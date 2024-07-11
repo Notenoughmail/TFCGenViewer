@@ -1,0 +1,21 @@
+{
+  "tfcgenviewer.preview_world.title": "Preview World",
+  "button.tfcgenviewer.preview_world": "Preview World",
+  "button.tfcgenviewer.apply": "Apply",
+  "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
+  "tfcgenviewer.preview_world.current_seed": "Current seed: %d",
+  "button.tfcgenviewer.gridx": "Grid X",
+  "button.tfcgenviewer.gridx.tooltip": "The x position in the world grid to preview",
+  "button.tfcgenviewer.gridy": "Grid Y",
+  "button.tfcgenviewer.gridy.tooltip": "The y position in the world grid to preview",
+  "tfcgenviewer.preview_world.visualizer_task": "Visualizer Task",
+  "tfcgenviewer.preview_world.visualizer_task.biomes": "Biomes",
+  "tfcgenviewer.preview_world.visualizer_task.rainfall": "Rainfall",
+  "tfcgenviewer.preview_world.visualizer_task.temperature": "Temperature",
+  "tfcgenviewer.preview_world.visualizer_task.continents": "Continents",
+  "tfcgenviewer.preview_world.visualizer_task.biome_altitude": "Biome Altitude",
+  "tfcgenviewer.preview_world.visualizer_task.inland_height": "Inland Height",
+  "tfcgenviewer.preview_world.visualizer_task.rocks": "Rocks",
+  "tfcgenviewer.preview_world.visualizer_task.rivers": "Rivers and Lakes",
+  "tfcgenviewer.preview_world.seed_hint": "World seed"
+}
