@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public abstract class MoreTabMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void test(CreateWorldScreen parent, CallbackInfo ci, GridLayout.RowHelper rowHelper) {
+    private void tfcgenviewer$AddPreviewButton(CreateWorldScreen parent, CallbackInfo ci, GridLayout.RowHelper rowHelper) {
         rowHelper.addChild(Button.builder(TFCGenViewer.PREVIEW_WORLD, button -> {
             parent.getMinecraft().setScreen(new PreviewGenerationScreen(parent));
         }).width(210).build());

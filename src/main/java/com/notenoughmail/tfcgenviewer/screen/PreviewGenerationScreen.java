@@ -1,6 +1,5 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.SeedValueSet;
@@ -9,7 +8,6 @@ import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,17 +18,15 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.Consumer;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -59,10 +55,6 @@ public class PreviewGenerationScreen extends Screen {
                 OptionInstance.UnitDouble.INSTANCE, defaultValue, value -> {});
     }
 
-    private static OptionInstance<Integer> intOpt(String key, int min, int max, int defaultValue, OptionInstance.CaptionBasedToString<Integer> label) {
-        return new OptionInstance<>(key, OptionInstance.cachedConstantTooltip(Component.translatable(key + ".tooltip")), label, new OptionInstance.IntRange(min, max), defaultValue, value -> {});
-    }
-
     private final CreateWorldScreen parent;
     @Nullable
     private final ChunkGeneratorExtension generator;
@@ -70,8 +62,6 @@ public class PreviewGenerationScreen extends Screen {
     private RegionGenerator regionGenerator;
     private Settings worldSettings;
     private OptionInstance<VisualizeTask> visualizerTask;
-    private OptionInstance<String> seed;
-    private OptionInstance<Boolean> applier;
     private long seedInUse;
     private String editorSeed, localSeed;
 
@@ -90,6 +80,7 @@ public class PreviewGenerationScreen extends Screen {
         generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
+        ImageBuilder.getPreview(); // Initialize the texture
     }
 
     @Nullable
@@ -153,10 +144,10 @@ public class PreviewGenerationScreen extends Screen {
             );
             options.addSmall(
                     visualizerTask = new OptionInstance<>("tfcgenviewer.preview_world.visualizer_task", OptionInstance.noTooltip(), (caption, task) -> task.getName(), new OptionInstance.Enum<>(List.of(VisualizeTask.VALUES), VisualizeTask.CODEC), VisualizeTask.RIVERS, task -> {}),
-                    seed = new OptionInstance<>("selectWorld.enterSeed", OptionInstance.noTooltip(), (caption, seed) -> Component.literal(seed), new SeedValueSet(font, (s, editBox) -> editorSeed = editBox.getValue(), () -> editorSeed), String.valueOf(seedInUse), s -> {})
+                    new OptionInstance<>("selectWorld.enterSeed", OptionInstance.noTooltip(), (caption, seed) -> Component.literal(seed), new SeedValueSet(font, (s, editBox) -> editorSeed = editBox.getValue(), () -> editorSeed), String.valueOf(seedInUse), s -> {})
             );
             options.addBig(
-                    applier = new OptionInstance<>("button.tfcgenviewer.apply", OptionInstance.noTooltip(), (caption, bool) -> caption, OptionInstance.BOOLEAN_VALUES, false, bool -> {}) {
+                    new OptionInstance<>("button.tfcgenviewer.apply", OptionInstance.noTooltip(), (caption, bool) -> caption, OptionInstance.BOOLEAN_VALUES, false, bool -> {}) {
                         @Override
                         public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
                             return Button.builder(APPLY, button -> applyUpdates(true)).bounds(pX, pY, pWidth, 20).build();
@@ -164,8 +155,6 @@ public class PreviewGenerationScreen extends Screen {
                     }
             );
             addWidget(options);
-            assert regionGenerator != null;
-            ImageBuilder.getPreview(); // Initialize the texture
             applyUpdates(true);
         }
 

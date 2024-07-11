@@ -7,8 +7,8 @@ import net.dries007.tfc.world.region.RegionGenerator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor.ARGB32;
 import net.minecraft.util.FastColor.ABGR32;
+import net.minecraft.util.FastColor.ARGB32;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
