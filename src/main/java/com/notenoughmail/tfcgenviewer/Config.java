@@ -17,7 +17,7 @@ public class Config {
     private static void register(ForgeConfigSpec.Builder builder) {
         visualizeSize = builder.comment(
                 "",
-                " The size vertical and horizontal distance to visualize, a restart is required to take effect",
+                " The vertical and horizontal size to visualize, in world grids (8 chunks), a restart is required to take effect",
                 " Note that bigger sizes will take exponentially longer to preview",
                 ""
                 ).defineInRange("viewSize", 512, 16, 2048);

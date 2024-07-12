@@ -3,7 +3,7 @@ package com.notenoughmail.tfcgenviewer.screen;
 import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.SeedValueSet;
-import com.notenoughmail.tfcgenviewer.util.VisualizeTask;
+import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
@@ -28,6 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Consumer;
 
+// TODO: Region count, copy seed button, display dimensions, rock editor?
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PreviewGenerationScreen extends Screen {
@@ -35,6 +36,7 @@ public class PreviewGenerationScreen extends Screen {
     public static final Component TITLE = Component.translatable("tfcgenviewer.preview_world.title");
     public static final Component INVALID_GENERATOR = Component.translatable("tfcgenviewer.preview_world.invalid_generator");
     public static final Component APPLY = Component.translatable("button.tfcgenviewer.apply");
+    public static final Component SAVE = Component.translatable("button.tfcgenviewer.save");
 
     // Taken from TFC's create world screen
     private static OptionInstance<Integer> kmOpt(String key, int min, int max, int defaultValue) {
@@ -55,20 +57,25 @@ public class PreviewGenerationScreen extends Screen {
                 OptionInstance.UnitDouble.INSTANCE, defaultValue, value -> {});
     }
 
+    private static OptionInstance<Integer> offsetOption(String key, int defaultValue) {
+        return new OptionInstance<>(key, OptionInstance.cachedConstantTooltip(Component.translatable(key + ".tooltip")), (text, value) -> Options.genericValueLabel(text, Component.translatable("tfcgenviewer.preview_world.chunks", (8 * value))), new OptionInstance.IntRange(-1250, 1250), defaultValue, value -> {});
+    }
+
     private final CreateWorldScreen parent;
     @Nullable
     private final ChunkGeneratorExtension generator;
     @Nullable
     private RegionGenerator regionGenerator;
     private Settings worldSettings;
-    private OptionInstance<VisualizeTask> visualizerTask;
+    private OptionInstance<VisualizerType> visualizerTask;
     private long seedInUse;
     private String editorSeed, localSeed;
+    private int regionCount;
 
     // Copied from TFC's create world screen
     private OptionsList options;
-    private OptionInstance<Boolean> flatBedrock;
-    private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale;
+    private OptionInstance<Boolean> flatBedrock, spawnOverlay;
+    private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset;
     private OptionInstance<Double> tempConst, rainConst, continentalness, grassDensity;
 
     public PreviewGenerationScreen(CreateWorldScreen parent) {
@@ -81,6 +88,7 @@ public class PreviewGenerationScreen extends Screen {
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
         ImageBuilder.getPreview(); // Initialize the texture
+        regionCount = 0;
     }
 
     @Nullable
@@ -143,7 +151,14 @@ public class PreviewGenerationScreen extends Screen {
                     grassDensity = pctOpt("tfc.create_world.grass_density", worldSettings.grassDensity())
             );
             options.addSmall(
-                    visualizerTask = new OptionInstance<>("tfcgenviewer.preview_world.visualizer_task", OptionInstance.noTooltip(), (caption, task) -> task.getName(), new OptionInstance.Enum<>(List.of(VisualizeTask.VALUES), VisualizeTask.CODEC), VisualizeTask.RIVERS, task -> {}),
+                    xOffset = offsetOption("tfcgenviewer.preview_world.x_offset", -ImageBuilder.previewSize() / 2), // Center on 0,0 by default
+                    zOffset = offsetOption("tfcgenviewer.preview_world.z_offset", -ImageBuilder.previewSize() / 2)
+            );
+            options.addSmall(
+                    visualizerTask = new OptionInstance<>("tfcgenviewer.preview_world.visualizer_type", OptionInstance.noTooltip(), (caption, task) -> task.getName(), new OptionInstance.Enum<>(List.of(VisualizerType.VALUES), VisualizerType.CODEC), VisualizerType.RIVERS, task -> {}),
+                    spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.preview_world.spawn_overlay", false)
+            );
+            options.addBig(
                     new OptionInstance<>("selectWorld.enterSeed", OptionInstance.noTooltip(), (caption, seed) -> Component.literal(seed), new SeedValueSet(font, (s, editBox) -> editorSeed = editBox.getValue(), () -> editorSeed), String.valueOf(seedInUse), s -> {})
             );
             options.addBig(
@@ -158,7 +173,7 @@ public class PreviewGenerationScreen extends Screen {
             applyUpdates(true);
         }
 
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> {
+        addRenderableWidget(Button.builder(SAVE, button -> {
             applyUpdates(false);
             minecraft.setScreen(parent);
         }).bounds(8, height - 28, 150, 20).build());
@@ -194,7 +209,7 @@ public class PreviewGenerationScreen extends Screen {
             } else {
                 regionGenerator = getRegionGenerator();
                 assert regionGenerator != null;
-                ImageBuilder.build(regionGenerator, visualizerTask.get());
+                regionCount = ImageBuilder.build(regionGenerator, visualizerTask.get(), xOffset.get(), zOffset.get(), spawnOverlay.get(), spawnDist.get(), spawnCenterX.get(), spawnCenterZ.get());
             }
         }
     }

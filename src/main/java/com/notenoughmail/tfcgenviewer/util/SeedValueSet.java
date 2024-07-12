@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public record SeedValueSet(Font font, BiConsumer<String, EditBox> seedSetter, Supplier<String> defaultValue) implements OptionInstance.ValueSet<String> {
 
     public static final Component SEED_LABEL = Component.translatable("selectWorld.enterSeed");
-    public static final Component SEED_HINT = Component.translatable("tfcgenviewer.preview_world.seed_hint").withStyle(ChatFormatting.GRAY);
+    public static final Component SEED_HINT = Component.translatable("selectWorld.seedInfo").withStyle(ChatFormatting.DARK_GRAY);
     private static final Codec<String> CODEC = Codec.STRING;
 
     @Override
