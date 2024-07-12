@@ -6,12 +6,17 @@ import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.DoubleToIntFunction;
@@ -54,11 +59,11 @@ public class ImageBuilder {
     @Nullable
     private static Integer LINE_WIDTH;
     @Nullable
-    private static Float PREVIEW_SIZE_KM;
+    private static String PREVIEW_SIZE_KM;
 
     public static int previewSize() {
         if (PREVIEW_SIZE == null) {
-            PREVIEW_SIZE = Config.visualizeSize.get();
+            PREVIEW_SIZE = Config.previewSize.get();
         }
         return PREVIEW_SIZE;
     }
@@ -70,9 +75,9 @@ public class ImageBuilder {
         return LINE_WIDTH;
     }
 
-    public static float previewSizeKm() {
+    public static String previewSizeKm() {
         if (PREVIEW_SIZE_KM == null) {
-            PREVIEW_SIZE_KM = previewSize() * 128 / 1000F;
+            PREVIEW_SIZE_KM = String.format("%.1f", previewSize() * 128 / 1000F);
         }
         return PREVIEW_SIZE_KM;
     }
@@ -153,13 +158,22 @@ public class ImageBuilder {
             vLine(image, yCenter - radius, yCenter + radius, xCenter + radius, lineWidth(), DARK_GRAY);
             vLine(image, yCenter - radius, yCenter + radius, xCenter - radius, lineWidth(), DARK_GRAY);
 
-            final int length = previewSize() / 16;
+            final int length = Math.min(radius / 4, previewSize() / 12);
             hLine(image, xCenter - length, xCenter + length, yCenter, lineWidth(), SPAWN_RED);
             vLine(image, yCenter - length, yCenter + length, xCenter, lineWidth(), SPAWN_RED);
         }
 
         PREVIEW.setPixels(image);
         PREVIEW.upload();
+
+        if (!FMLLoader.isProduction()) {
+            try {
+                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%dx%d_%s.png", previewSize(), previewSize(), Util.getFilenameFormattedDateTime())));
+            } catch (IOException exception) {
+                TFCGenViewer.LOGGER.warn("Unable to write preview to disk!", exception);
+            }
+        }
+
         return visitedRegions.size();
     }
 

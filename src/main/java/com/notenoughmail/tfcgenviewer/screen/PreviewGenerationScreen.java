@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
@@ -28,7 +29,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Consumer;
 
-// TODO: Region count, copy seed button, display dimensions, rock editor?
+// TODO: ?rock editor?
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PreviewGenerationScreen extends Screen {
@@ -71,6 +72,7 @@ public class PreviewGenerationScreen extends Screen {
     private long seedInUse;
     private String editorSeed, localSeed;
     private int regionCount;
+    private Button seedbutton;
 
     // Copied from TFC's create world screen
     private OptionsList options;
@@ -94,6 +96,9 @@ public class PreviewGenerationScreen extends Screen {
     @Nullable
     private RegionGenerator getRegionGenerator() {
         seedInUse = WorldOptions.parseSeed(localSeed).orElse(WorldOptions.randomSeed());
+        if (seedbutton != null) {
+            seedbutton.setMessage(Component.translatable("button.tfcgenviewer.current_seed", seedInUse));
+        }
         return generator == null ? null : new RegionGenerator(worldSettings, new XoroshiroRandomSource(seedInUse));
     }
 
@@ -111,9 +116,11 @@ public class PreviewGenerationScreen extends Screen {
 
     private void renderGeneration(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         options.render(graphics, mouseX, mouseY, partialTick);
-        final int preview = Math.min(width / 3 * 2 - 50, height - 50);
-        graphics.blit(ImageBuilder.getPreview(), width / 3 + 20, 32, 0, 0, preview, preview, preview, preview);
-        graphics.drawCenteredString(font, Component.translatable("tfcgenviewer.preview_world.current_seed", seedInUse), (width / 3) + (preview / 2), height - 14, 0xFFFFFF);
+        final int thirdWidth = width / 3;
+        final int preview = Math.min(thirdWidth * 2 - 50, height - 64);
+        graphics.blit(ImageBuilder.getPreview(), thirdWidth + 10, 32, 0, 0, preview, preview, preview, preview);
+        final int leftPos = thirdWidth + 20 + preview;
+        graphics.drawWordWrap(font, Component.translatable("tfcgenviewer.preview_world.preview_info", regionCount, ImageBuilder.previewSizeKm(), ImageBuilder.previewSizeKm()), leftPos, height / 2 - 60, width - leftPos - 10, 0xFFFFFF);
     }
 
     @Override
@@ -170,14 +177,22 @@ public class PreviewGenerationScreen extends Screen {
                     }
             );
             addWidget(options);
+
+            seedbutton = Button
+                    .builder(Component.translatable("button.tfcgenviewer.current_seed", seedInUse), button -> minecraft.keyboardHandler.setClipboard(String.valueOf(seedInUse)))
+                    .tooltip(Tooltip.create(Component.translatable("button.tfcgenviewer.current_seed.tooltip")))
+                    .bounds((width / 3) + 10, height - 28, Math.min(width / 3 * 2 - 50, height - 64), 20)
+                    .build();
+
+            addRenderableWidget(seedbutton);
             applyUpdates(true);
         }
 
         addRenderableWidget(Button.builder(SAVE, button -> {
             applyUpdates(false);
             minecraft.setScreen(parent);
-        }).bounds(8, height - 28, 150, 20).build());
-        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> minecraft.setScreen(parent)).bounds(166, height - 28, 150, 20).build());
+        }).bounds(width / 6 - 105, height - 28, 100, 20).build());
+        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> minecraft.setScreen(parent)).bounds(width / 6 + 5, height - 28, 100, 20).build());
     }
 
     private void applyUpdates(boolean local) {

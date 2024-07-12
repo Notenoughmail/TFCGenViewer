@@ -3,7 +3,8 @@
   "button.tfcgenviewer.preview_world": "Preview World",
   "button.tfcgenviewer.apply": "Apply",
   "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
-  "tfcgenviewer.preview_world.current_seed": "Current seed: %d",
+  "button.tfcgenviewer.current_seed": "Current seed: %d",
+  "button.tfcgenviewer.current_seed.tooltip": "Click to copy",
   "tfcgenviewer.preview_world.visualizer_type": "Visualizer",
   "tfcgenviewer.preview_world.visualizer_type.biomes": "Biomes",
   "tfcgenviewer.preview_world.visualizer_type.rainfall": "Rainfall",
@@ -17,6 +18,7 @@
   "tfcgenviewer.preview_world.x_offset.tooltip": "The x offset, in chunks, of the preview",
   "tfcgenviewer.preview_world.z_offset": "Z Offset",
   "tfcgenviewer.preview_world.z_offset.tooltip": "The x offset, in chunks, of the preview",
-  "tfcgenviewer.preview_world.spawn_overlay": "Show Spawn Overlay",
-  "button.tfcgenviewer.save": "Save"
+  "tfcgenviewer.preview_world.spawn_overlay": "Spawn Overlay",
+  "button.tfcgenviewer.save": "Save",
+  "tfcgenviewer.preview_world.preview_info": "%d regions generated\n\nDimensions:\n%s km x %s km"
 }

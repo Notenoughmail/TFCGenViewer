@@ -6,7 +6,7 @@ import net.minecraftforge.fml.config.ModConfig;
 
 public class Config {
 
-    public static ForgeConfigSpec.IntValue visualizeSize;
+    public static ForgeConfigSpec.IntValue previewSize;
 
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -15,11 +15,11 @@ public class Config {
     }
 
     private static void register(ForgeConfigSpec.Builder builder) {
-        visualizeSize = builder.comment(
+        previewSize = builder.comment(
                 "",
                 " The vertical and horizontal size to visualize, in world grids (8 chunks), a restart is required to take effect",
                 " Note that bigger sizes will take exponentially longer to preview",
                 ""
-                ).defineInRange("viewSize", 512, 16, 2048);
+                ).defineInRange("previewSize", 256, 16, 2048);
     }
 }
