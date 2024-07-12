@@ -71,7 +71,7 @@ public class PreviewGenerationScreen extends Screen {
     private OptionInstance<VisualizerType> visualizerTask;
     private long seedInUse;
     private String editorSeed, localSeed;
-    private int regionCount;
+    private Component sideInfoDisplay;
     private Button seedbutton;
 
     // Copied from TFC's create world screen
@@ -90,7 +90,7 @@ public class PreviewGenerationScreen extends Screen {
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
         ImageBuilder.getPreview(); // Initialize the texture
-        regionCount = 0;
+        sideInfoDisplay = Component.empty();
     }
 
     @Nullable
@@ -120,7 +120,7 @@ public class PreviewGenerationScreen extends Screen {
         final int preview = Math.min(thirdWidth * 2 - 50, height - 64);
         graphics.blit(ImageBuilder.getPreview(), thirdWidth + 10, 32, 0, 0, preview, preview, preview, preview);
         final int leftPos = thirdWidth + 20 + preview;
-        graphics.drawWordWrap(font, Component.translatable("tfcgenviewer.preview_world.preview_info", regionCount, ImageBuilder.previewSizeKm(), ImageBuilder.previewSizeKm()), leftPos, height / 2 - 60, width - leftPos - 10, 0xFFFFFF);
+        graphics.drawWordWrap(font, sideInfoDisplay, leftPos, height / 2 - 60, width - leftPos - 10, 0xFFFFFF);
     }
 
     @Override
@@ -186,13 +186,15 @@ public class PreviewGenerationScreen extends Screen {
 
             addRenderableWidget(seedbutton);
             applyUpdates(true);
-        }
 
-        addRenderableWidget(Button.builder(SAVE, button -> {
-            applyUpdates(false);
-            minecraft.setScreen(parent);
-        }).bounds(width / 6 - 105, height - 28, 100, 20).build());
-        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> minecraft.setScreen(parent)).bounds(width / 6 + 5, height - 28, 100, 20).build());
+            addRenderableWidget(Button.builder(SAVE, button -> {
+                applyUpdates(false);
+                minecraft.setScreen(parent);
+            }).bounds(width / 6 - 105, height - 28, 100, 20).build());
+            addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> minecraft.setScreen(parent)).bounds(width / 6 + 5, height - 28, 100, 20).build());
+        } else {
+            addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> minecraft.setScreen(parent)).bounds(width / 2 - 30, height - 28, 60, 20).build());
+        }
     }
 
     private void applyUpdates(boolean local) {
@@ -224,7 +226,7 @@ public class PreviewGenerationScreen extends Screen {
             } else {
                 regionGenerator = getRegionGenerator();
                 assert regionGenerator != null;
-                regionCount = ImageBuilder.build(regionGenerator, visualizerTask.get(), xOffset.get(), zOffset.get(), spawnOverlay.get(), spawnDist.get(), spawnCenterX.get(), spawnCenterZ.get());
+                sideInfoDisplay = ImageBuilder.build(regionGenerator, visualizerTask.get(), xOffset.get(), zOffset.get(), spawnOverlay.get(), spawnDist.get(), spawnCenterX.get(), spawnCenterZ.get());
             }
         }
     }

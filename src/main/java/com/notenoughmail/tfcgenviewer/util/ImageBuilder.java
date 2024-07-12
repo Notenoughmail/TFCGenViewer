@@ -9,6 +9,7 @@ import net.dries007.tfc.world.region.RegionGenerator;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.fml.loading.FMLLoader;
@@ -135,7 +136,7 @@ public class ImageBuilder {
 
     public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> setPixel(image, x, y, blue.applyAsInt(region.noise() / 2));
 
-    public static int build(RegionGenerator generator, VisualizerType visualizer, int xOffset, int yOffset, boolean drawSpawn, int spawnDist, int spawnX, int spawnY) {
+    public static Component build(RegionGenerator generator, VisualizerType visualizer, int xOffset, int yOffset, boolean drawSpawn, int spawnDist, int spawnX, int spawnY) {
         final NativeImage image = new NativeImage(previewSize(), previewSize(), false);
         final Set<Region> visitedRegions = new HashSet<>();
         for (int x = 0; x < previewSize(); x++) {
@@ -166,15 +167,15 @@ public class ImageBuilder {
         PREVIEW.setPixels(image);
         PREVIEW.upload();
 
-        if (!FMLLoader.isProduction()) {
+        if (false && !FMLLoader.isProduction()) {
             try {
-                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%dx%d_%s.png", previewSize(), previewSize(), Util.getFilenameFormattedDateTime())));
+                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%s_%dx%d@%s.png", visualizer.name(), previewSize(), previewSize(), Util.getFilenameFormattedDateTime())));
             } catch (IOException exception) {
                 TFCGenViewer.LOGGER.warn("Unable to write preview to disk!", exception);
             }
         }
 
-        return visitedRegions.size();
+        return Component.translatable("tfcgenviewer.preview_world.preview_info", visitedRegions.size(), ImageBuilder.previewSizeKm(), ImageBuilder.previewSizeKm());
     }
 
     public static int biomeColor(int biome) {
