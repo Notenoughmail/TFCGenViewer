@@ -27,7 +27,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Consumer;
 
-// TODO: ?rock editor?
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PreviewGenerationScreen extends Screen {
@@ -73,6 +72,7 @@ public class PreviewGenerationScreen extends Screen {
     private Component sideInfoDisplay;
     private Button seedbutton;
     private int previewPixels;
+    private InfoPane rightInfo;
 
     // Copied from TFC's create world screen
     private CustomOptionsList options;
@@ -119,7 +119,7 @@ public class PreviewGenerationScreen extends Screen {
         options.render(graphics, mouseX, mouseY, partialTick);
         graphics.blit(ImageBuilder.getPreview(), (width - previewPixels) / 2, (height - previewPixels) / 2, 0, 0, previewPixels, previewPixels, previewPixels, previewPixels);
         final int leftPos = (width + previewPixels) / 2 + 10;
-        graphics.drawWordWrap(font, sideInfoDisplay, leftPos, Math.max(height / 4 - 20, 32), width - leftPos - 10, 0xFFFFFF);
+        graphics.drawWordWrap(font, sideInfoDisplay, leftPos, 32, width - leftPos - 10, 0xFFFFFF);
         graphics.blit(COMPASS, leftPos, height - 96, 0, 0, 64, 64, 64, 64);
     }
 
