@@ -42,16 +42,6 @@ public enum VisualizerType {
         }
     }, colors("biome_altitude", green.applyAsInt(0), green.applyAsInt(0.333), green.applyAsInt(0.666), green.applyAsInt(1), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999))),
     INLAND_HEIGHT(name("inland_height"), (x, y, xPos, yPos, generator, region, point, image) -> setPixel(image, x, y, inlandHeightColor(point)), colors("inland_height", green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), SHALLOW_WATER, DEEP_WATER, VERY_DEEP_WATER)),
-    ROCK_TYPES(name("rock_types"), (x, y, xPos, yPos, generator, region, point, image) -> {
-        final double value = new Random(point.rock >> 2).nextDouble();
-        setPixel(image, x, y, switch (point.rock & 0b11) {
-            case 0 -> blue.applyAsInt(value);
-            case 1 -> VOLCANIC_ROCK.applyAsInt(value);
-            case 2 -> green.applyAsInt(value);
-            case 3 -> UPLIFT_ROCK.applyAsInt(value);
-            default -> CLEAR;
-        });
-    }, colors("rock_types", green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999), VOLCANIC_ROCK.applyAsInt(0), VOLCANIC_ROCK.applyAsInt(0.2), VOLCANIC_ROCK.applyAsInt(0.4), VOLCANIC_ROCK.applyAsInt(0.6), VOLCANIC_ROCK.applyAsInt(0.8), VOLCANIC_ROCK.applyAsInt(0.999), UPLIFT_ROCK.applyAsInt(0), UPLIFT_ROCK.applyAsInt(0.2), UPLIFT_ROCK.applyAsInt(0.4), UPLIFT_ROCK.applyAsInt(0.6), UPLIFT_ROCK.applyAsInt(0.8), UPLIFT_ROCK.applyAsInt(0.999))),
     RIVERS(name("rivers"), (x, y, xPos, yPos, generator, region, point, image) -> {
         if (point.land()) {
             final int color;
@@ -73,13 +63,20 @@ public enum VisualizerType {
             fillOcean.draw(x, y, xPos, yPos, generator, region, point, image);
         }
     }, colors("rivers", RIVER_BLUE, SHORT_MOUNTAIN, GRAY, SHALLOW_WATER, green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999))),
+    ROCK_TYPES(name("rock_types"), (x, y, xPos, yPos, generator, region, point, image) -> {
+        final double value = new Random(point.rock >> 2).nextDouble();
+        setPixel(image, x, y, switch (point.rock & 0b11) {
+            case 0 -> blue.applyAsInt(value);
+            case 1 -> VOLCANIC_ROCK.applyAsInt(value);
+            case 2 -> green.applyAsInt(value);
+            case 3 -> UPLIFT_ROCK.applyAsInt(value);
+            default -> CLEAR;
+        });
+    }, colors("rock_types", green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999), VOLCANIC_ROCK.applyAsInt(0), VOLCANIC_ROCK.applyAsInt(0.2), VOLCANIC_ROCK.applyAsInt(0.4), VOLCANIC_ROCK.applyAsInt(0.6), VOLCANIC_ROCK.applyAsInt(0.8), VOLCANIC_ROCK.applyAsInt(0.999), UPLIFT_ROCK.applyAsInt(0), UPLIFT_ROCK.applyAsInt(0.2), UPLIFT_ROCK.applyAsInt(0.4), UPLIFT_ROCK.applyAsInt(0.6), UPLIFT_ROCK.applyAsInt(0.8), UPLIFT_ROCK.applyAsInt(0.999))),
     ROCKS(name("rocks"), (x, y, xPos, yPos, generator, region, point, image) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 0, yPos * 128 - 64, 0, null).raw();
         final int color = ROCK_BLOCK_COLORS.getOrDefault(raw, UNKNOWN_ROCK);
         setPixel(image, x, y, color);
-        // if (!point.land()) {
-        //     setPixel(image, x, y, SUBMERGED_OVERLAY);
-        // }
     }, colors("rocks", GRANITE, DIORITE, GABBRO, SHALE, CLAYSTONE, LIMESTONE, CONGLOMERATE, DOLOMITE, CHERT, CHALK, RHYOLITE, BASALT, ANDESITE, DACITE, QUARTZITE, SLATE, PHYLLITE, SCHIST, GNEISS, MARBLE, UNKNOWN_ROCK));
 
     public static final VisualizerType[] VALUES = values();

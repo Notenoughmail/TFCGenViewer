@@ -129,26 +129,25 @@ public class ImageBuilder {
     // TODO: Improve differences between grays
     public static final int GRANITE = color(255, 74, 70, 85);
     public static final int DIORITE = color(255, 142, 142, 142);
-    public static final int GABBRO = color(255, 65, 65, 65);
+    public static final int GABBRO = color(255, 68, 85, 93);
     public static final int SHALE = color(255, 70, 67, 70);
     public static final int CLAYSTONE = color(255, 68, 102, 141);
     public static final int LIMESTONE = color(255, 107, 127, 136);
     public static final int CONGLOMERATE = color(255, 101, 113, 111);
-    public static final int DOLOMITE = color(255, 59, 53, 53);
+    public static final int DOLOMITE = color(255, 89, 70, 60);
     public static final int CHERT = color(255, 70, 78, 122);
-    public static final int CHALK = color(255, 156, 160, 161);
-    public static final int RHYOLITE = color(255, 75, 79, 85);
+    public static final int CHALK = color(255, 193, 199, 199);
+    public static final int RHYOLITE = color(255, 103, 98, 115);
     public static final int BASALT = color(255, 33, 32, 29);
     public static final int ANDESITE = color(255, 96, 96, 96);
     public static final int DACITE = color(255, 123, 123, 122);
     public static final int QUARTZITE = color(255, 128, 129, 140);
     public static final int SLATE = color(255, 103, 116, 125);
-    public static final int PHYLLITE = color(255, 66, 63, 73);
+    public static final int PHYLLITE = color(255, 169, 157, 148);
     public static final int SCHIST = color(255, 65, 84, 77);
-    public static final int GNEISS = color(255, 96, 106, 114);
-    public static final int MARBLE = color(255, 174, 174, 168);
+    public static final int GNEISS = color(255, 96, 109, 115);
+    public static final int MARBLE = color(255, 235, 235, 227);
     public static final int UNKNOWN_ROCK = color(255, 227, 88, 255);
-    public static final int SUBMERGED_OVERLAY = color(25, 200, 0, 0);
 
     public static final Map<Block, Integer> ROCK_BLOCK_COLORS = Util.make(new IdentityHashMap<>(20), map -> {
         map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GRANITE).get(Rock.BlockType.RAW).get(), GRANITE);
