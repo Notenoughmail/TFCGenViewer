@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.screen;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.*;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
+import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -19,6 +20,7 @@ import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import org.jetbrains.annotations.Nullable;
@@ -64,12 +66,11 @@ public class PreviewGenerationScreen extends Screen {
     @Nullable
     private final ChunkGeneratorExtension generator;
     @Nullable
-    private RegionGenerator regionGenerator;
+    private RegionChunkDataGenerator regionGenerator;
     private Settings worldSettings;
     private OptionInstance<VisualizerType> visualizerTask;
     private long seedInUse;
     private String editorSeed, localSeed;
-    private Component sideInfoDisplay;
     private Button seedbutton;
     private int previewPixels;
     private InfoPane rightInfo;
@@ -90,17 +91,21 @@ public class PreviewGenerationScreen extends Screen {
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
         ImageBuilder.getPreview(); // Initialize the texture
-        sideInfoDisplay = Component.empty();
         previewPixels = 2;
     }
 
     @Nullable
-    private RegionGenerator getRegionGenerator() {
+    private RegionChunkDataGenerator getRegionGenerator() {
         seedInUse = WorldOptions.parseSeed(localSeed).orElse(WorldOptions.randomSeed());
         if (seedbutton != null) {
             seedbutton.setMessage(Component.translatable("button.tfcgenviewer.current_seed", seedInUse));
         }
-        return generator == null ? null : new RegionGenerator(worldSettings, new XoroshiroRandomSource(seedInUse));
+        if (generator != null) {
+            final RandomSource random = new XoroshiroRandomSource(seedInUse);
+            final RegionGenerator region = new RegionGenerator(worldSettings, random);
+            return RegionChunkDataGenerator.create(random.nextLong(), worldSettings.rockLayerSettings(), region);
+        }
+        return null;
     }
 
     @Override
@@ -118,9 +123,6 @@ public class PreviewGenerationScreen extends Screen {
     private void renderGeneration(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         options.render(graphics, mouseX, mouseY, partialTick);
         graphics.blit(ImageBuilder.getPreview(), (width - previewPixels) / 2, (height - previewPixels) / 2, 0, 0, previewPixels, previewPixels, previewPixels, previewPixels);
-        final int leftPos = (width + previewPixels) / 2 + 10;
-        graphics.drawWordWrap(font, sideInfoDisplay, leftPos, 32, width - leftPos - 10, 0xFFFFFF);
-        graphics.blit(COMPASS, leftPos, height - 96, 0, 0, 64, 64, 64, 64);
     }
 
     @Override
@@ -162,6 +164,9 @@ public class PreviewGenerationScreen extends Screen {
                     }
             );
             addWidget(options);
+
+            final int rightPos = (width + previewPixels) / 2 + 10;
+            addRenderableWidget(rightInfo = new InfoPane(rightPos, 32, width - rightPos - 10, height - 64, Component.empty(), font, COMPASS, 64));
 
             seedbutton = Button
                     .builder(Component.translatable("button.tfcgenviewer.current_seed", seedInUse), button -> minecraft.keyboardHandler.setClipboard(String.valueOf(seedInUse)))
@@ -211,7 +216,16 @@ public class PreviewGenerationScreen extends Screen {
             } else {
                 regionGenerator = getRegionGenerator();
                 assert regionGenerator != null;
-                sideInfoDisplay = ImageBuilder.build(regionGenerator, visualizerTask.get(), xOffset.get(), zOffset.get(), spawnOverlay.get(), spawnDist.get(), spawnCenterX.get(), spawnCenterZ.get());
+                rightInfo.setMessage(ImageBuilder.build(
+                        regionGenerator,
+                        visualizerTask.get(),
+                        xOffset.get(),
+                        zOffset.get(),
+                        spawnOverlay.get(),
+                        spawnDist.get(),
+                        spawnCenterX.get(),
+                        spawnCenterZ.get()
+                ));
             }
         }
     }

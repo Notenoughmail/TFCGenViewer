@@ -2,14 +2,15 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
+import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
-import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
 
 import java.util.Random;
 import java.util.stream.IntStream;
@@ -62,7 +63,7 @@ public enum VisualizerType {
                 color = green.applyAsInt(Mth.clampedMap(point.discreteBiomeAltitude(), 0, 3, 0, 1));
             }
             setPixel(image, x, y, color);
-            for (RiverEdge edge : generator.getOrCreatePartitionPoint(xPos, yPos).rivers()) {
+            for (RiverEdge edge : generator.regionGenerator().getOrCreatePartitionPoint(xPos, yPos).rivers()) {
                 final MidpointFractal fractal = edge.fractal();
                 if (fractal.maybeIntersect(xPos, yPos, 0.1F) && fractal.intersect(xPos, yPos, 0.35F)) {
                     setPixel(image, x, y, RIVER_BLUE);
@@ -73,7 +74,12 @@ public enum VisualizerType {
         }
     }, colors("rivers", RIVER_BLUE, SHORT_MOUNTAIN, GRAY, SHALLOW_WATER, green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999))),
     ROCKS(name("rocks"), (x, y, xPos, yPos, generator, region, point, image) -> {
-        // TODO: Implement
+        final Block raw = generator.generateRock(xPos * 128 - 64, 0, yPos * 128 - 64, 0, null).raw();
+        final int color = ROCK_BLOCK_COLORS.getOrDefault(raw, UNKNOWN_ROCK);
+        setPixel(image, x, y, color);
+        // if (!point.land()) {
+        //     setPixel(image, x, y, SUBMERGED_OVERLAY);
+        // }
     }, colors("rocks", GRANITE, DIORITE, GABBRO, SHALE, CLAYSTONE, LIMESTONE, CONGLOMERATE, DOLOMITE, CHERT, CHALK, RHYOLITE, BASALT, ANDESITE, DACITE, QUARTZITE, SLATE, PHYLLITE, SCHIST, GNEISS, MARBLE, UNKNOWN_ROCK));
 
     public static final VisualizerType[] VALUES = values();
@@ -114,12 +120,12 @@ public enum VisualizerType {
         return colorKey;
     }
 
-    public void draw(int x, int y, int xPos, int yPos, RegionGenerator generator, Region region, Region.Point point, NativeImage image) {
+    public void draw(int x, int y, int xPos, int yPos, RegionChunkDataGenerator generator, Region region, Region.Point point, NativeImage image) {
         drawer.draw(x, y, xPos, yPos, generator, region, point, image);
     }
 
     @FunctionalInterface
     public interface DrawFunction {
-        void draw(int x, int y, int xPos, int yPos, RegionGenerator generator, Region region, Region.Point point, NativeImage image);
+        void draw(int x, int y, int xPos, int yPos, RegionChunkDataGenerator generator, Region region, Region.Point point, NativeImage image);
     }
 }

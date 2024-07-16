@@ -21,7 +21,7 @@
   "tfcgenviewer.preview_world.visualizer_type.rivers": "Rivers and Mountains",
   "tfcgenviewer.preview_world.visualizer_type.rivers.color_key": "%s : River\n%s : Short Mountain\n%s : Tall Mountain\n%s : Lake\n%s%s%s%s%s%s : Land\n%s%s%s%s%s%s : Ocean",
   "tfcgenviewer.preview_world.visualizer_type.rocks": "Rocks",
-  "tfcgenviewer.preview_world.visualizer_type.rocks.color_key": "%s : Granite\n%s : Diorite\n%s : Gabbro\n%s : Shale\n%s : Claystone\n%s : Limestone\n%s : Conglomerate\n%s : Dolomite\n%s : Chert\n%s : Chalk\n%s : Rhyolite\n%s : Basalt\n%s : Andesite\n%s : Dacite\n%s : Quartzite\n%s : Slate\n%s : Phyllite\n%s : Schist\n%s : Gneiss\n%s : Marble\n%s : Unknown Rock",
+  "tfcgenviewer.preview_world.visualizer_type.rocks.color_key": "%s : Granite\n%s : Diorite\n%s : Gabbro\n%s : Shale\n%s : Claystone\n%s : Limestone\n%s : Conglomerate\n%s : Dolomite\n%s : Chert\n%s : Chalk\n%s : Rhyolite\n%s : Basalt\n%s : Andesite\n%s : Dacite\n%s : Quartzite\n%s : Slate\n%s : Phyllite\n%s : Schist\n%s : Gneiss\n%s : Marble\n%s : Unknown Rock\nBlue Tint: In ocean",
   "tfcgenviewer.preview_world.chunks": "%s Chunks",
   "tfcgenviewer.preview_world.x_offset": "X Offset",
   "tfcgenviewer.preview_world.x_offset.tooltip": "The x offset, in chunks, of the preview",
@@ -29,5 +29,5 @@
   "tfcgenviewer.preview_world.z_offset.tooltip": "The x offset, in chunks, of the preview",
   "tfcgenviewer.preview_world.spawn_overlay": "Spawn Overlay",
   "button.tfcgenviewer.save": "Save",
-  "tfcgenviewer.preview_world.preview_info": "%s regions generated\nDimensions: %s km x %s km\nVisualizer: %s\n\nColor Key:\n%s"
+  "tfcgenviewer.preview_world.preview_info": "%s regions generated\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s"
 }
