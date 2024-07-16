@@ -3,15 +3,18 @@ package com.notenoughmail.tfcgenviewer.util;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.Config;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import net.dries007.tfc.common.blocks.TFCBlocks;
+import net.dries007.tfc.common.blocks.rock.Rock;
+import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
-import net.dries007.tfc.world.region.RegionGenerator;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +22,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
@@ -86,7 +91,7 @@ public class ImageBuilder {
     // Misc colors
     public static final int RIVER_BLUE = color(255, 250, 180, 100);
     public static final int CLEAR = 0x00000000;
-    public static final int SHORT_MOUNTAIN = color(255, 50, 110, 240);
+    public static final int VOLCANIC_MOUNTAIN = color(255, 50, 110, 240);
     public static final int GRAY = color(255, 150, 150, 150);
     public static final int DARK_GRAY = color(255, 50, 50, 50);
     public static final int SPAWN_RED = color(255, 48, 15, 198);
@@ -120,12 +125,59 @@ public class ImageBuilder {
     public static final int DEEP_WATER = color(255, 240, 120, 120);
     public static final int VERY_DEEP_WATER = color(255, 200, 100, 100);
 
+    // Rock Colors
+    // TODO: Improve differences between grays
+    public static final int GRANITE = color(255, 74, 70, 85);
+    public static final int DIORITE = color(255, 142, 142, 142);
+    public static final int GABBRO = color(255, 68, 85, 93);
+    public static final int SHALE = color(255, 70, 67, 70);
+    public static final int CLAYSTONE = color(255, 68, 102, 141);
+    public static final int LIMESTONE = color(255, 107, 127, 136);
+    public static final int CONGLOMERATE = color(255, 101, 113, 111);
+    public static final int DOLOMITE = color(255, 89, 70, 60);
+    public static final int CHERT = color(255, 70, 78, 122);
+    public static final int CHALK = color(255, 193, 199, 199);
+    public static final int RHYOLITE = color(255, 103, 98, 115);
+    public static final int BASALT = color(255, 33, 32, 29);
+    public static final int ANDESITE = color(255, 96, 96, 96);
+    public static final int DACITE = color(255, 123, 123, 122);
+    public static final int QUARTZITE = color(255, 128, 129, 140);
+    public static final int SLATE = color(255, 103, 116, 125);
+    public static final int PHYLLITE = color(255, 169, 157, 148);
+    public static final int SCHIST = color(255, 65, 84, 77);
+    public static final int GNEISS = color(255, 96, 109, 115);
+    public static final int MARBLE = color(255, 235, 235, 227);
+    public static final int UNKNOWN_ROCK = color(255, 227, 88, 255);
+
+    public static final Map<Block, Integer> ROCK_BLOCK_COLORS = Util.make(new IdentityHashMap<>(20), map -> {
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GRANITE).get(Rock.BlockType.RAW).get(), GRANITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.DIORITE).get(Rock.BlockType.RAW).get(), DIORITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GABBRO).get(Rock.BlockType.RAW).get(), GABBRO);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.SHALE).get(Rock.BlockType.RAW).get(), SHALE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CLAYSTONE).get(Rock.BlockType.RAW).get(), CLAYSTONE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.LIMESTONE).get(Rock.BlockType.RAW).get(), LIMESTONE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CONGLOMERATE).get(Rock.BlockType.RAW).get(), CONGLOMERATE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.DOLOMITE).get(Rock.BlockType.RAW).get(), DOLOMITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CHERT).get(Rock.BlockType.RAW).get(), CHERT);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CHALK).get(Rock.BlockType.RAW).get(), CHALK);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.RHYOLITE).get(Rock.BlockType.RAW).get(), RHYOLITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.BASALT).get(Rock.BlockType.RAW).get(), BASALT);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.ANDESITE).get(Rock.BlockType.RAW).get(), ANDESITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.DACITE).get(Rock.BlockType.RAW).get(), DACITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.QUARTZITE).get(Rock.BlockType.RAW).get(), QUARTZITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.SLATE).get(Rock.BlockType.RAW).get(), SLATE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.PHYLLITE).get(Rock.BlockType.RAW).get(), PHYLLITE);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.SCHIST).get(Rock.BlockType.RAW).get(), SCHIST);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GNEISS).get(Rock.BlockType.RAW).get(), GNEISS);
+        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.MARBLE).get(Rock.BlockType.RAW).get(), MARBLE);
+    });
+
     // Gradients
     public static final DoubleToIntFunction blue = linearGradient(color(255, 150, 50, 50), color(255, 255, 140, 100));
     public static final DoubleToIntFunction green = linearGradient(color(255, 0, 100, 0), color(255, 80, 200, 80));
     public static final DoubleToIntFunction VOLCANIC_ROCK = value -> color(255, 100, (int) (100 * value), 200);
     public static final DoubleToIntFunction UPLIFT_ROCK = value -> color(255, 200, (int) (180 * value), 180);
-    public static final DoubleToIntFunction temperature = multiLinearGradient(
+    public static final DoubleToIntFunction climate = multiLinearGradient(
             color(255, 240, 20, 180),
             color(255, 240, 180, 0),
             color(255, 220, 180, 180),
@@ -136,16 +188,16 @@ public class ImageBuilder {
 
     public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> setPixel(image, x, y, blue.applyAsInt(region.noise() / 2));
 
-    public static Component build(RegionGenerator generator, VisualizerType visualizer, int xOffset, int yOffset, boolean drawSpawn, int spawnDist, int spawnX, int spawnY) {
+    public static Component build(RegionChunkDataGenerator generator, VisualizerType visualizer, int xOffset, int yOffset, boolean drawSpawn, int spawnDist, int spawnX, int spawnY) {
         final NativeImage image = new NativeImage(previewSize(), previewSize(), false);
         final Set<Region> visitedRegions = new HashSet<>();
         for (int x = 0; x < previewSize(); x++) {
             for (int y = 0; y < previewSize(); y++) {
                 final int xPos = x + xOffset;
                 final int yPos = y + yOffset;
-                final Region region = generator.getOrCreateRegion(xPos, yPos);
+                final Region region = generator.regionGenerator().getOrCreateRegion(xPos, yPos);
                 visitedRegions.add(region);
-                final Region.Point point = generator.getOrCreateRegionPoint(xPos, yPos);
+                final Region.Point point = generator.regionGenerator().getOrCreateRegionPoint(xPos, yPos);
                 visualizer.draw(x, y, xPos, yPos, generator, region, point, image);
             }
         }
@@ -175,7 +227,16 @@ public class ImageBuilder {
             }
         }
 
-        return Component.translatable("tfcgenviewer.preview_world.preview_info", visitedRegions.size(), ImageBuilder.previewSizeKm(), ImageBuilder.previewSizeKm());
+        return Component.translatable(
+                "tfcgenviewer.preview_world.preview_info",
+                visitedRegions.size(),
+                ImageBuilder.previewSizeKm(),
+                ImageBuilder.previewSizeKm(),
+                (xOffset + (previewSize() / 2)) * 128,
+                (yOffset + (previewSize() / 2)) * 128,
+                visualizer.getName(),
+                visualizer.getColorKey()
+        );
     }
 
     public static int biomeColor(int biome) {
