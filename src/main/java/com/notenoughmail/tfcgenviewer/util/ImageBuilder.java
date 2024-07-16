@@ -91,7 +91,7 @@ public class ImageBuilder {
     // Misc colors
     public static final int RIVER_BLUE = color(255, 250, 180, 100);
     public static final int CLEAR = 0x00000000;
-    public static final int SHORT_MOUNTAIN = color(255, 50, 110, 240);
+    public static final int VOLCANIC_MOUNTAIN = color(255, 50, 110, 240);
     public static final int GRAY = color(255, 150, 150, 150);
     public static final int DARK_GRAY = color(255, 50, 50, 50);
     public static final int SPAWN_RED = color(255, 48, 15, 198);

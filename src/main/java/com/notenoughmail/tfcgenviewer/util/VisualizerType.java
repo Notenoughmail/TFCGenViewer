@@ -46,7 +46,7 @@ public enum VisualizerType {
         if (point.land()) {
             final int color;
             if (point.mountain()) {
-                color = point.baseLandHeight <= 2 ? SHORT_MOUNTAIN : GRAY;
+                color = point.baseLandHeight <= 2 ? VOLCANIC_MOUNTAIN : GRAY;
             } else if (point.lake()) {
                 color = SHALLOW_WATER;
             } else {
@@ -62,7 +62,7 @@ public enum VisualizerType {
         } else {
             fillOcean.draw(x, y, xPos, yPos, generator, region, point, image);
         }
-    }, colors("rivers", RIVER_BLUE, SHORT_MOUNTAIN, GRAY, SHALLOW_WATER, green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999))),
+    }, colors("rivers", RIVER_BLUE, VOLCANIC_MOUNTAIN, GRAY, SHALLOW_WATER, green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999))),
     ROCK_TYPES(name("rock_types"), (x, y, xPos, yPos, generator, region, point, image) -> {
         final double value = new Random(point.rock >> 2).nextDouble();
         setPixel(image, x, y, switch (point.rock & 0b11) {
