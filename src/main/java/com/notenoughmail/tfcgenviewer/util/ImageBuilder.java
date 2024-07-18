@@ -1,7 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.notenoughmail.tfcgenviewer.Config;
+import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.rock.Rock;
@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fml.loading.FMLLoader;
@@ -59,7 +60,25 @@ public class ImageBuilder {
                 .toArray(DoubleToIntFunction[]::new);
         return value -> parts[Mth.floor(value * parts.length)].applyAsInt((value * parts.length) % 1);
     }
-    
+
+    public static int rgbToBgr(int rgb) {
+        return color(
+                255,
+                FastColor.ARGB32.blue(rgb),
+                FastColor.ARGB32.green(rgb),
+                FastColor.ARGB32.red(rgb)
+        );
+    }
+
+    public static int bgrToRgb(int bgr) {
+        return FastColor.ARGB32.color(
+                255,
+                red(bgr),
+                green(bgr),
+                blue(bgr)
+        );
+    }
+
     @Nullable
     private static Integer PREVIEW_SIZE;
     @Nullable
@@ -126,7 +145,6 @@ public class ImageBuilder {
     public static final int VERY_DEEP_WATER = color(255, 200, 100, 100);
 
     // Rock Colors
-    // TODO: Improve differences between grays
     public static final int GRANITE = color(255, 74, 70, 85);
     public static final int DIORITE = color(255, 142, 142, 142);
     public static final int GABBRO = color(255, 68, 85, 93);
@@ -147,7 +165,6 @@ public class ImageBuilder {
     public static final int SCHIST = color(255, 65, 84, 77);
     public static final int GNEISS = color(255, 96, 109, 115);
     public static final int MARBLE = color(255, 235, 235, 227);
-    public static final int UNKNOWN_ROCK = color(255, 227, 88, 255);
 
     public static final Map<Block, Integer> ROCK_BLOCK_COLORS = Util.make(new IdentityHashMap<>(20), map -> {
         map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GRANITE).get(Rock.BlockType.RAW).get(), GRANITE);

@@ -2,17 +2,21 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
+import com.notenoughmail.tfcgenviewer.config.RockColors;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.common.util.Lazy;
 
 import java.util.Random;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.*;
@@ -75,9 +79,13 @@ public enum VisualizerType {
     }, colors("rock_types", green.applyAsInt(0), green.applyAsInt(0.2), green.applyAsInt(0.4), green.applyAsInt(0.6), green.applyAsInt(0.8), green.applyAsInt(0.999), blue.applyAsInt(0), blue.applyAsInt(0.2), blue.applyAsInt(0.4), blue.applyAsInt(0.6), blue.applyAsInt(0.8), blue.applyAsInt(0.999), VOLCANIC_ROCK.applyAsInt(0), VOLCANIC_ROCK.applyAsInt(0.2), VOLCANIC_ROCK.applyAsInt(0.4), VOLCANIC_ROCK.applyAsInt(0.6), VOLCANIC_ROCK.applyAsInt(0.8), VOLCANIC_ROCK.applyAsInt(0.999), UPLIFT_ROCK.applyAsInt(0), UPLIFT_ROCK.applyAsInt(0.2), UPLIFT_ROCK.applyAsInt(0.4), UPLIFT_ROCK.applyAsInt(0.6), UPLIFT_ROCK.applyAsInt(0.8), UPLIFT_ROCK.applyAsInt(0.999))),
     ROCKS(name("rocks"), (x, y, xPos, yPos, generator, region, point, image) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 0, yPos * 128 - 64, 0, null).raw();
-        final int color = ROCK_BLOCK_COLORS.getOrDefault(raw, UNKNOWN_ROCK);
-        setPixel(image, x, y, color);
-    }, colors("rocks", GRANITE, DIORITE, GABBRO, SHALE, CLAYSTONE, LIMESTONE, CONGLOMERATE, DOLOMITE, CHERT, CHALK, RHYOLITE, BASALT, ANDESITE, DACITE, QUARTZITE, SLATE, PHYLLITE, SCHIST, GNEISS, MARBLE, UNKNOWN_ROCK));
+        setPixel(image, x, y, RockColors.get(raw));
+    }, () -> {
+        final MutableComponent key = Component.empty();
+        RockColors.forEach(def -> def.appendTo(key, false));
+        RockColors.getUnknown().appendTo(key, true);
+        return key;
+    });
 
     public static final VisualizerType[] VALUES = values();
     public static final Codec<VisualizerType> CODEC = Codec.intRange(0, VALUES.length - 1).xmap(b -> VALUES[b], Enum::ordinal);
@@ -100,13 +108,18 @@ public enum VisualizerType {
         );
     }
 
-    private final Component name, colorKey;
+    private final Component name;
     private final DrawFunction drawer;
+    private final Supplier<Component> colorKey;
 
-    VisualizerType(Component name, DrawFunction drawer, Component colorKey) {
+    VisualizerType(Component name, DrawFunction drawer, Supplier<Component> colorKey) {
         this.name = name;
         this.drawer = drawer;
         this.colorKey = colorKey;
+    }
+
+    VisualizerType(Component name, DrawFunction drawer, Component colorKey) {
+        this(name, drawer, Lazy.of(() -> colorKey));
     }
 
     public Component getName() {
@@ -114,7 +127,7 @@ public enum VisualizerType {
     }
 
     public Component getColorKey() {
-        return colorKey;
+        return colorKey.get();
     }
 
     public void draw(int x, int y, int xPos, int yPos, RegionChunkDataGenerator generator, Region region, Region.Point point, NativeImage image) {
