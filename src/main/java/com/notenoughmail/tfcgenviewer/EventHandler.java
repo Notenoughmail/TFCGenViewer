@@ -1,5 +1,6 @@
 package com.notenoughmail.tfcgenviewer;
 
+import com.notenoughmail.tfcgenviewer.config.BiomeColors;
 import com.notenoughmail.tfcgenviewer.config.RockColors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -30,10 +31,15 @@ public class EventHandler {
     }
 
     private static void reloadAssets(ModelEvent.RegisterAdditional e) {
-        RockColors.clear();
         final ResourceManager rm = Minecraft.getInstance().getResourceManager();
-        final Map<ResourceLocation, Resource> resources = rm.listResources("tfcgenviewer/rocks", rl -> rl.getPath().endsWith(".json"));
-        resources.forEach(RockColors::assignColor);
+
+        RockColors.clear();
+        final Map<ResourceLocation, Resource> rocks = rm.listResources("tfcgenviewer/rocks", rl -> rl.getPath().endsWith(".json"));
+        rocks.forEach(RockColors::assignColor);
+
+        BiomeColors.clear();
+        final Map<ResourceLocation, Resource> biomes = rm.listResources("tfcgenviewer/biomes", rl -> rl.getPath().endsWith(".json"));
+        biomes.forEach(BiomeColors::assignColor);
     }
 
     private static void addPackFinders(AddPackFindersEvent event) {

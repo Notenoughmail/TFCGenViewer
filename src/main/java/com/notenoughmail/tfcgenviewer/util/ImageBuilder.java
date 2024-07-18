@@ -115,79 +115,10 @@ public class ImageBuilder {
     public static final int DARK_GRAY = color(255, 50, 50, 50);
     public static final int SPAWN_RED = color(255, 48, 15, 198);
 
-    // Biomes
-    public static final int OCEAN = color(255, 220, 0, 0);
-    public static final int OCEAN_REEF = color(255, 250, 160, 70);
-    public static final int DEEP_OCEAN = color(255, 160, 0, 0);
-    public static final int DEEP_OCEAN_TRENCH = color(255, 80, 0, 0);
-    public static final int LAKE = color(255, 255, 30, 30);
-    public static final int MOUNTAIN_ANY_OR_PLATEAU_LAKE = color(255, 255, 180, 180);
-    public static final int RIVER = color(255, 255, 200, 0);
-    public static final int OCEANIC_MOUNTAINS = color(255, 255, 0, 255);
-    public static final int CANYONS = color(255, 255, 60, 180);
-    public static final int LOW_CANYONS = color(255, 255, 110, 200);
-    public static final int LOWLANDS = color(255, 230, 150, 220);
-    public static final int MOUNTAINS = color(255, 50, 50, 255);
-    public static final int OLD_MOUNTAINS = color(255, 100, 100, 240);
-    public static final int PLATEAU = color(255, 120, 120, 210);
-    public static final int BADLANDS = color(255, 0, 150, 255);
-    public static final int INVERTED_BADLANDS = color(255, 0, 150, 240);
-    public static final int SHORE = color(255, 130, 210, 230);
-    public static final int HIGHLANDS = color(255, 30, 80, 20);
-    public static final int ROLLING_HILLS = color(255, 50, 100, 50);
-    public static final int HILLS = color(255, 80, 130, 80);
-    public static final int PLAINS = color(255, 100, 200, 100);
-    public static final int UNKNOWN_BIOME = color(255, 255, 96, 230);
-
     // Ocean depth colors
     public static final int SHALLOW_WATER = color(255, 255, 160, 150);
     public static final int DEEP_WATER = color(255, 240, 120, 120);
     public static final int VERY_DEEP_WATER = color(255, 200, 100, 100);
-
-    // Rock Colors
-    public static final int GRANITE = color(255, 74, 70, 85);
-    public static final int DIORITE = color(255, 142, 142, 142);
-    public static final int GABBRO = color(255, 68, 85, 93);
-    public static final int SHALE = color(255, 70, 67, 70);
-    public static final int CLAYSTONE = color(255, 68, 102, 141);
-    public static final int LIMESTONE = color(255, 107, 127, 136);
-    public static final int CONGLOMERATE = color(255, 101, 113, 111);
-    public static final int DOLOMITE = color(255, 89, 70, 60);
-    public static final int CHERT = color(255, 70, 78, 122);
-    public static final int CHALK = color(255, 193, 199, 199);
-    public static final int RHYOLITE = color(255, 103, 98, 115);
-    public static final int BASALT = color(255, 33, 32, 29);
-    public static final int ANDESITE = color(255, 96, 96, 96);
-    public static final int DACITE = color(255, 123, 123, 122);
-    public static final int QUARTZITE = color(255, 128, 129, 140);
-    public static final int SLATE = color(255, 103, 116, 125);
-    public static final int PHYLLITE = color(255, 169, 157, 148);
-    public static final int SCHIST = color(255, 65, 84, 77);
-    public static final int GNEISS = color(255, 96, 109, 115);
-    public static final int MARBLE = color(255, 235, 235, 227);
-
-    public static final Map<Block, Integer> ROCK_BLOCK_COLORS = Util.make(new IdentityHashMap<>(20), map -> {
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GRANITE).get(Rock.BlockType.RAW).get(), GRANITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.DIORITE).get(Rock.BlockType.RAW).get(), DIORITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GABBRO).get(Rock.BlockType.RAW).get(), GABBRO);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.SHALE).get(Rock.BlockType.RAW).get(), SHALE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CLAYSTONE).get(Rock.BlockType.RAW).get(), CLAYSTONE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.LIMESTONE).get(Rock.BlockType.RAW).get(), LIMESTONE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CONGLOMERATE).get(Rock.BlockType.RAW).get(), CONGLOMERATE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.DOLOMITE).get(Rock.BlockType.RAW).get(), DOLOMITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CHERT).get(Rock.BlockType.RAW).get(), CHERT);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.CHALK).get(Rock.BlockType.RAW).get(), CHALK);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.RHYOLITE).get(Rock.BlockType.RAW).get(), RHYOLITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.BASALT).get(Rock.BlockType.RAW).get(), BASALT);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.ANDESITE).get(Rock.BlockType.RAW).get(), ANDESITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.DACITE).get(Rock.BlockType.RAW).get(), DACITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.QUARTZITE).get(Rock.BlockType.RAW).get(), QUARTZITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.SLATE).get(Rock.BlockType.RAW).get(), SLATE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.PHYLLITE).get(Rock.BlockType.RAW).get(), PHYLLITE);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.SCHIST).get(Rock.BlockType.RAW).get(), SCHIST);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.GNEISS).get(Rock.BlockType.RAW).get(), GNEISS);
-        map.put(TFCBlocks.ROCK_BLOCKS.get(Rock.MARBLE).get(Rock.BlockType.RAW).get(), MARBLE);
-    });
 
     // Gradients
     public static final DoubleToIntFunction blue = linearGradient(color(255, 150, 50, 50), color(255, 255, 140, 100));
@@ -254,37 +185,6 @@ public class ImageBuilder {
                 visualizer.getName(),
                 visualizer.getColorKey()
         );
-    }
-
-    public static int biomeColor(int biome) {
-        if (biome == TFCLayers.OCEAN) return OCEAN;
-        if (biome == TFCLayers.OCEAN_REEF) return OCEAN_REEF;
-        if (biome == TFCLayers.DEEP_OCEAN) return DEEP_OCEAN;
-        if (biome == TFCLayers.DEEP_OCEAN_TRENCH) return DEEP_OCEAN_TRENCH;
-        if (biome == TFCLayers.LAKE) return LAKE;
-        if (biome == TFCLayers.MOUNTAIN_LAKE || biome == TFCLayers.OCEANIC_MOUNTAIN_LAKE || biome == TFCLayers.OLD_MOUNTAIN_LAKE || biome == TFCLayers.VOLCANIC_MOUNTAIN_LAKE || biome == TFCLayers.PLATEAU_LAKE) return MOUNTAIN_ANY_OR_PLATEAU_LAKE;
-        if (biome == TFCLayers.RIVER) return RIVER;
-
-        if (biome == TFCLayers.OCEANIC_MOUNTAINS || biome == TFCLayers.VOLCANIC_OCEANIC_MOUNTAINS) return OCEANIC_MOUNTAINS;
-        if (biome == TFCLayers.CANYONS) return CANYONS;
-        if (biome == TFCLayers.LOW_CANYONS) return LOW_CANYONS;
-        if (biome == TFCLayers.LOWLANDS) return LOWLANDS;
-
-        if (biome == TFCLayers.MOUNTAINS || biome == TFCLayers.VOLCANIC_MOUNTAINS) return MOUNTAINS;
-        if (biome == TFCLayers.OLD_MOUNTAINS) return OLD_MOUNTAINS;
-        if (biome == TFCLayers.PLATEAU) return PLATEAU;
-
-        if (biome == TFCLayers.BADLANDS) return BADLANDS;
-        if (biome == TFCLayers.INVERTED_BADLANDS) return INVERTED_BADLANDS;
-
-        if (biome == TFCLayers.SHORE) return SHORE;
-
-        if (biome == TFCLayers.HIGHLANDS) return HIGHLANDS;
-        if (biome == TFCLayers.ROLLING_HILLS) return ROLLING_HILLS;
-        if (biome == TFCLayers.HILLS) return HILLS;
-        if (biome == TFCLayers.PLAINS) return PLAINS;
-
-        return UNKNOWN_BIOME;
     }
 
     public static int inlandHeightColor(Region.Point point) {

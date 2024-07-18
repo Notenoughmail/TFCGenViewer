@@ -2,12 +2,12 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
+import com.notenoughmail.tfcgenviewer.config.BiomeColors;
 import com.notenoughmail.tfcgenviewer.config.RockColors;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
@@ -23,7 +23,7 @@ import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.*;
 import static net.minecraft.util.FastColor.ABGR32.*;
 
 public enum VisualizerType {
-    BIOMES(name("biomes"), (x, y, xPos, yPos, generator, region, point, image) -> setPixel(image, x, y, biomeColor(point.biome)), colors("biomes", OCEAN, OCEAN_REEF, DEEP_OCEAN, DEEP_OCEAN_TRENCH, LAKE, MOUNTAIN_ANY_OR_PLATEAU_LAKE, RIVER, OCEANIC_MOUNTAINS, CANYONS, LOW_CANYONS, LOWLANDS, MOUNTAINS, OLD_MOUNTAINS, PLATEAU, BADLANDS, INVERTED_BADLANDS, SHORE, HIGHLANDS, ROLLING_HILLS, HILLS, PLAINS)),
+    BIOMES(name("biomes"), (x, y, xPos, yPos, generator, region, point, image) -> setPixel(image, x, y, BiomeColors.get(point.biome)), BiomeColors.colorKey()),
     RAINFALL(name("rainfall"), (x, y, xPos, yPos, generator, region, point, image) -> {
         if (point.land()) {
             setPixel(image, x, y, climate.applyAsInt(Mth.clampedMap(point.rainfall, 0F, 500F, 0, 0.999F)));
@@ -80,12 +80,7 @@ public enum VisualizerType {
     ROCKS(name("rocks"), (x, y, xPos, yPos, generator, region, point, image) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 0, yPos * 128 - 64, 0, null).raw();
         setPixel(image, x, y, RockColors.get(raw));
-    }, () -> {
-        final MutableComponent key = Component.empty();
-        RockColors.forEach(def -> def.appendTo(key, false));
-        RockColors.getUnknown().appendTo(key, true);
-        return key;
-    });
+    }, RockColors.colorKey());
 
     public static final VisualizerType[] VALUES = values();
     public static final Codec<VisualizerType> CODEC = Codec.intRange(0, VALUES.length - 1).xmap(b -> VALUES[b], Enum::ordinal);
