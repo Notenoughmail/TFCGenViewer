@@ -13,14 +13,13 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static net.minecraft.util.FastColor.ABGR32.color;
 
 public class BiomeColors {
 
-    private static final Map<BiomeExtension, ColorDefinition> COLORS = new IdentityHashMap<>(); // Might need to be a regular HashMap
+    private static final Map<BiomeExtension, ColorDefinition> COLORS = new IdentityHashMap<>();
     private static final List<ColorDefinition> SORTED_COLORS = new ArrayList<>();
 
     private static ColorDefinition UNKNOWN = new ColorDefinition(

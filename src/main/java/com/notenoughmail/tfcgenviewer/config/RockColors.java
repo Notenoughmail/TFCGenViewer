@@ -7,7 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static net.minecraft.util.FastColor.ABGR32.color;
@@ -28,7 +32,7 @@ public class RockColors {
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock", UNKNOWN.color());
+        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock." + resourcePath.getPath().substring(19, resourcePath.getPath().length() - 9).replace('/', '.'), UNKNOWN.color());
         if (def != null) {
             if (resourcePath.getNamespace().equals(TFCGenViewer.ID) && resourcePath.getPath().equals("tfcgenviewer/rocks/unknown.json")) {
                 UNKNOWN = def;

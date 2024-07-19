@@ -1,0 +1,112 @@
+{
+  "ocean_fill": {
+    "reference": "blue",
+    "key": "tfcgenviewer.biome.ocean"
+  },
+  "rainfall": {
+    "reference": "climate",
+    "key": "tfcgenviewer.climate.rainfall"
+  },
+  "temperature": {
+    "reference": "climate",
+    "key": "tfcgenviewer.climate.temperature"
+  },
+  "inland_height": {
+    "land": {
+      "reference": "green",
+      "key": "tfcgenviewer.inland_height.land"
+    },
+    "shallow_water": {
+      "color": {
+        "r": 150,
+        "g": 160,
+        "b": 255
+      },
+      "key": "tfcgenviewer.inland_height.shallow_water"
+    },
+    "deep_water": {
+      "color": {
+        "r": 120,
+        "g": 120,
+        "b": 240
+      },
+      "key": "tfcgenviewer.inland_height.deep_water"
+    },
+    "very_deep_water": {
+      "color": {
+        "r": 100,
+        "g": 100,
+        "b": 200
+      },
+      "key": "tfcgenviewer.inland_height.very_deep_water"
+    }
+  },
+  "biome_altitude": {
+    "low": {
+      "color": {
+        "r": 0,
+        "g": 100,
+        "b": 0
+      },
+      "key": "tfcgenviewer.biome_altitude.low"
+    },
+    "medium": {
+      "color": {
+        "r": 26,
+        "g": 133,
+        "b": 26
+      },
+      "key": "tfcgenviewer.biome_altitude.medium"
+    },
+    "high": {
+      "color": {
+        "r": 53,
+        "g": 166,
+        "b": 53
+      },
+      "key": "tfcgenviewer.biome_altitude.high"
+    },
+    "mountain": {
+      "color": {
+        "r": 80,
+        "g": 200,
+        "b": 80
+      },
+      "key": "tfcgenviewer.biome_altitude.mountain"
+    }
+  },
+  "rivers": {
+    "river": {
+      "color": {
+        "r": 100,
+        "g": 180,
+        "b": 250
+      },
+      "key": "tfcgenviewer.biome.river"
+    },
+    "oceanic_volcanic_mountain": {
+      "color": {
+        "r": 240,
+        "g": 110,
+        "b": 50
+      },
+      "key": "tfcgenviewer.rivers.oceanic_volcanic_mountain"
+    },
+    "inland_mountain": {
+      "color": {
+        "r": 150,
+        "g": 150,
+        "b": 150
+      },
+      "key": "tfcgenviewer.rivers.inland_mountain"
+    },
+    "lake": {
+      "color": {
+        "r": 150,
+        "g": 160,
+        "b": 255
+      },
+      "key": "tfcgenviewer.biome.lake"
+    }
+  }
+}

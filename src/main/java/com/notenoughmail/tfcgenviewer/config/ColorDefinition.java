@@ -14,6 +14,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,18 +25,15 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
 
     private static final Gson GSON = new Gson();
 
+    @Nullable
     public static ColorDefinition parse(ResourceLocation resourcePath, Resource resource, String type, int fallback) {
         try (InputStream stream = resource.open()) {
-            final JsonObject json = GSON.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
-            final Component name = json.has("key") ? Component.translatable(json.get("key").getAsString()) : Component.translatable("tfcgenviewer.%s.unknown".formatted(type));
-            final int colorValue;
-            if (json.has("color")) {
-                colorValue = parseColor(json.get("color"), fallback, type, resourcePath);
-            } else {
-                TFCGenViewer.LOGGER.warn("The {} color at {} does not have a 'color' property!", type, resourcePath);
-                colorValue = fallback;
-            }
-            return new ColorDefinition(colorValue, name, json.has("sort") ? json.get("sort").getAsInt() : 100);
+            return parse(
+                    GSON.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class),
+                    fallback,
+                    type,
+                    resourcePath
+            );
         } catch (IOException exception) {
             TFCGenViewer.LOGGER.warn(
                     "Unable to open {} color resource at {}. Error:\n{}",
@@ -46,6 +44,21 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
         }
         TFCGenViewer.LOGGER.warn("Unable to parse color definition for {} at {}", type, resourcePath);
         return null;
+    }
+
+    public static ColorDefinition parse(JsonObject json, int fallback, String type, ResourceLocation resourcePath) {
+        final int colorValue;
+        if (json.has("color")) {
+            colorValue = parseColor(json.get("color"), fallback, type, resourcePath);
+        } else {
+            TFCGenViewer.LOGGER.warn("The {} color at {} does not have a 'color' property!", type, resourcePath);
+            colorValue = fallback;
+        }
+        return new ColorDefinition(
+                colorValue,
+                json.has("key") ? Component.translatable(json.get("key").getAsString()) : Component.translatable("tfcgenviewer.color.%s".formatted(type)),
+                json.has("sort") ? json.get("sort").getAsInt() : 100
+        );
     }
 
     public static int parseColor(JsonElement color, int fallback, String type, ResourceLocation resourcePath) {

@@ -1,12 +1,10 @@
 package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import net.dries007.tfc.common.blocks.TFCBlocks;
-import net.dries007.tfc.common.blocks.rock.Rock;
+import com.notenoughmail.tfcgenviewer.config.Colors;
+import com.notenoughmail.tfcgenviewer.config.Config;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
-import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -15,7 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
@@ -23,8 +20,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
@@ -109,7 +104,6 @@ public class ImageBuilder {
 
     // Misc colors
     public static final int RIVER_BLUE = color(255, 250, 180, 100);
-    public static final int CLEAR = 0x00000000;
     public static final int VOLCANIC_MOUNTAIN = color(255, 50, 110, 240);
     public static final int GRAY = color(255, 150, 150, 150);
     public static final int DARK_GRAY = color(255, 50, 50, 50);
@@ -134,7 +128,7 @@ public class ImageBuilder {
             color(255, 40, 40, 200)
     );
 
-    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> setPixel(image, x, y, blue.applyAsInt(region.noise() / 2));
+    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> setPixel(image, x, y, Colors.fillOcean().gradient().applyAsInt(region.noise() / 2));
 
     public static Component build(RegionChunkDataGenerator generator, VisualizerType visualizer, int xOffset, int yOffset, boolean drawSpawn, int spawnDist, int spawnX, int spawnY) {
         final NativeImage image = new NativeImage(previewSize(), previewSize(), false);
@@ -189,10 +183,18 @@ public class ImageBuilder {
 
     public static int inlandHeightColor(Region.Point point) {
         if (point.land()) {
-            return green.applyAsInt(point.baseLandHeight / 24F);
+            return Colors.inlandHeight().gradient().applyAsInt(point.baseLandHeight / 24F);
         }
 
-        return point.shore() ? point.river() ? SHALLOW_WATER : DEEP_WATER : point.baseOceanDepth < 4 ? SHALLOW_WATER : point.baseOceanDepth < 8 ? DEEP_WATER : VERY_DEEP_WATER;
+        return point.shore() ?
+                point.river() ?
+                        Colors.shallowWater().color() :
+                        Colors.deepWater().color() :
+                point.baseOceanDepth < 4 ?
+                        Colors.shallowWater().color() :
+                        point.baseOceanDepth < 8 ?
+                                Colors.deepWater().color() :
+                                Colors.veryDeepWater().color();
     }
 
     static void setPixel(NativeImage image, int x, int y, int color) {

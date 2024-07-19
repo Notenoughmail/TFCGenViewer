@@ -1,7 +1,9 @@
 package com.notenoughmail.tfcgenviewer;
 
 import com.notenoughmail.tfcgenviewer.config.BiomeColors;
+import com.notenoughmail.tfcgenviewer.config.Colors;
 import com.notenoughmail.tfcgenviewer.config.RockColors;
+import com.notenoughmail.tfcgenviewer.config.RockTypeColors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +18,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forgespi.language.IModFileInfo;
-import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.resource.PathPackResources;
 
@@ -40,6 +41,13 @@ public class EventHandler {
         BiomeColors.clear();
         final Map<ResourceLocation, Resource> biomes = rm.listResources("tfcgenviewer/biomes", rl -> rl.getPath().endsWith(".json"));
         biomes.forEach(BiomeColors::assignColor);
+
+        final Map<ResourceLocation, Resource> rockTypes = rm.listResources("tfcgenviewer/rock_types", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
+        rockTypes.forEach(RockTypeColors::assignGradient);
+
+        final Map<ResourceLocation, Resource> colors = rm.listResources("tfcgenviewer/colors", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().equals("tfcgenviewer/colors/colors.json"));
+        colors.forEach(Colors::assign);
+
     }
 
     private static void addPackFinders(AddPackFindersEvent event) {
