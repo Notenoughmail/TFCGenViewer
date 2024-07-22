@@ -37,18 +37,15 @@ public class RockTypeColors {
 
     public static void assignGradient(ResourceLocation resourcePath, Resource resource) {
         if (resourcePath.getNamespace().equals(TFCGenViewer.ID)) {
-            final int type = switch (resourcePath.getPath()) {
-                case "tfcgenviewer/rock_types/oceanic.json" -> 0;
-                case "tfcgenviewer/rock_types/volcanic.json" -> 1;
-                case "tfcgenviewer/rock_types/land.json" -> 2;
-                case "tfcgenviewer/rock_types/uplift.json" -> 3;
-                default -> -1;
-            };
-            switch (type) {
-                case 0 -> DEFINITIONS[0] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.oceanic", ImageBuilder.blue);
-                case 1 -> DEFINITIONS[1] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.volcanic", ImageBuilder.VOLCANIC_ROCK);
-                case 2 -> DEFINITIONS[2] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.land", ImageBuilder.green);
-                case 3 -> DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ImageBuilder.UPLIFT_ROCK);
+            switch (resourcePath.getPath()) {
+                case "tfcgenviewer/rock_types/oceanic.json" ->
+                        DEFINITIONS[0] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.oceanic", ImageBuilder.blue);
+                case "tfcgenviewer/rock_types/volcanic.json" ->
+                        DEFINITIONS[1] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.volcanic", ImageBuilder.VOLCANIC_ROCK);
+                case "tfcgenviewer/rock_types/land.json" ->
+                        DEFINITIONS[2] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.land", ImageBuilder.green);
+                case "tfcgenviewer/rock_types/uplift.json" ->
+                        DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ImageBuilder.UPLIFT_ROCK);
             }
         }
     }
@@ -56,9 +53,9 @@ public class RockTypeColors {
     public static Supplier<Component> colorKey() {
         return () -> {
             final MutableComponent key = Component.empty();
-            DEFINITIONS[2].appendTo(key, false);
-            DEFINITIONS[0].appendTo(key, false);
-            DEFINITIONS[1].appendTo(key, false);
+            DEFINITIONS[2].appendTo(key);
+            DEFINITIONS[0].appendTo(key);
+            DEFINITIONS[1].appendTo(key);
             DEFINITIONS[3].appendTo(key, true);
             return key;
         };

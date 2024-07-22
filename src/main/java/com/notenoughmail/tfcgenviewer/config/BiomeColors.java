@@ -34,12 +34,12 @@ public class BiomeColors {
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "biome", UNKNOWN.color());
+        final ResourceLocation id = resourcePath.withPath(p -> p.substring(20, p.length() - 5));
+        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "biome", UNKNOWN.color(), id.toLanguageKey("biome"));
         if (def != null) {
-            if (resourcePath.getNamespace().equals(TFCGenViewer.ID) && resourcePath.getPath().equals("tfcgenviewer/biomes/unknown.json")) {
+            if (id.getNamespace().equals(TFCGenViewer.ID) && id.getPath().equals("unknown")) {
                 UNKNOWN = def;
             } else {
-                final ResourceLocation id = resourcePath.withPath(p -> p.substring(20, p.length() - 5));
                 final BiomeExtension ext = TFCBiomes.getById(id);
                 if (ext != null) {
                     COLORS.put(ext, def);
@@ -62,7 +62,7 @@ public class BiomeColors {
     public static Supplier<Component> colorKey() {
         return () -> {
             final MutableComponent key = Component.empty();
-            SORTED_COLORS.stream().distinct().sorted().forEach(def -> def.appendTo(key, false));
+            SORTED_COLORS.stream().distinct().sorted().forEach(def -> def.appendTo(key));
             UNKNOWN.appendTo(key, true);
             return key;
         };

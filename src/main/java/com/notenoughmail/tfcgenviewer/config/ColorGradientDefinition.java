@@ -1,6 +1,5 @@
 package com.notenoughmail.tfcgenviewer.config;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -19,10 +18,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.DoubleToIntFunction;
 
+import static com.notenoughmail.tfcgenviewer.config.Colors.GSON;
+
 public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {
 
     private static final double[] keyValues = new double[] { 0, 0.2, 0.4, 0.6, 0.8, 0.999 };
-    private static final Gson GSON = new Gson();
 
     @Nullable
     public static ColorGradientDefinition parse(ResourceLocation resourcePath, Resource resource, String type, @Nullable DoubleToIntFunction fallback) {
@@ -46,35 +46,26 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
     }
 
     @Nullable
-    public static ColorGradientDefinition parse(JsonElement json, ResourceLocation resourcePath, String type, @Nullable DoubleToIntFunction fallback) {
-        if (json.isJsonObject()) {
-            final JsonObject obj = json.getAsJsonObject();
-            final DoubleToIntFunction gradientValue;
-            if (obj.has("gradient")) {
-                gradientValue = parseGradient(obj.get("gradient"), fallback, type, resourcePath);
-            } else if (obj.has("reference")) {
-                final DoubleToIntFunction ref = reference(obj.get("reference").getAsString());
-                if (ref != null) {
-                    gradientValue = ref;
-                } else {
-                    TFCGenViewer.LOGGER.warn("Unknown color gradient reference: {} at {}", obj.get("reference").getAsString(), resourcePath);
-                    gradientValue = fallback;
-                }
+    public static ColorGradientDefinition parse(JsonObject json, ResourceLocation resourcePath, String type, @Nullable DoubleToIntFunction fallback) {
+        final DoubleToIntFunction gradientValue;
+        if (json.has("gradient")) {
+            gradientValue = parseGradient(json.get("gradient"), fallback, type, resourcePath);
+        } else if (json.has("reference")) {
+            final DoubleToIntFunction ref = reference(json.get("reference").getAsString());
+            if (ref != null) {
+                gradientValue = ref;
             } else {
-                TFCGenViewer.LOGGER.warn("The {} color gradient at {} does not have a 'gradient' property!", type, resourcePath);
+                TFCGenViewer.LOGGER.warn("Unknown color gradient reference: {} at {}", json.get("reference").getAsString(), resourcePath);
                 gradientValue = fallback;
             }
-            return gradientValue == null ? null : new ColorGradientDefinition(
-                    gradientValue,
-                    obj.has("key") ? Component.translatable(obj.get("key").getAsString()) : Component.translatable("tfcgenviewer.%s".formatted(type))
-            );
+        } else {
+            TFCGenViewer.LOGGER.warn("The {} color gradient at {} does not have a 'gradient' property!", type, resourcePath);
+            gradientValue = fallback;
         }
-        TFCGenViewer.LOGGER.warn(
-                "Unable to parse {} color gradient at {}, is not an object!",
-                json,
-                resourcePath
+        return gradientValue == null ? null : new ColorGradientDefinition(
+                gradientValue,
+                json.has("key") ? Component.translatable(json.get("key").getAsString()) : Component.translatable("tfcgenviewer.%s".formatted(type))
         );
-        return null;
     }
 
     @Nullable
@@ -153,12 +144,16 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                 ref.equalsIgnoreCase("rainfall")
         ) {
             return ImageBuilder.climate;
-        } else if (ref.equalsIgnoreCase("volcanic") || ref.equalsIgnoreCase("volcanic_rock")) {
+        } else if (ref.equalsIgnoreCase("volcanic") || ref.equalsIgnoreCase("volcanic_rock") || ref.equalsIgnoreCase("pink")) {
             return ImageBuilder.VOLCANIC_ROCK;
-        } else if (ref.equalsIgnoreCase("uplift") || ref.equalsIgnoreCase("uplift_rock") || ref.equalsIgnoreCase("pink")) {
+        } else if (ref.equalsIgnoreCase("uplift") || ref.equalsIgnoreCase("uplift_rock")) {
             return ImageBuilder.UPLIFT_ROCK;
         }
         return null;
+    }
+
+    public void appendTo(MutableComponent text) {
+        appendTo(text, false);
     }
 
     public void appendTo(MutableComponent text, boolean end) {

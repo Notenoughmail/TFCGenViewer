@@ -1,6 +1,5 @@
 package com.notenoughmail.tfcgenviewer.config;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -21,18 +20,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import static com.notenoughmail.tfcgenviewer.config.Colors.GSON;
+
 public record ColorDefinition(int color, Component name, int sort) implements Comparable<ColorDefinition> {
 
-    private static final Gson GSON = new Gson();
-
     @Nullable
-    public static ColorDefinition parse(ResourceLocation resourcePath, Resource resource, String type, int fallback) {
+    public static ColorDefinition parse(ResourceLocation resourcePath, Resource resource, String type, int fallback, @Nullable String fallbackKey) {
         try (InputStream stream = resource.open()) {
             return parse(
                     GSON.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class),
                     fallback,
                     type,
-                    resourcePath
+                    resourcePath,
+                    fallbackKey
             );
         } catch (IOException exception) {
             TFCGenViewer.LOGGER.warn(
@@ -46,7 +46,7 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
         return null;
     }
 
-    public static ColorDefinition parse(JsonObject json, int fallback, String type, ResourceLocation resourcePath) {
+    public static ColorDefinition parse(JsonObject json, int fallback, String type, ResourceLocation resourcePath, @Nullable String fallbackKey) {
         final int colorValue;
         if (json.has("color")) {
             colorValue = parseColor(json.get("color"), fallback, type, resourcePath);
@@ -56,7 +56,11 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
         }
         return new ColorDefinition(
                 colorValue,
-                json.has("key") ? Component.translatable(json.get("key").getAsString()) : Component.translatable("tfcgenviewer.color.%s".formatted(type)),
+                json.has("key") ?
+                        Component.translatable(json.get("key").getAsString()) :
+                        fallbackKey == null ?
+                                Component.translatable("tfcgenviewer.color.%s".formatted(type)) :
+                                Component.translatable(fallbackKey),
                 json.has("sort") ? json.get("sort").getAsInt() : 100
         );
     }
@@ -100,6 +104,10 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
             TFCGenViewer.LOGGER.warn("Unable to parse {} color: {},", type, color);
         }
         return fallback;
+    }
+
+    public void appendTo(MutableComponent text) {
+        appendTo(text, false);
     }
 
     public void appendTo(MutableComponent text, boolean end) {

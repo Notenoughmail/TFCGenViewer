@@ -2,29 +2,22 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
-import com.notenoughmail.tfcgenviewer.config.BiomeColors;
-import com.notenoughmail.tfcgenviewer.config.Colors;
-import com.notenoughmail.tfcgenviewer.config.RockColors;
-import com.notenoughmail.tfcgenviewer.config.RockTypeColors;
+import com.notenoughmail.tfcgenviewer.config.*;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.util.Lazy;
 
 import java.util.Random;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
-import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.*;
-import static net.minecraft.util.FastColor.ABGR32.blue;
-import static net.minecraft.util.FastColor.ABGR32.green;
-import static net.minecraft.util.FastColor.ABGR32.*;
+import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.fillOcean;
+import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
 public enum VisualizerType {
     BIOMES(name("biomes"), (x, y, xPos, yPos, generator, region, point, image) -> setPixel(image, x, y, BiomeColors.get(point.biome)), BiomeColors.colorKey()),
@@ -36,7 +29,7 @@ public enum VisualizerType {
         }
     }, () -> {
         final MutableComponent key = Component.empty();
-        Colors.rainfall().appendTo(key, false);
+        Colors.rainfall().appendTo(key);
         Colors.fillOcean().appendTo(key, true);
         return key;
     }),
@@ -48,52 +41,45 @@ public enum VisualizerType {
         }
     }, () -> {
         final MutableComponent key = Component.empty();
-        Colors.temperature().appendTo(key, false);
+        Colors.temperature().appendTo(key);
         Colors.fillOcean().appendTo(key, true);
         return key;
     }),
     BIOME_ALTITUDE(name("biome_altitude"), (x, y, xPos, yPos, generator, region, point, image) -> {
         if (point.land()) {
-            setPixel(image, x, y, Colors.biomeAltitude(point.discreteBiomeAltitude()));
+            setPixel(image, x, y, BiomeAltitudeColors.color(point.discreteBiomeAltitude()));
         } else {
             fillOcean.draw(x, y, xPos, yPos, generator, region, point, image);
         }
-    }, Colors.biomeAltitude(false)),
-    INLAND_HEIGHT(name("inland_height"), (x, y, xPos, yPos, generator, region, point, image) -> setPixel(image, x, y, inlandHeightColor(point)), () -> {
-        final MutableComponent key = Component.empty();
-        Colors.inlandHeight().appendTo(key, false);
-        Colors.shallowWater().appendTo(key, false);
-        Colors.deepWater().appendTo(key, false);
-        Colors.veryDeepWater().appendTo(key, true);
-        return key;
-    }),
-    RIVERS(name("rivers"), (x, y, xPos, yPos, generator, region, point, image) -> {
+    }, BiomeAltitudeColors.colorKey()),
+    INLAND_HEIGHT(name("inland_height"), (x, y, xPos, yPos, generator, region, point, image) -> setPixel(image, x, y, InlandHeightColors.color(point)), InlandHeightColors.colorKey()),
+    RIVERS(name("rivers_and_mountains"), (x, y, xPos, yPos, generator, region, point, image) -> {
         if (point.land()) {
             final int color;
             if (point.mountain()) {
-                color = point.baseLandHeight <= 2 ? Colors.volcanicMountain().color() : Colors.inlandMountain().color();
+                color = point.baseLandHeight <= 2 ? RiversColors.volcanicMountain().color() : RiversColors.inlandMountain().color();
             } else if (point.lake()) {
-                color = Colors.lake().color();
+                color = RiversColors.lake().color();
             } else {
-                color = Colors.biomeAltitude(point.discreteBiomeAltitude());
+                color = BiomeAltitudeColors.color(point.discreteBiomeAltitude());
             }
             setPixel(image, x, y, color);
             for (RiverEdge edge : generator.regionGenerator().getOrCreatePartitionPoint(xPos, yPos).rivers()) {
                 final MidpointFractal fractal = edge.fractal();
                 if (fractal.maybeIntersect(xPos, yPos, 0.1F) && fractal.intersect(xPos, yPos, 0.35F)) {
-                    setPixel(image, x, y, Colors.river().color());
+                    setPixel(image, x, y, RiversColors.river().color());
                 }
             }
         } else {
             fillOcean.draw(x, y, xPos, yPos, generator, region, point, image);
         }
-    }, Colors.biomeAltitude(true)),
+    }, RiversColors.colorKey()),
     ROCK_TYPES(name("rock_types"), (x, y, xPos, yPos, generator, region, point, image) -> {
         final double value = new Random(point.rock >> 2).nextDouble();
         setPixel(image, x, y, RockTypeColors.apply(point.rock & 0b11, value));
     }, RockTypeColors.colorKey()),
     ROCKS(name("rocks"), (x, y, xPos, yPos, generator, region, point, image) -> {
-        final Block raw = generator.generateRock(xPos * 128 - 64, 0, yPos * 128 - 64, 0, null).raw();
+        final Block raw = generator.generateRock(xPos * 128 - 64, 90, yPos * 128 - 64, 100, null).raw();
         setPixel(image, x, y, RockColors.get(raw));
     }, RockColors.colorKey());
 
@@ -102,20 +88,6 @@ public enum VisualizerType {
 
     private static Component name(String name) {
         return Component.translatable("tfcgenviewer.preview_world.visualizer_type." + name);
-    }
-
-    private static MutableComponent colors(String name, int... colors) {
-        return Component.translatable(
-                "tfcgenviewer.preview_world.visualizer_type." + name + ".color_key",
-                IntStream.of(colors).mapToObj(i ->
-                        Component.literal("■").withStyle(style ->
-                                style.withColor(FastColor.ARGB32.color(
-                                        alpha(i),
-                                        red(i),
-                                        green(i),
-                                        blue(i)
-                                )))).toArray()
-        );
     }
 
     private final Component name;

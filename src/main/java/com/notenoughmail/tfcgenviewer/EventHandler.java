@@ -1,9 +1,6 @@
 package com.notenoughmail.tfcgenviewer;
 
-import com.notenoughmail.tfcgenviewer.config.BiomeColors;
-import com.notenoughmail.tfcgenviewer.config.Colors;
-import com.notenoughmail.tfcgenviewer.config.RockColors;
-import com.notenoughmail.tfcgenviewer.config.RockTypeColors;
+import com.notenoughmail.tfcgenviewer.config.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -45,9 +42,17 @@ public class EventHandler {
         final Map<ResourceLocation, Resource> rockTypes = rm.listResources("tfcgenviewer/rock_types", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
         rockTypes.forEach(RockTypeColors::assignGradient);
 
-        final Map<ResourceLocation, Resource> colors = rm.listResources("tfcgenviewer/colors", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().equals("tfcgenviewer/colors/colors.json"));
-        colors.forEach(Colors::assign);
+        final Map<ResourceLocation, Resource> inlandHeights = rm.listResources("tfcgenviewer/inland_height", rl -> rl.getNamespace().endsWith(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
+        inlandHeights.forEach(InlandHeightColors::assign);
 
+        final Map<ResourceLocation, Resource> rivers = rm.listResources("tfcgenviewer/rivers_and_mountains", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
+        rivers.forEach(RiversColors::assign);
+
+        final Map<ResourceLocation, Resource> biomeAltitude = rm.listResources("tfcgenviewer/biome_altitude", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
+        biomeAltitude.forEach(BiomeAltitudeColors::assign);
+
+        final Map<ResourceLocation, Resource> misc = rm.listResources("tfcgenviewer/colors", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
+        misc.forEach(Colors::assign);
     }
 
     private static void addPackFinders(AddPackFindersEvent event) {

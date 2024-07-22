@@ -181,22 +181,6 @@ public class ImageBuilder {
         );
     }
 
-    public static int inlandHeightColor(Region.Point point) {
-        if (point.land()) {
-            return Colors.inlandHeight().gradient().applyAsInt(point.baseLandHeight / 24F);
-        }
-
-        return point.shore() ?
-                point.river() ?
-                        Colors.shallowWater().color() :
-                        Colors.deepWater().color() :
-                point.baseOceanDepth < 4 ?
-                        Colors.shallowWater().color() :
-                        point.baseOceanDepth < 8 ?
-                                Colors.deepWater().color() :
-                                Colors.veryDeepWater().color();
-    }
-
     static void setPixel(NativeImage image, int x, int y, int color) {
         final int alpha = alpha(color);
         if (alpha != 0) {

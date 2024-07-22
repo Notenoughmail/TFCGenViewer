@@ -32,7 +32,7 @@ public class RockColors {
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock." + resourcePath.getPath().substring(19, resourcePath.getPath().length() - 9).replace('/', '.'), UNKNOWN.color());
+        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock." + resourcePath.getPath().substring(19, resourcePath.getPath().length() - 9).replace('/', '.'), UNKNOWN.color(), null);
         if (def != null) {
             if (resourcePath.getNamespace().equals(TFCGenViewer.ID) && resourcePath.getPath().equals("tfcgenviewer/rocks/unknown.json")) {
                 UNKNOWN = def;
@@ -61,7 +61,7 @@ public class RockColors {
         return () -> {
             final MutableComponent key = Component.empty();
             SORTED_COLORS.sort(ColorDefinition::compareTo);
-            SORTED_COLORS.forEach(def -> def.appendTo(key, false));
+            SORTED_COLORS.forEach(def -> def.appendTo(key));
             UNKNOWN.appendTo(key, true);
             return key;
         };
