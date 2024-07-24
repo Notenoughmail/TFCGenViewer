@@ -59,7 +59,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                 gradientValue = fallback;
             }
         } else {
-            TFCGenViewer.LOGGER.warn("The {} color gradient at {} does not have a 'gradient' property!", type, resourcePath);
+            TFCGenViewer.LOGGER.warn("The {} color gradient at {} does not have a 'gradient' or 'reference' property!", type, resourcePath);
             gradientValue = fallback;
         }
         return gradientValue == null ? null : new ColorGradientDefinition(
@@ -75,19 +75,21 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
             return color == 0xF0000000 ? fallback : value -> color;
         } else if (gradient.isJsonArray()) {
             final JsonArray array = gradient.getAsJsonArray();
-            if (array.size() < 3) {
-                if (array.isEmpty()) {
+            return switch (array.size()) {
+                case 0 -> {
                     TFCGenViewer.LOGGER.warn(
                             "Attempted to parse empty {} color gradient array {} at {}",
                             type,
                             gradient,
                             resourcePath
                     );
-                    return fallback;
-                } else if (array.size() == 1) {
+                    yield fallback;
+                }
+                case 1 -> {
                     final int color = ColorDefinition.parseColor(array.get(0), 0xF0000000, type, resourcePath);
-                    return color == 0xF0000000 ? fallback : value -> color;
-                } else {
+                    yield color == 0xF0000000 ? fallback : value -> color;
+                }
+                case 2 -> {
                     final int from = ColorDefinition.parseColor(array.get(0), 0xF0000000, type, resourcePath);
                     final int to = ColorDefinition.parseColor(array.get(1), 0xF0000000, type, resourcePath);
                     if (from == 0xF0000000 || to == 0xF0000000) {
@@ -97,17 +99,18 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                                 array,
                                 resourcePath
                         );
-                        return fallback;
-                    } else {
-                        return ImageBuilder.linearGradient(from, to);
+                        yield fallback;
                     }
+                    yield ImageBuilder.linearGradient(from, to);
                 }
-            }
-            final int[] colors = new int[array.size()];
-            for (int i = 0 ; i < colors.length ; i++) {
-                colors[i] = ColorDefinition.parseColor(array.get(i), 0, type, resourcePath);
-            }
-            return ImageBuilder.multiLinearGradient(colors);
+                default -> {
+                    final int[] colors = new int[array.size()];
+                    for (int i = 0 ; i < colors.length ; i++) {
+                        colors[i] = ColorDefinition.parseColor(array.get(i), 0xFF000000, type, resourcePath);
+                    }
+                    yield ImageBuilder.multiLinearGradient(colors);
+                }
+            };
         } else if (gradient.isJsonObject()) {
             final JsonObject json = gradient.getAsJsonObject();
             if (json.has("from") && json.has("to")) {
@@ -121,9 +124,8 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                             resourcePath
                     );
                     return fallback;
-                } else {
-                    return ImageBuilder.linearGradient(from, to);
                 }
+                return ImageBuilder.linearGradient(from, to);
             }
         }
         TFCGenViewer.LOGGER.warn("Unable to parse color gradient definition for {} at {}", type, resourcePath);
@@ -144,10 +146,10 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                 ref.equalsIgnoreCase("rainfall")
         ) {
             return ImageBuilder.climate;
-        } else if (ref.equalsIgnoreCase("volcanic") || ref.equalsIgnoreCase("volcanic_rock") || ref.equalsIgnoreCase("pink")) {
-            return ImageBuilder.VOLCANIC_ROCK;
+        } else if (ref.equalsIgnoreCase("volcanic") || ref.equalsIgnoreCase("volcanic_rock")) {
+            return ImageBuilder.volcanic;
         } else if (ref.equalsIgnoreCase("uplift") || ref.equalsIgnoreCase("uplift_rock")) {
-            return ImageBuilder.UPLIFT_ROCK;
+            return ImageBuilder.uplift;
         }
         return null;
     }

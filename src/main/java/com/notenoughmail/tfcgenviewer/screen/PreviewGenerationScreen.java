@@ -74,6 +74,7 @@ public class PreviewGenerationScreen extends Screen {
     private Button seedbutton;
     private int previewPixels;
     private InfoPane rightInfo;
+    private Runnable seedTick;
 
     // Copied from TFC's create world screen
     private CustomOptionsList options;
@@ -106,6 +107,14 @@ public class PreviewGenerationScreen extends Screen {
             return RegionChunkDataGenerator.create(random.nextLong(), worldSettings.rockLayerSettings(), region);
         }
         return null;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (seedTick != null) {
+            seedTick.run();
+        }
     }
 
     @Override
@@ -155,7 +164,7 @@ public class PreviewGenerationScreen extends Screen {
                     xOffset = offsetOption("tfcgenviewer.preview_world.x_offset", -ImageBuilder.previewSize() / 2), // Center on 0,0 by default
                     zOffset = offsetOption("tfcgenviewer.preview_world.z_offset", -ImageBuilder.previewSize() / 2),
                     visualizerTask = new OptionInstance<>("tfcgenviewer.preview_world.visualizer_type", OptionInstance.noTooltip(), (caption, task) -> task.getName(), new OptionInstance.Enum<>(List.of(VisualizerType.VALUES), VisualizerType.CODEC), VisualizerType.RIVERS, task -> {}),
-                    new OptionInstance<>("selectWorld.enterSeed", OptionInstance.noTooltip(), (caption, seed) -> Component.literal(seed), new SeedValueSet(font, (s, editBox) -> editorSeed = editBox.getValue(), () -> editorSeed), String.valueOf(seedInUse), s -> {}),
+                    new OptionInstance<>("selectWorld.enterSeed", OptionInstance.noTooltip(), (caption, seed) -> Component.literal(seed), new SeedValueSet(font, (s, editBox) -> editorSeed = editBox.getValue(), () -> editorSeed, tick -> seedTick = tick), String.valueOf(seedInUse), s -> {}),
                     new OptionInstance<>("button.tfcgenviewer.apply", OptionInstance.noTooltip(), (caption, bool) -> caption, OptionInstance.BOOLEAN_VALUES, false, bool -> {}) {
                         @Override
                         public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {

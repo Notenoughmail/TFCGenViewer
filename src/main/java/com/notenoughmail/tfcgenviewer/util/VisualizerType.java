@@ -100,10 +100,6 @@ public enum VisualizerType {
         this.colorKey = colorKey;
     }
 
-    VisualizerType(Component name, DrawFunction drawer, Component colorKey) {
-        this(name, drawer, Lazy.of(() -> colorKey));
-    }
-
     public Component getName() {
         return name;
     }

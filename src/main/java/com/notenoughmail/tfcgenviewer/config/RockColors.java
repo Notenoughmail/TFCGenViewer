@@ -22,7 +22,7 @@ public class RockColors {
     private static final List<ColorDefinition> SORTED_COLORS = new ArrayList<>();
     private static ColorDefinition UNKNOWN = new ColorDefinition(
             color(255, 227, 88, 255),
-            Component.translatable("tfcgenviewer.rock.unknown"),
+            Component.translatable("rock.tfcgenviewer.unknown"),
             100
     );
 
@@ -32,12 +32,12 @@ public class RockColors {
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock." + resourcePath.getPath().substring(19, resourcePath.getPath().length() - 9).replace('/', '.'), UNKNOWN.color(), null);
+        final ResourceLocation id = resourcePath.withPath(p -> p.substring(19, p.length() - 5));
+        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock", UNKNOWN.color(), id.withPath(p -> p.replace('/', '.')).toLanguageKey("rock"));
         if (def != null) {
             if (resourcePath.getNamespace().equals(TFCGenViewer.ID) && resourcePath.getPath().equals("tfcgenviewer/rocks/unknown.json")) {
                 UNKNOWN = def;
             } else {
-                final ResourceLocation id = resourcePath.withPath(p -> p.substring(19, p.length() - 5));
                 final Block block = ForgeRegistries.BLOCKS.getValue(id);
                 if (block != null) {
                     COLORS.put(block, def);

@@ -24,7 +24,7 @@ public class BiomeColors {
 
     private static ColorDefinition UNKNOWN = new ColorDefinition(
             color(255, 170, 170, 170),
-            Component.translatable("tfcgenviewer.biome.unknown"),
+            Component.translatable("biome.tfcgenviewer.unknown"),
             100
     );
 

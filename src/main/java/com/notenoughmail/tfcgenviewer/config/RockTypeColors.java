@@ -18,7 +18,7 @@ public class RockTypeColors {
                 Component.translatable("tfcgenviewer.rock_type.oceanic")
         );
         DEFINITIONS[1] = new ColorGradientDefinition(
-                ImageBuilder.VOLCANIC_ROCK,
+                ImageBuilder.volcanic,
                 Component.translatable("tfcgenviewer.rock_type.volcanic")
         );
         DEFINITIONS[2] = new ColorGradientDefinition(
@@ -26,7 +26,7 @@ public class RockTypeColors {
                 Component.translatable("tfcgenviewer.rock_type.land")
         );
         DEFINITIONS[3] = new ColorGradientDefinition(
-                ImageBuilder.UPLIFT_ROCK,
+                ImageBuilder.uplift,
                 Component.translatable("tfcgenviewer.rock_type.uplift")
         );
     }
@@ -41,11 +41,11 @@ public class RockTypeColors {
                 case "tfcgenviewer/rock_types/oceanic.json" ->
                         DEFINITIONS[0] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.oceanic", ImageBuilder.blue);
                 case "tfcgenviewer/rock_types/volcanic.json" ->
-                        DEFINITIONS[1] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.volcanic", ImageBuilder.VOLCANIC_ROCK);
+                        DEFINITIONS[1] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.volcanic", ImageBuilder.volcanic);
                 case "tfcgenviewer/rock_types/land.json" ->
                         DEFINITIONS[2] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.land", ImageBuilder.green);
                 case "tfcgenviewer/rock_types/uplift.json" ->
-                        DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ImageBuilder.UPLIFT_ROCK);
+                        DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ImageBuilder.uplift);
             }
         }
     }

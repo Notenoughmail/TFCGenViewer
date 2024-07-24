@@ -117,8 +117,8 @@ public class ImageBuilder {
     // Gradients
     public static final DoubleToIntFunction blue = linearGradient(color(255, 150, 50, 50), color(255, 255, 140, 100));
     public static final DoubleToIntFunction green = linearGradient(color(255, 0, 100, 0), color(255, 80, 200, 80));
-    public static final DoubleToIntFunction VOLCANIC_ROCK = value -> color(255, 100, (int) (100 * value), 200);
-    public static final DoubleToIntFunction UPLIFT_ROCK = value -> color(255, 200, (int) (180 * value), 180);
+    public static final DoubleToIntFunction volcanic = value -> color(255, 100, (int) (100 * value), 200);
+    public static final DoubleToIntFunction uplift = value -> color(255, 200, (int) (180 * value), 180);
     public static final DoubleToIntFunction climate = multiLinearGradient(
             color(255, 240, 20, 180),
             color(255, 240, 180, 0),
@@ -163,7 +163,7 @@ public class ImageBuilder {
 
         if (false && !FMLLoader.isProduction()) {
             try {
-                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%s_%dx%d@%s.png", visualizer.name(), previewSize(), previewSize(), Util.getFilenameFormattedDateTime())));
+                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%s_%dx%d_%d@%s.png", visualizer.name(), previewSize(), previewSize(), visitedRegions.size(), Util.getFilenameFormattedDateTime())));
             } catch (IOException exception) {
                 TFCGenViewer.LOGGER.warn("Unable to write preview to disk!", exception);
             }
