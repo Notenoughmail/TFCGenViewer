@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public record SeedValueSet(Font font, BiConsumer<String, EditBox> seedSetter, Supplier<String> defaultValue) implements OptionInstance.ValueSet<String> {
+public record SeedValueSet(Font font, BiConsumer<String, EditBox> seedSetter, Supplier<String> defaultValue, Consumer<Runnable> seedTick) implements OptionInstance.ValueSet<String> {
 
     public static final Component SEED_LABEL = Component.translatable("selectWorld.enterSeed");
     public static final Component SEED_HINT = Component.translatable("selectWorld.seedInfo").withStyle(ChatFormatting.DARK_GRAY);
@@ -28,6 +28,7 @@ public record SeedValueSet(Font font, BiConsumer<String, EditBox> seedSetter, Su
             editor.setResponder(s -> seedSetter.accept(s, editor));
             editor.setValue(defaultValue().get());
             editor.setHint(SEED_HINT);
+            seedTick.accept(editor::tick);
             return editor;
         };
     }
