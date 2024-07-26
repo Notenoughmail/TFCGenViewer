@@ -14,11 +14,10 @@
   "tfcgenviewer.preview_world.visualizer_type.rivers_and_mountains": "Rivers and Mountains",
   "tfcgenviewer.preview_world.visualizer_type.rock_types": "Rock Types",
   "tfcgenviewer.preview_world.visualizer_type.rocks": "Rocks",
-  "tfcgenviewer.preview_world.chunks": "%s Chunks",
   "tfcgenviewer.preview_world.x_offset": "X Offset",
-  "tfcgenviewer.preview_world.x_offset.tooltip": "The x offset, in chunks, of the preview",
+  "tfcgenviewer.preview_world.x_offset.tooltip": "The x offset, in km, of the preview's center from 0",
   "tfcgenviewer.preview_world.z_offset": "Z Offset",
-  "tfcgenviewer.preview_world.z_offset.tooltip": "The z offset, in chunks, of the preview",
+  "tfcgenviewer.preview_world.z_offset.tooltip": "The z offset, in km, of the preview's center from 0",
   "tfcgenviewer.preview_world.spawn_overlay": "Spawn Overlay",
   "button.tfcgenviewer.save": "Save",
   "tfcgenviewer.preview_world.preview_info": "%s regions generated\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
@@ -62,5 +61,8 @@
   "tfcgenviewer.biome_altitude.mountain": "Mountain",
   "tfcgenviewer.rivers.inland_mountain": "Inland Mountain",
   "tfcgenviewer.rivers.oceanic_volcanic_mountain": "Oceanic/Volcanic Mountain",
-  "tfcgenviewer.fill_ocean": "Ocean"
+  "tfcgenviewer.fill_ocean": "Ocean",
+  "tfcgenviewer.preview_world.km": "%s km",
+  "tfcgenviewer.preview_world.preview_scale_danger": "%s km | Danger!",
+  "tfcgenviewer.preview_world.preview_scale": "Preview Scale"
 }

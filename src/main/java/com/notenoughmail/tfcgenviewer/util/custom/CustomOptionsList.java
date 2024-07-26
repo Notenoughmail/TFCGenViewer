@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.custom;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -12,7 +12,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import java.util.List;
 
 /**
- * A simple, minimalist reimplementation of {@link net.minecraft.client.gui.components.OptionsList} that is a single column instead of two
+ * A simple, minimalist reimplementation of {@link net.minecraft.client.gui.components.OptionsList OptionsList} that is a single column instead of two
  * <p>
  * It just works™
  */

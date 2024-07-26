@@ -3,7 +3,9 @@ package com.notenoughmail.tfcgenviewer.config;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -19,15 +21,15 @@ public class Colors {
 
     static ColorGradientDefinition
             RAINFALL = new ColorGradientDefinition(
-                    ImageBuilder.climate,
+                    ColorUtil.climate,
                     Component.translatable("tfcgenviewer.climate.rainfall")
             ),
             TEMPERATURE = new ColorGradientDefinition(
-                    ImageBuilder.climate,
+                    ColorUtil.climate,
                     Component.translatable("tfcgenviewer.climate.temperature")
             ),
             FILL_OCEAN = new ColorGradientDefinition(
-                    ImageBuilder.blue,
+                    ColorUtil.blue,
                     Component.translatable("biome.tfc.ocean")
             );
 
@@ -42,6 +44,8 @@ public class Colors {
     public static ColorGradientDefinition fillOcean() {
         return FILL_OCEAN;
     }
+
+    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> ImageBuilder.setPixel(image, x, y, FILL_OCEAN.gradient().applyAsInt(region.noise() / 2));
 
     public static void assign(ResourceLocation resourcePath, Resource resource) {
         try (InputStream stream = resource.open()) {

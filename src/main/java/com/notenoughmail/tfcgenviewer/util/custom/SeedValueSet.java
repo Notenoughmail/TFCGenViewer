@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.custom;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
