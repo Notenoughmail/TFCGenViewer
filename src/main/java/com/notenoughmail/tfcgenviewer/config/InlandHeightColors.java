@@ -3,7 +3,6 @@ package com.notenoughmail.tfcgenviewer.config;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;

@@ -33,6 +33,18 @@ public class Colors {
                     Component.translatable("biome.tfc.ocean")
             );
 
+    static ColorDefinition
+            SPAWN_BORDER = new ColorDefinition(
+                    ColorUtil.DARK_GRAY,
+                    Component.empty(),
+                    0
+            ),
+            SPAWN_RETICULE = new ColorDefinition(
+                    ColorUtil.SPAWN_RED,
+                    Component.empty(),
+                    0
+            );
+
     public static ColorGradientDefinition rainfall() {
         return RAINFALL;
     }
@@ -43,6 +55,14 @@ public class Colors {
 
     public static ColorGradientDefinition fillOcean() {
         return FILL_OCEAN;
+    }
+
+    public static ColorDefinition spawnBorder() {
+        return SPAWN_BORDER;
+    }
+
+    public static ColorDefinition getSpawnReticule() {
+        return SPAWN_RETICULE;
     }
 
     public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> ImageBuilder.setPixel(image, x, y, FILL_OCEAN.gradient().applyAsInt(region.noise() / 2));
@@ -82,6 +102,30 @@ public class Colors {
                     );
                     if (def != null) {
                         TEMPERATURE = def;
+                    }
+                }
+                case "tfcgenviewer/spawn/border.json" -> {
+                    final ColorDefinition def = ColorDefinition.parse(
+                            json,
+                            0xF0000000,
+                            "spawn.border",
+                            resourcePath,
+                            null
+                    );
+                    if (def.color() != 0xF0000000) {
+                        SPAWN_BORDER = def;
+                    }
+                }
+                case "tfcgenviewer/spawn/reticule.json" -> {
+                    final ColorDefinition def = ColorDefinition.parse(
+                            json,
+                            0xF0000000,
+                            "spawn.reticule",
+                            resourcePath,
+                            null
+                    );
+                    if (def.color() != 0xF0000000) {
+                        SPAWN_RETICULE = def;
                     }
                 }
             }

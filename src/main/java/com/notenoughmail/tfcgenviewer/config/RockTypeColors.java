@@ -2,7 +2,6 @@ package com.notenoughmail.tfcgenviewer.config;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;

@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.config.Colors;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
@@ -9,8 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
-import net.minecraft.util.Mth;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 
@@ -18,10 +17,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.DoubleToIntFunction;
-import java.util.stream.IntStream;
 
-import static net.minecraft.util.FastColor.ABGR32.*;
+import static net.minecraft.util.FastColor.ABGR32.alpha;
 
 public class ImageBuilder {
 
@@ -56,6 +53,10 @@ public class ImageBuilder {
     }
 
     private static void upload(int scale, NativeImage image) {
+        for (int i = 0 ; i < 7 ; i++) {
+            // Free the previously used image from memory
+            PREVIEWS[i].setPixels(null);
+        }
         final DynamicTexture preview = PREVIEWS[scale];
         preview.setPixels(image);
         preview.upload();
@@ -119,15 +120,14 @@ public class ImageBuilder {
 
             final int lineWidthPixels = lineWidth(scale);
 
-            // TODO: Make spawn overlay colors resourcepackable
-            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids + radiusGrids, lineWidthPixels, ColorUtil.DARK_GRAY);
-            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids - radiusGrids, lineWidthPixels, ColorUtil.DARK_GRAY);
-            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids + radiusGrids, lineWidthPixels, ColorUtil.DARK_GRAY);
-            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids - radiusGrids, lineWidthPixels, ColorUtil.DARK_GRAY);
+            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
 
             final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
-            hLine(image, xCenterGrids - length, xCenterGrids + length, yCenterGrids, lineWidthPixels, ColorUtil.SPAWN_RED);
-            vLine(image, yCenterGrids - length, yCenterGrids + length, xCenterGrids, lineWidthPixels, ColorUtil.SPAWN_RED);
+            hLine(image, xCenterGrids - length, xCenterGrids + length, yCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
+            vLine(image, yCenterGrids - length, yCenterGrids + length, xCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
         }
 
         upload(scale, image);
@@ -141,25 +141,23 @@ public class ImageBuilder {
         }
 
         final String previewKm = previewSizeKm(scale);
-        // In blocks
-        final int xCenter = xOffsetGrids * 128;
-        final int yCenter = yOffsetGrids * 128;
-        final int halfPreviewBlocks = halfPreviewGrids * 128;
+        final int xCenterBlocks = xOffsetGrids * 128;
+        final int yCenterBlocks = yOffsetGrids * 128;
         return new PreviewInfo(
                 Component.translatable(
                         "tfcgenviewer.preview_world.preview_info",
                         visitedRegions.size(),
                         previewKm,
                         previewKm,
-                        xCenter,
-                        yCenter,
+                        xCenterBlocks,
+                        yCenterBlocks,
                         visualizer.getName(),
                         visualizer.getColorKey()
                 ),
                 scale,
                 previewSizeGrids * 128,
-                xCenter - halfPreviewBlocks,
-                yCenter - halfPreviewBlocks
+                xDrawOffsetGrids * 128,
+                yDrawOffsetGrids * 128
         );
     }
 

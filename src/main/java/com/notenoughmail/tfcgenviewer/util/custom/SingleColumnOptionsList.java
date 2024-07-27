@@ -16,9 +16,9 @@ import java.util.List;
  * <p>
  * It just works™
  */
-public class CustomOptionsList extends ContainerObjectSelectionList<CustomOptionsList.Entry> {
+public class SingleColumnOptionsList extends ContainerObjectSelectionList<SingleColumnOptionsList.Entry> {
 
-    public CustomOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
+    public SingleColumnOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
         super(pMinecraft, pWidth, pHeight, pY0, pY1, pItemHeight);
     }
 

@@ -7,7 +7,6 @@ import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
 
 import static net.minecraft.util.FastColor.ABGR32.*;
-import static net.minecraft.util.FastColor.ABGR32.blue;
 
 public class ColorUtil {
 

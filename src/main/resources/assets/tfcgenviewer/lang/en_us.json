@@ -64,5 +64,6 @@
   "tfcgenviewer.fill_ocean": "Ocean",
   "tfcgenviewer.preview_world.km": "%s km",
   "tfcgenviewer.preview_world.preview_scale_danger": "%s km Danger!",
-  "tfcgenviewer.preview_world.preview_scale": "Preview Scale"
+  "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
+  "tfcgenviewer.preview_world.preview_pos": "(%s,%s)"
 }

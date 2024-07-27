@@ -2,10 +2,14 @@ package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
-import com.notenoughmail.tfcgenviewer.util.*;
-import com.notenoughmail.tfcgenviewer.util.custom.CustomOptionsList;
+import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
+import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
+import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
+import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
 import com.notenoughmail.tfcgenviewer.util.custom.SeedValueSet;
+import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
@@ -94,11 +98,10 @@ public class PreviewGenerationScreen extends Screen {
     private Runnable seedTick;
     private PreviewInfo previewInfo;
 
-    // Copied from TFC's create world screen
-    private CustomOptionsList options;
     private OptionInstance<Boolean> flatBedrock, spawnOverlay;
     private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset, previewScale;
     private OptionInstance<Double> tempConst, rainConst, continentalness, grassDensity;
+    private PreviewPane previewPane;
 
     public PreviewGenerationScreen(CreateWorldScreen parent) {
         super(TITLE);
@@ -139,18 +142,11 @@ public class PreviewGenerationScreen extends Screen {
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         renderBackground(pGuiGraphics);
-        if (generator != null) {
-            renderGeneration(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        } else {
+        if (generator == null) {
             pGuiGraphics.drawCenteredString(font, INVALID_GENERATOR, width / 2, height / 2 - 50, 0xFFFFFF);
         }
         pGuiGraphics.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF);
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-    }
-
-    private void renderGeneration(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        options.render(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(ImageBuilder.getPreview(previewInfo.scale()), (width - previewPixels) / 2, (height - previewPixels) / 2, 0, 0, previewPixels, previewPixels, previewPixels, previewPixels);
     }
 
     @Override
@@ -166,9 +162,10 @@ public class PreviewGenerationScreen extends Screen {
 
         if (generator != null) {
 
-            options = new CustomOptionsList(minecraft, (width - previewPixels) / 2 - 10, height, 32, height - 32, 25);
+            final SingleColumnOptionsList options = new SingleColumnOptionsList(minecraft, (width - previewPixels) / 2 - 10, height, 32, height - 32, 25);
 
             options.add(
+                    // Copied from TFC's create world screen
                     flatBedrock = OptionInstance.createBoolean("tfc.create_world.flat_bedrock", worldSettings.flatBedrock(), bool -> {}),
                     spawnDist = kmOpt("tfc.create_world.spawn_distance", 100, 20000, worldSettings.spawnDistance()),
                     spawnCenterX = kmOpt("tfc.create_world.spawn_center_x", -20000, 20000, worldSettings.spawnCenterX()),
@@ -210,7 +207,7 @@ public class PreviewGenerationScreen extends Screen {
                             (caption, seed) -> Component.literal(seed),
                             new SeedValueSet(
                                     font,
-                                    (s, editBox) -> editorSeed = editBox.getValue(),
+                                    s -> editorSeed = s,
                                     () -> editorSeed,
                                     tick -> seedTick = tick
                             ),
@@ -231,7 +228,11 @@ public class PreviewGenerationScreen extends Screen {
                         }
                     }
             );
-            addWidget(options);
+            addRenderableWidget(options);
+
+            final int previewLeftEdge = (width - previewPixels) / 2;
+            previewPane = new PreviewPane(previewLeftEdge, (height - previewPixels) / 2, previewPixels, font);
+            addRenderableWidget(previewPane);
 
             final int rightPos = (width + previewPixels) / 2 + 10;
             addRenderableWidget(infoPane = new InfoPane(rightPos, 32, width - rightPos - 10, height - 64, Component.empty(), font, COMPASS, 64));
@@ -239,7 +240,7 @@ public class PreviewGenerationScreen extends Screen {
             seedbutton = Button
                     .builder(Component.translatable("button.tfcgenviewer.current_seed", seedInUse), button -> minecraft.keyboardHandler.setClipboard(String.valueOf(seedInUse)))
                     .tooltip(Tooltip.create(Component.translatable("button.tfcgenviewer.current_seed.tooltip")))
-                    .bounds((width - previewPixels) / 2, height - 28, previewPixels, 20)
+                    .bounds(previewLeftEdge, height - 28, previewPixels, 20)
                     .build();
 
             addRenderableWidget(seedbutton);
@@ -296,6 +297,7 @@ public class PreviewGenerationScreen extends Screen {
                         previewScale.get()
                 );
                 infoPane.setMessage(previewInfo.rightInfo());
+                previewPane.setInfo(previewInfo);
             }
         }
     }
