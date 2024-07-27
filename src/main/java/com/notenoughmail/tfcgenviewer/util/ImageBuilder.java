@@ -3,7 +3,6 @@ package com.notenoughmail.tfcgenviewer.util;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Colors;
-import com.notenoughmail.tfcgenviewer.config.Config;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
@@ -11,132 +10,102 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
-import net.minecraft.util.Mth;
-import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.DoubleToIntFunction;
-import java.util.stream.IntStream;
 
-import static net.minecraft.util.FastColor.ABGR32.*;
+import static net.minecraft.util.FastColor.ABGR32.alpha;
 
-// Unless otherwise stated, everything here uses ABGR color
 public class ImageBuilder {
 
-    private static DynamicTexture PREVIEW;
-    private static final ResourceLocation PREVIEW_LOCATION = TFCGenViewer.identifier("preview");
-
-    public static ResourceLocation getPreview() {
-        if (PREVIEW == null) {
-            PREVIEW = new DynamicTexture(previewSize(), previewSize(), false);
-            Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATION, PREVIEW);
+    private static final ResourceLocation[] PREVIEW_LOCATIONS = Util.make(new ResourceLocation[7], array -> {
+        for (int i = 0 ; i < 7 ; i++) {
+            array[i] = TFCGenViewer.identifier("preview/" + i);
         }
-        return PREVIEW_LOCATION;
+    });
+
+    private static DynamicTexture[] PREVIEWS;
+
+    public static ResourceLocation getPreview(int scale) {
+        return PREVIEW_LOCATIONS[scale];
     }
 
-    public static DoubleToIntFunction linearGradient(int from, int to) {
-        return value -> color(
-                Mth.lerpInt((float) value, alpha(from), alpha(to)),
-                Mth.lerpInt((float) value, blue(from), blue(to)),
-                Mth.lerpInt((float) value, green(from), green(to)),
-                Mth.lerpInt((float) value, red(from), red(to))
-        );
-    }
-
-    public static DoubleToIntFunction multiLinearGradient(int... colors) {
-        final DoubleToIntFunction[] parts = IntStream.range(0, colors.length - 1)
-                .mapToObj(i -> linearGradient(colors[i], colors[i + 1]))
-                .toArray(DoubleToIntFunction[]::new);
-        return value -> parts[Mth.floor(value * parts.length)].applyAsInt((value * parts.length) % 1);
-    }
-
-    public static int rgbToBgr(int rgb) {
-        return color(
-                255,
-                FastColor.ARGB32.blue(rgb),
-                FastColor.ARGB32.green(rgb),
-                FastColor.ARGB32.red(rgb)
-        );
-    }
-
-    public static int bgrToRgb(int bgr) {
-        return FastColor.ARGB32.color(
-                255,
-                red(bgr),
-                green(bgr),
-                blue(bgr)
-        );
-    }
-
-    @Nullable
-    private static Integer PREVIEW_SIZE;
-    @Nullable
-    private static Integer LINE_WIDTH;
-    @Nullable
-    private static String PREVIEW_SIZE_KM;
-
-    public static int previewSize() {
-        if (PREVIEW_SIZE == null) {
-            PREVIEW_SIZE = Config.previewSize.get();
+    public static void initPreviews() {
+        if (PREVIEWS == null) {
+            PREVIEWS = Util.make(new DynamicTexture[7], array -> {
+                for (int i = 0 ; i < 7 ; i++) {
+                    final int size = previewSize(i);
+                    try {
+                        // Do not try-with-resources or #close() these
+                        DynamicTexture texture = new DynamicTexture(size, size, false);
+                        array[i] = texture;
+                        Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
+                    } catch (Exception exception) {
+                        TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
+                    }
+                }
+            });
         }
-        return PREVIEW_SIZE;
     }
 
-    public static int lineWidth() {
-        if (LINE_WIDTH == null) {
-            LINE_WIDTH = previewSize() / 512;
+    private static void upload(int scale, NativeImage image) {
+        for (int i = 0 ; i < 7 ; i++) {
+            // Free the previously used image from memory
+            PREVIEWS[i].setPixels(null);
         }
-        return LINE_WIDTH;
+        final DynamicTexture preview = PREVIEWS[scale];
+        preview.setPixels(image);
+        preview.upload();
     }
 
-    public static String previewSizeKm() {
-        if (PREVIEW_SIZE_KM == null) {
-            PREVIEW_SIZE_KM = String.format("%.1f", previewSize() * 128 / 1000F);
-        }
-        return PREVIEW_SIZE_KM;
+    /**
+     * Gets the preview size in grids from the scale option (0-6)
+     */
+    public static int previewSize(int scale) {
+        return (int) Math.pow(2, scale + 5);
     }
 
-    // Misc colors
-    public static final int RIVER_BLUE = color(255, 250, 180, 100);
-    public static final int VOLCANIC_MOUNTAIN = color(255, 50, 110, 240);
-    public static final int GRAY = color(255, 150, 150, 150);
-    public static final int DARK_GRAY = color(255, 50, 50, 50);
-    public static final int SPAWN_RED = color(255, 48, 15, 198);
+    public static int lineWidth(int scale) {
+        return previewSize(scale) / 512;
+    }
 
-    // Ocean depth colors
-    public static final int SHALLOW_WATER = color(255, 255, 160, 150);
-    public static final int DEEP_WATER = color(255, 240, 120, 120);
-    public static final int VERY_DEEP_WATER = color(255, 200, 100, 100);
+    public static String previewSizeKm(int scale) {
+        return "%.1f".formatted(previewSize(scale) * 128 / 1000F);
+    }
 
-    // Gradients
-    public static final DoubleToIntFunction blue = linearGradient(color(255, 150, 50, 50), color(255, 255, 140, 100));
-    public static final DoubleToIntFunction green = linearGradient(color(255, 0, 100, 0), color(255, 80, 200, 80));
-    public static final DoubleToIntFunction volcanic = value -> color(255, 100, (int) (100 * value), 200);
-    public static final DoubleToIntFunction uplift = value -> color(255, 200, (int) (180 * value), 180);
-    public static final DoubleToIntFunction climate = multiLinearGradient(
-            color(255, 240, 20, 180),
-            color(255, 240, 180, 0),
-            color(255, 220, 180, 180),
-            color(255, 0, 210, 210),
-            color(255, 60, 120, 200),
-            color(255, 40, 40, 200)
-    );
 
-    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> setPixel(image, x, y, Colors.fillOcean().gradient().applyAsInt(region.noise() / 2));
+    private static NativeImage currentImage;
+    private static String imageName;
 
-    public static Component build(RegionChunkDataGenerator generator, VisualizerType visualizer, int xOffset, int yOffset, boolean drawSpawn, int spawnDist, int spawnX, int spawnY) {
-        final NativeImage image = new NativeImage(previewSize(), previewSize(), false);
+    public static PreviewInfo build(
+            RegionChunkDataGenerator generator,
+            VisualizerType visualizer,
+            int xOffsetGrids,
+            int yOffsetGrids,
+            boolean drawSpawn,
+            int spawnDistBlocks,
+            int spawnXBlocks,
+            int spawnYBlocks,
+            int scale
+    ) {
+        final int previewSizeGrids = previewSize(scale);
+
+        final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
         final Set<Region> visitedRegions = new HashSet<>();
-        for (int x = 0; x < previewSize(); x++) {
-            for (int y = 0; y < previewSize(); y++) {
-                final int xPos = x + xOffset;
-                final int yPos = y + yOffset;
+        final int halfPreviewGrids = previewSizeGrids / 2;
+        final int xDrawOffsetGrids = -xOffsetGrids - halfPreviewGrids;
+        final int yDrawOffsetGrids = -yOffsetGrids - halfPreviewGrids;
+
+        for (int x = 0; x < previewSizeGrids; x++) {
+            for (int y = 0; y < previewSizeGrids; y++) {
+                // Shift the generation by the offsets and
+                // subtract half preview to center the image
+                // relative to 0,0
+                final int xPos = x + xDrawOffsetGrids;
+                final int yPos = y + yDrawOffsetGrids;
                 final Region region = generator.regionGenerator().getOrCreateRegion(xPos, yPos);
                 visitedRegions.add(region);
                 final Region.Point point = generator.regionGenerator().getOrCreateRegionPoint(xPos, yPos);
@@ -145,43 +114,49 @@ public class ImageBuilder {
         }
 
         if (drawSpawn) {
-            final int xCenter = (spawnX / (16 * 8)) - xOffset;
-            final int yCenter = (spawnY / (16 * 8)) - yOffset;
-            final int radius = spawnDist / (16 * 8);
-            hLine(image, xCenter - radius, xCenter + radius, yCenter + radius, lineWidth(), DARK_GRAY);
-            hLine(image, xCenter - radius, xCenter + radius, yCenter - radius, lineWidth(), DARK_GRAY);
-            vLine(image, yCenter - radius, yCenter + radius, xCenter + radius, lineWidth(), DARK_GRAY);
-            vLine(image, yCenter - radius, yCenter + radius, xCenter - radius, lineWidth(), DARK_GRAY);
+            final int xCenterGrids = (spawnXBlocks / (16 * 8)) - xDrawOffsetGrids;
+            final int yCenterGrids = (spawnYBlocks / (16 * 8)) - yDrawOffsetGrids;
+            final int radiusGrids = spawnDistBlocks / (16 * 8);
 
-            final int length = Math.min(radius / 4, previewSize() / 12);
-            hLine(image, xCenter - length, xCenter + length, yCenter, lineWidth(), SPAWN_RED);
-            vLine(image, yCenter - length, yCenter + length, xCenter, lineWidth(), SPAWN_RED);
+            final int lineWidthPixels = lineWidth(scale);
+
+            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+
+            final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
+            hLine(image, xCenterGrids - length, xCenterGrids + length, yCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
+            vLine(image, yCenterGrids - length, yCenterGrids + length, xCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
         }
 
-        PREVIEW.setPixels(image);
-        PREVIEW.upload();
+        upload(scale, image);
 
-        if (false && !FMLLoader.isProduction()) {
-            try {
-                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%s_%dx%d_%d@%s.png", visualizer.name(), previewSize(), previewSize(), visitedRegions.size(), Util.getFilenameFormattedDateTime())));
-            } catch (IOException exception) {
-                TFCGenViewer.LOGGER.warn("Unable to write preview to disk!", exception);
-            }
-        }
+        currentImage = image;
+        imageName = "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name());
 
-        return Component.translatable(
-                "tfcgenviewer.preview_world.preview_info",
-                visitedRegions.size(),
-                ImageBuilder.previewSizeKm(),
-                ImageBuilder.previewSizeKm(),
-                (xOffset + (previewSize() / 2)) * 128,
-                (yOffset + (previewSize() / 2)) * 128,
-                visualizer.getName(),
-                visualizer.getColorKey()
+        final String previewKm = previewSizeKm(scale);
+        final int xCenterBlocks = xOffsetGrids * 128;
+        final int yCenterBlocks = yOffsetGrids * 128;
+        return new PreviewInfo(
+                Component.translatable(
+                        "tfcgenviewer.preview_world.preview_info",
+                        visitedRegions.size(),
+                        previewKm,
+                        previewKm,
+                        xCenterBlocks,
+                        yCenterBlocks,
+                        visualizer.getName(),
+                        visualizer.getColorKey()
+                ),
+                scale,
+                previewSizeGrids * 128,
+                xDrawOffsetGrids * 128,
+                yDrawOffsetGrids * 128
         );
     }
 
-    static void setPixel(NativeImage image, int x, int y, int color) {
+    public static void setPixel(NativeImage image, int x, int y, int color) {
         final int alpha = alpha(color);
         if (alpha != 0) {
             if (!image.isOutsideBounds(x, y)) {
@@ -218,6 +193,16 @@ public class ImageBuilder {
                 for (int i = x - width ; i < x + width ; i++) {
                     setPixel(image, i, y, color);
                 }
+            }
+        }
+    }
+
+    public static void exportImage() {
+        if (currentImage != null) {
+            try {
+                currentImage.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), imageName));
+            } catch (Exception exception) {
+                TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(imageName), exception);
             }
         }
     }

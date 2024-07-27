@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -76,7 +76,7 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
                         value.get("r").getAsInt()
                 );
             } else if (value.has("h") && value.has("s") && value.has("v")) {
-                return ImageBuilder.rgbToBgr(Mth.hsvToRgb(
+                return ColorUtil.rgbToBgr(Mth.hsvToRgb(
                         value.get("h").getAsFloat(),
                         value.get("s").getAsFloat(),
                         value.get("v").getAsFloat()
@@ -87,10 +87,10 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
         } else if (color.isJsonPrimitive()) {
             final JsonPrimitive primitive = color.getAsJsonPrimitive();
             if (primitive.isNumber()) {
-                return ImageBuilder.rgbToBgr(primitive.getAsInt());
+                return ColorUtil.rgbToBgr(primitive.getAsInt());
             } else if (primitive.isString()) {
                 try {
-                    return ImageBuilder.rgbToBgr(Integer.parseInt(primitive.getAsString(), 16));
+                    return ColorUtil.rgbToBgr(Integer.parseInt(primitive.getAsString(), 16));
                 } catch (NumberFormatException exception) {
                     TFCGenViewer.LOGGER.warn(
                             "Unable to parse number for {} color at {}. Error:\n{}",
@@ -113,7 +113,7 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
     public void appendTo(MutableComponent text, boolean end) {
         text.append(Component.translatable(
                 "tfcgenviewer.preview_world.color_key_template",
-                Component.literal("■").withStyle(style -> style.withColor(ImageBuilder.bgrToRgb(color))),
+                Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgrToRgb(color))),
                 name
         ));
         if (!end) text.append(CommonComponents.NEW_LINE);

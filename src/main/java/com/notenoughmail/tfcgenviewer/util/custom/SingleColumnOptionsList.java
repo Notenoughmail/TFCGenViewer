@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.custom;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -12,13 +12,13 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import java.util.List;
 
 /**
- * A simple, minimalist reimplementation of {@link net.minecraft.client.gui.components.OptionsList} that is a single column instead of two
+ * A simple, minimalist reimplementation of {@link net.minecraft.client.gui.components.OptionsList OptionsList} that is a single column instead of two
  * <p>
  * It just works™
  */
-public class CustomOptionsList extends ContainerObjectSelectionList<CustomOptionsList.Entry> {
+public class SingleColumnOptionsList extends ContainerObjectSelectionList<SingleColumnOptionsList.Entry> {
 
-    public CustomOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
+    public SingleColumnOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
         super(pMinecraft, pWidth, pHeight, pY0, pY1, pItemHeight);
     }
 

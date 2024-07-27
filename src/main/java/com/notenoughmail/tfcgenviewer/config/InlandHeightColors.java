@@ -2,7 +2,7 @@ package com.notenoughmail.tfcgenviewer.config;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -20,23 +20,23 @@ import static com.notenoughmail.tfcgenviewer.config.Colors.GSON;
 public class InlandHeightColors {
 
     private static ColorGradientDefinition HEIGHT = new ColorGradientDefinition(
-            ImageBuilder.green,
+            ColorUtil.green,
             Component.translatable("tfcgenviewer.inland_height.land")
     );
 
     private static ColorDefinition
             SHALLOW_WATER = new ColorDefinition(
-            ImageBuilder.SHALLOW_WATER,
-            Component.translatable("tfcgenviewer.inland_height.shallow_water"),
-            0
+                ColorUtil.SHALLOW_WATER,
+                Component.translatable("tfcgenviewer.inland_height.shallow_water"),
+                0
             ),
             DEEP_WATER = new ColorDefinition(
-                    ImageBuilder.DEEP_WATER,
+                    ColorUtil.DEEP_WATER,
                     Component.translatable("tfcgenviewer.inland_height.deep_water"),
                     0
             ),
             VERY_DEEP_WATER = new ColorDefinition(
-                    ImageBuilder.VERY_DEEP_WATER,
+                    ColorUtil.VERY_DEEP_WATER,
                     Component.translatable("tfcgenviewer.inland_height.very_deep_water"),
                     0
             );

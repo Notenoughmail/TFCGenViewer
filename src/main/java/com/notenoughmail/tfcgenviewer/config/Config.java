@@ -6,7 +6,7 @@ import net.minecraftforge.fml.config.ModConfig;
 
 public class Config {
 
-    public static ForgeConfigSpec.IntValue previewSize;
+    public static ForgeConfigSpec.IntValue defaultPreviewSize;
 
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -15,11 +15,12 @@ public class Config {
     }
 
     private static void register(ForgeConfigSpec.Builder builder) {
-        previewSize = builder.comment(
+        defaultPreviewSize = builder.comment(
                 "",
-                " The vertical and horizontal size to visualize, in world grids (8 chunks), a restart is required to take effect",
-                " Note that bigger sizes will take exponentially longer to preview",
+                " The preview size the preview screen will have when first opened",
+                " Conversion to km:",
+                "     (2 ^ (defaultPreviewSize + 5)) * 128 / 1000",
                 ""
-                ).defineInRange("previewSize", 256, 16, 2048);
+                ).defineInRange("defaultPreviewSize", 3, 0, 6);
     }
 }

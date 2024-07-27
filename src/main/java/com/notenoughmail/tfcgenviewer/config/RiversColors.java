@@ -2,7 +2,7 @@ package com.notenoughmail.tfcgenviewer.config;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -20,22 +20,22 @@ public class RiversColors {
 
     static ColorDefinition
             RIVER = new ColorDefinition(
-                ImageBuilder.RIVER_BLUE,
+                ColorUtil.RIVER_BLUE,
                 Component.translatable("biome.tfc.river"),
                 0
             ),
             LAKE = new ColorDefinition(
-                    ImageBuilder.SHALLOW_WATER,
+                    ColorUtil.SHALLOW_WATER,
                     Component.translatable("biome.tfc.lake"),
                     0
             ),
             VOLCANIC_MOUNTAIN = new ColorDefinition(
-                    ImageBuilder.VOLCANIC_MOUNTAIN,
+                    ColorUtil.VOLCANIC_MOUNTAIN,
                     Component.translatable("tfcgenviewer.rivers.oceanic_volcanic_mountain"),
                     0
             ),
             INLAND_MOUNTAIN = new ColorDefinition(
-                    ImageBuilder.GRAY,
+                    ColorUtil.GRAY,
                     Component.translatable("tfcgenviewer.rivers.inland_mountain"),
                     0
             );

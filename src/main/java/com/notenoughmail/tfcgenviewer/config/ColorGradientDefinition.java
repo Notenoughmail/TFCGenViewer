@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -101,14 +101,14 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                         );
                         yield fallback;
                     }
-                    yield ImageBuilder.linearGradient(from, to);
+                    yield ColorUtil.linearGradient(from, to);
                 }
                 default -> {
                     final int[] colors = new int[array.size()];
                     for (int i = 0 ; i < colors.length ; i++) {
                         colors[i] = ColorDefinition.parseColor(array.get(i), 0xFF000000, type, resourcePath);
                     }
-                    yield ImageBuilder.multiLinearGradient(colors);
+                    yield ColorUtil.multiLinearGradient(colors);
                 }
             };
         } else if (gradient.isJsonObject()) {
@@ -125,7 +125,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                     );
                     return fallback;
                 }
-                return ImageBuilder.linearGradient(from, to);
+                return ColorUtil.linearGradient(from, to);
             }
         }
         TFCGenViewer.LOGGER.warn("Unable to parse color gradient definition for {} at {}", type, resourcePath);
@@ -135,9 +135,9 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
     @Nullable
     public static DoubleToIntFunction reference(String ref) {
         if (ref.equalsIgnoreCase("blue") || ref.equalsIgnoreCase("ocean")) {
-            return ImageBuilder.blue;
+            return ColorUtil.blue;
         } else if (ref.equalsIgnoreCase("green") || ref.equalsIgnoreCase("land")) {
-            return ImageBuilder.green;
+            return ColorUtil.green;
         } else if (
                 ref.equalsIgnoreCase("climate") ||
                 ref.equalsIgnoreCase("temp") ||
@@ -145,11 +145,11 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                 ref.equalsIgnoreCase("rain") ||
                 ref.equalsIgnoreCase("rainfall")
         ) {
-            return ImageBuilder.climate;
+            return ColorUtil.climate;
         } else if (ref.equalsIgnoreCase("volcanic") || ref.equalsIgnoreCase("volcanic_rock")) {
-            return ImageBuilder.volcanic;
+            return ColorUtil.volcanic;
         } else if (ref.equalsIgnoreCase("uplift") || ref.equalsIgnoreCase("uplift_rock")) {
-            return ImageBuilder.uplift;
+            return ColorUtil.uplift;
         }
         return null;
     }
@@ -161,7 +161,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
     public void appendTo(MutableComponent text, boolean end) {
         final MutableComponent colors = Component.empty();
         for (double i : keyValues) {
-            colors.append(Component.literal("■").withStyle(style -> style.withColor(ImageBuilder.bgrToRgb(gradient.applyAsInt(i)))));
+            colors.append(Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgrToRgb(gradient.applyAsInt(i)))));
         }
         text.append(Component.translatable(
                 "tfcgenviewer.preview_world.color_key_template",

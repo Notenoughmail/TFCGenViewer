@@ -1,7 +1,7 @@
 package com.notenoughmail.tfcgenviewer.config;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -14,19 +14,19 @@ public class RockTypeColors {
 
     static {
         DEFINITIONS[0] = new ColorGradientDefinition(
-                ImageBuilder.blue,
+                ColorUtil.blue,
                 Component.translatable("tfcgenviewer.rock_type.oceanic")
         );
         DEFINITIONS[1] = new ColorGradientDefinition(
-                ImageBuilder.volcanic,
+                ColorUtil.volcanic,
                 Component.translatable("tfcgenviewer.rock_type.volcanic")
         );
         DEFINITIONS[2] = new ColorGradientDefinition(
-                ImageBuilder.green,
+                ColorUtil.green,
                 Component.translatable("tfcgenviewer.rock_type.land")
         );
         DEFINITIONS[3] = new ColorGradientDefinition(
-                ImageBuilder.uplift,
+                ColorUtil.uplift,
                 Component.translatable("tfcgenviewer.rock_type.uplift")
         );
     }
@@ -39,13 +39,13 @@ public class RockTypeColors {
         if (resourcePath.getNamespace().equals(TFCGenViewer.ID)) {
             switch (resourcePath.getPath()) {
                 case "tfcgenviewer/rock_types/oceanic.json" ->
-                        DEFINITIONS[0] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.oceanic", ImageBuilder.blue);
+                        DEFINITIONS[0] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.oceanic", ColorUtil.blue);
                 case "tfcgenviewer/rock_types/volcanic.json" ->
-                        DEFINITIONS[1] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.volcanic", ImageBuilder.volcanic);
+                        DEFINITIONS[1] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.volcanic", ColorUtil.volcanic);
                 case "tfcgenviewer/rock_types/land.json" ->
-                        DEFINITIONS[2] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.land", ImageBuilder.green);
+                        DEFINITIONS[2] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.land", ColorUtil.green);
                 case "tfcgenviewer/rock_types/uplift.json" ->
-                        DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ImageBuilder.uplift);
+                        DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ColorUtil.uplift);
             }
         }
     }

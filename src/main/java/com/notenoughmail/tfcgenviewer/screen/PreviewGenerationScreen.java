@@ -1,7 +1,15 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.*;
+import com.notenoughmail.tfcgenviewer.config.Config;
+import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
+import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
+import com.notenoughmail.tfcgenviewer.util.VisualizerType;
+import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
+import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
+import com.notenoughmail.tfcgenviewer.util.custom.SeedValueSet;
+import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
@@ -37,6 +45,7 @@ public class PreviewGenerationScreen extends Screen {
     public static final Component INVALID_GENERATOR = Component.translatable("tfcgenviewer.preview_world.invalid_generator");
     public static final Component APPLY = Component.translatable("button.tfcgenviewer.apply");
     public static final Component SAVE = Component.translatable("button.tfcgenviewer.save");
+    public static final Component EXPORT = Component.translatable("button.tfcgenviewer.export");
     public static final ResourceLocation COMPASS = TFCGenViewer.identifier("textures/gui/compass.png");
 
     // Taken from TFC's create world screen
@@ -58,8 +67,21 @@ public class PreviewGenerationScreen extends Screen {
                 OptionInstance.UnitDouble.INSTANCE, defaultValue, value -> {});
     }
 
-    private static OptionInstance<Integer> offsetOption(String key, int defaultValue) {
-        return new OptionInstance<>(key, OptionInstance.cachedConstantTooltip(Component.translatable(key + ".tooltip")), (text, value) -> Options.genericValueLabel(text, Component.translatable("tfcgenviewer.preview_world.chunks", (8 * value))), new OptionInstance.IntRange(-1250, 1250), defaultValue, value -> {});
+    private static OptionInstance<Integer> offsetOption(String key) {
+        return new OptionInstance<>(
+                key,
+                OptionInstance.cachedConstantTooltip(Component.translatable(key + ".tooltip")),
+                (text, offset) -> Options.genericValueLabel(
+                    text,
+                    Component.translatable(
+                            "tfcgenviewer.preview_world.km",
+                            "%.2f".formatted((128 * offset) / 1000F)
+                    )
+                ),
+                new OptionInstance.IntRange(-175, 175),
+                0,
+                value -> {}
+        );
     }
 
     private final CreateWorldScreen parent;
@@ -73,14 +95,14 @@ public class PreviewGenerationScreen extends Screen {
     private String editorSeed, localSeed;
     private Button seedbutton;
     private int previewPixels;
-    private InfoPane rightInfo;
+    private InfoPane infoPane;
     private Runnable seedTick;
+    private PreviewInfo previewInfo;
 
-    // Copied from TFC's create world screen
-    private CustomOptionsList options;
     private OptionInstance<Boolean> flatBedrock, spawnOverlay;
-    private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset;
+    private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset, previewScale;
     private OptionInstance<Double> tempConst, rainConst, continentalness, grassDensity;
+    private PreviewPane previewPane;
 
     public PreviewGenerationScreen(CreateWorldScreen parent) {
         super(TITLE);
@@ -91,8 +113,9 @@ public class PreviewGenerationScreen extends Screen {
         generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
-        ImageBuilder.getPreview(); // Initialize the texture
+        ImageBuilder.initPreviews();
         previewPixels = 2;
+        previewInfo = PreviewInfo.EMPTY;
     }
 
     @Nullable
@@ -120,18 +143,11 @@ public class PreviewGenerationScreen extends Screen {
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         renderBackground(pGuiGraphics);
-        if (generator != null) {
-            renderGeneration(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        } else {
+        if (generator == null) {
             pGuiGraphics.drawCenteredString(font, INVALID_GENERATOR, width / 2, height / 2 - 50, 0xFFFFFF);
         }
         pGuiGraphics.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF);
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-    }
-
-    private void renderGeneration(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        options.render(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(ImageBuilder.getPreview(), (width - previewPixels) / 2, (height - previewPixels) / 2, 0, 0, previewPixels, previewPixels, previewPixels, previewPixels);
     }
 
     @Override
@@ -147,9 +163,10 @@ public class PreviewGenerationScreen extends Screen {
 
         if (generator != null) {
 
-            options = new CustomOptionsList(minecraft, (width - previewPixels) / 2 - 10, height, 32, height - 32, 25);
+            final SingleColumnOptionsList options = new SingleColumnOptionsList(minecraft, (width - previewPixels) / 2 - 10, height, 32, height - 32, 25);
 
             options.add(
+                    // Copied from TFC's create world screen
                     flatBedrock = OptionInstance.createBoolean("tfc.create_world.flat_bedrock", worldSettings.flatBedrock(), bool -> {}),
                     spawnDist = kmOpt("tfc.create_world.spawn_distance", 100, 20000, worldSettings.spawnDistance()),
                     spawnCenterX = kmOpt("tfc.create_world.spawn_center_x", -20000, 20000, worldSettings.spawnCenterX()),
@@ -161,26 +178,83 @@ public class PreviewGenerationScreen extends Screen {
                     continentalness = pctOpt("tfc.create_world.continentalness", worldSettings.continentalness()),
                     grassDensity = pctOpt("tfc.create_world.grass_density", worldSettings.grassDensity()),
                     spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.preview_world.spawn_overlay", false),
-                    xOffset = offsetOption("tfcgenviewer.preview_world.x_offset", -ImageBuilder.previewSize() / 2), // Center on 0,0 by default
-                    zOffset = offsetOption("tfcgenviewer.preview_world.z_offset", -ImageBuilder.previewSize() / 2),
-                    visualizerTask = new OptionInstance<>("tfcgenviewer.preview_world.visualizer_type", OptionInstance.noTooltip(), (caption, task) -> task.getName(), new OptionInstance.Enum<>(List.of(VisualizerType.VALUES), VisualizerType.CODEC), VisualizerType.RIVERS, task -> {}),
-                    new OptionInstance<>("selectWorld.enterSeed", OptionInstance.noTooltip(), (caption, seed) -> Component.literal(seed), new SeedValueSet(font, (s, editBox) -> editorSeed = editBox.getValue(), () -> editorSeed, tick -> seedTick = tick), String.valueOf(seedInUse), s -> {}),
-                    new OptionInstance<>("button.tfcgenviewer.apply", OptionInstance.noTooltip(), (caption, bool) -> caption, OptionInstance.BOOLEAN_VALUES, false, bool -> {}) {
+                    previewScale = new OptionInstance<>(
+                            "tfcgenviewer.preview_world.preview_scale",
+                            OptionInstance.noTooltip(),
+                            (caption, scale) -> Options.genericValueLabel(
+                                    caption,
+                                    Component.translatable(
+                                            scale > 4 ? "tfcgenviewer.preview_world.preview_scale_danger" : "tfcgenviewer.preview_world.km",
+                                            ImageBuilder.previewSizeKm(scale)
+                                    )
+                            ),
+                            new OptionInstance.IntRange(0, 6),
+                            Config.defaultPreviewSize.get(),
+                            scale -> {}
+                    ),
+                    xOffset = offsetOption("tfcgenviewer.preview_world.x_offset"),
+                    zOffset = offsetOption("tfcgenviewer.preview_world.z_offset"),
+                    visualizerTask = new OptionInstance<>(
+                            "tfcgenviewer.preview_world.visualizer_type",
+                            OptionInstance.noTooltip(),
+                            (caption, task) -> task.getName(),
+                            new OptionInstance.Enum<>(List.of(VisualizerType.VALUES), VisualizerType.CODEC),
+                            VisualizerType.RIVERS,
+                            task -> {}
+                    ),
+                    new OptionInstance<>(
+                            "selectWorld.enterSeed",
+                            OptionInstance.noTooltip(),
+                            (caption, seed) -> Component.literal(seed),
+                            new SeedValueSet(
+                                    font,
+                                    s -> editorSeed = s,
+                                    () -> editorSeed,
+                                    tick -> seedTick = tick
+                            ),
+                            String.valueOf(seedInUse),
+                            s -> {}
+                    ),
+                    new OptionInstance<>(
+                            "button.tfcgenviewer.apply",
+                            OptionInstance.noTooltip(),
+                            (caption, bool) -> caption,
+                            OptionInstance.BOOLEAN_VALUES,
+                            false,
+                            bool -> {}
+                    ) {
                         @Override
                         public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
                             return Button.builder(APPLY, button -> applyUpdates(true)).bounds(pX, pY, pWidth, 20).build();
                         }
+                    },
+                    new OptionInstance<>(
+                            "button.tfcgenviewer.export",
+                            OptionInstance.noTooltip(),
+                            (caption, bool) -> caption,
+                            OptionInstance.BOOLEAN_VALUES,
+                            false,
+                            bool -> {}
+                    ) {
+                        @Override
+                        public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
+                            return Button.builder(EXPORT, button -> ImageBuilder.exportImage()).bounds(pX, pY, pWidth, 20).build();
+                        }
                     }
             );
-            addWidget(options);
+            addRenderableWidget(options);
+
+            final int previewLeftEdge = (width - previewPixels) / 2;
+            previewPane = new PreviewPane(previewLeftEdge, (height - previewPixels) / 2, previewPixels, font);
+            addRenderableWidget(previewPane);
 
             final int rightPos = (width + previewPixels) / 2 + 10;
-            addRenderableWidget(rightInfo = new InfoPane(rightPos, 32, width - rightPos - 10, height - 64, Component.empty(), font, COMPASS, 64));
+            addRenderableWidget(infoPane = new InfoPane(rightPos, 32, width - rightPos - 10, height - 64, Component.empty(), font, COMPASS, 64));
 
             seedbutton = Button
                     .builder(Component.translatable("button.tfcgenviewer.current_seed", seedInUse), button -> minecraft.keyboardHandler.setClipboard(String.valueOf(seedInUse)))
                     .tooltip(Tooltip.create(Component.translatable("button.tfcgenviewer.current_seed.tooltip")))
-                    .bounds((width - previewPixels) / 2, height - 28, previewPixels, 20)
+                    .bounds(previewLeftEdge, height - 28, previewPixels, 20)
                     .build();
 
             addRenderableWidget(seedbutton);
@@ -225,7 +299,7 @@ public class PreviewGenerationScreen extends Screen {
             } else {
                 regionGenerator = getRegionGenerator();
                 assert regionGenerator != null;
-                rightInfo.setMessage(ImageBuilder.build(
+                previewInfo = ImageBuilder.build(
                         regionGenerator,
                         visualizerTask.get(),
                         xOffset.get(),
@@ -233,8 +307,11 @@ public class PreviewGenerationScreen extends Screen {
                         spawnOverlay.get(),
                         spawnDist.get(),
                         spawnCenterX.get(),
-                        spawnCenterZ.get()
-                ));
+                        spawnCenterZ.get(),
+                        previewScale.get()
+                );
+                infoPane.setMessage(previewInfo.rightInfo());
+                previewPane.setInfo(previewInfo);
             }
         }
     }

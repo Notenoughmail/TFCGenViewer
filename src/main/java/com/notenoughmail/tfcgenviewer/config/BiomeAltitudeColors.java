@@ -2,7 +2,7 @@ package com.notenoughmail.tfcgenviewer.config;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -23,22 +23,22 @@ public class BiomeAltitudeColors {
 
     static {
         COLORS[0] = new ColorDefinition(
-                ImageBuilder.green.applyAsInt(0),
+                ColorUtil.green.applyAsInt(0),
                 Component.translatable("tfcgenviewer.biome_altitude.low"),
                 0
         );
         COLORS[1] = new ColorDefinition(
-                ImageBuilder.green.applyAsInt(0.333),
+                ColorUtil.green.applyAsInt(0.333),
                 Component.translatable("tfcgenviewer.biome_altitude.medium"),
                 0
         );
         COLORS[2] = new ColorDefinition(
-                ImageBuilder.green.applyAsInt(0.666),
+                ColorUtil.green.applyAsInt(0.666),
                 Component.translatable("tfcgenviewer.biome_altitude.high"),
                 0
         );
         COLORS[3] = new ColorDefinition(
-                ImageBuilder.green.applyAsInt(0.999),
+                ColorUtil.green.applyAsInt(0.999),
                 Component.translatable("tfcgenviewer.biome_altitude.mountain"),
                 0
         );

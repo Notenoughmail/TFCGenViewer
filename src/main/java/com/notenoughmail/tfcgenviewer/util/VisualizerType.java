@@ -11,12 +11,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.util.Lazy;
 
 import java.util.Random;
 import java.util.function.Supplier;
 
-import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.fillOcean;
+import static com.notenoughmail.tfcgenviewer.config.Colors.fillOcean;
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
 public enum VisualizerType {
