@@ -23,7 +23,6 @@ import java.util.stream.IntStream;
 
 import static net.minecraft.util.FastColor.ABGR32.*;
 
-// Unless otherwise stated, everything here uses ABGR color
 public class ImageBuilder {
 
     private static final ResourceLocation[] PREVIEW_LOCATIONS = Util.make(new ResourceLocation[7], array -> {
@@ -32,30 +31,24 @@ public class ImageBuilder {
         }
     });
 
-    // TODO: Fix the images being broken now for some reason
     private static DynamicTexture[] PREVIEWS;
-    private static DynamicTexture PREVIEW;
 
     public static ResourceLocation getPreview(int scale) {
-        if (PREVIEW == null) {
-            // REMOVE THIS
-            PREVIEW = new DynamicTexture(256, 256, false);
-            Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[0], PREVIEW);
-        }
-        return PREVIEW_LOCATIONS[0];
+        return PREVIEW_LOCATIONS[scale];
     }
 
     public static void initPreviews() {
-        getPreview(3);
         if (PREVIEWS == null) {
             PREVIEWS = Util.make(new DynamicTexture[7], array -> {
                 for (int i = 0 ; i < 7 ; i++) {
-                    final int scale = previewSize(i);
-                    try (DynamicTexture texture = new DynamicTexture(scale, scale, false)) {
+                    final int size = previewSize(i);
+                    try {
+                        // Do not try-with-resources or #close() these
+                        DynamicTexture texture = new DynamicTexture(size, size, false);
                         array[i] = texture;
-                        Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], array[i]);
+                        Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
                     } catch (Exception exception) {
-                        TFCGenViewer.LOGGER.error("Could not make dynamic texture for scale {}! Error:\n{}", scale, exception);
+                        TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
                     }
                 }
             });
@@ -63,17 +56,9 @@ public class ImageBuilder {
     }
 
     private static void upload(int scale, NativeImage image) {
-        if (scale == 3) {
-            // REMOVE THIS
-            PREVIEW.setPixels(image);
-            PREVIEW.upload();
-        } else {
-            for (int i = 0; i < 7; i++) {
-                PREVIEWS[i].close();
-            }
-            PREVIEWS[scale].setPixels(image);
-            PREVIEWS[scale].upload();
-        }
+        final DynamicTexture preview = PREVIEWS[scale];
+        preview.setPixels(image);
+        preview.upload();
     }
 
     /**
@@ -92,7 +77,7 @@ public class ImageBuilder {
     }
 
 
-    private static final boolean exportImages = true;
+    private static final boolean exportImages = false;
 
     public static PreviewInfo build(
             RegionChunkDataGenerator generator,
@@ -110,8 +95,8 @@ public class ImageBuilder {
         final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
         final Set<Region> visitedRegions = new HashSet<>();
         final int halfPreviewGrids = previewSizeGrids / 2;
-        final int xDrawOffsetGrids = xOffsetGrids - halfPreviewGrids;
-        final int yDrawOffsetGrids = yOffsetGrids - halfPreviewGrids;
+        final int xDrawOffsetGrids = -xOffsetGrids - halfPreviewGrids;
+        final int yDrawOffsetGrids = -yOffsetGrids - halfPreviewGrids;
 
         for (int x = 0; x < previewSizeGrids; x++) {
             for (int y = 0; y < previewSizeGrids; y++) {
@@ -128,8 +113,8 @@ public class ImageBuilder {
         }
 
         if (drawSpawn) {
-            final int xCenterGrids = (spawnXBlocks / (16 * 8)) - xOffsetGrids;
-            final int yCenterGrids = (spawnYBlocks / (16 * 8)) - yOffsetGrids;
+            final int xCenterGrids = (spawnXBlocks / (16 * 8)) - xDrawOffsetGrids;
+            final int yCenterGrids = (spawnYBlocks / (16 * 8)) - yDrawOffsetGrids;
             final int radiusGrids = spawnDistBlocks / (16 * 8);
 
             final int lineWidthPixels = lineWidth(scale);
@@ -149,7 +134,7 @@ public class ImageBuilder {
 
         if (exportImages && !FMLLoader.isProduction()) {
             try {
-                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview_%s_%dx%d_%d@%s.png", visualizer.name(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), Util.getFilenameFormattedDateTime())));
+                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview@%s_%dx%d_%d_%s.png", Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())));
             } catch (IOException exception) {
                 TFCGenViewer.LOGGER.warn("Unable to write preview to disk!", exception);
             }

@@ -73,7 +73,7 @@ public class PreviewGenerationScreen extends Screen {
                             "%.2f".formatted((128 * offset) / 1000F)
                     )
                 ),
-                new OptionInstance.IntRange(-1250, 1250),
+                new OptionInstance.IntRange(-175, 175),
                 0,
                 value -> {}
         );
