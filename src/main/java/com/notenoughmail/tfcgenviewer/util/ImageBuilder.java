@@ -10,11 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -78,7 +77,8 @@ public class ImageBuilder {
     }
 
 
-    private static final boolean exportImages = false;
+    private static NativeImage currentImage;
+    private static String imageName;
 
     public static PreviewInfo build(
             RegionChunkDataGenerator generator,
@@ -132,13 +132,8 @@ public class ImageBuilder {
 
         upload(scale, image);
 
-        if (exportImages && !FMLLoader.isProduction()) {
-            try {
-                image.writeToFile(new File(FMLPaths.GAMEDIR.get().toFile(), String.format("screenshots\\preview@%s_%dx%d_%d_%s.png", Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())));
-            } catch (IOException exception) {
-                TFCGenViewer.LOGGER.warn("Unable to write preview to disk!", exception);
-            }
-        }
+        currentImage = image;
+        imageName = "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name());
 
         final String previewKm = previewSizeKm(scale);
         final int xCenterBlocks = xOffsetGrids * 128;
@@ -198,6 +193,16 @@ public class ImageBuilder {
                 for (int i = x - width ; i < x + width ; i++) {
                     setPixel(image, i, y, color);
                 }
+            }
+        }
+    }
+
+    public static void exportImage() {
+        if (currentImage != null) {
+            try {
+                currentImage.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), imageName));
+            } catch (Exception exception) {
+                TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(imageName), exception);
             }
         }
     }

@@ -2,6 +2,7 @@
   "tfcgenviewer.preview_world.title": "Preview World",
   "button.tfcgenviewer.preview_world": "Preview World",
   "button.tfcgenviewer.apply": "Apply",
+  "button.tfcgenviewer.export": "Export Preview",
   "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
   "button.tfcgenviewer.current_seed": "Current seed: %s",
   "button.tfcgenviewer.current_seed.tooltip": "Click to copy",

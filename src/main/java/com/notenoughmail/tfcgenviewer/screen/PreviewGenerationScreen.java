@@ -45,6 +45,7 @@ public class PreviewGenerationScreen extends Screen {
     public static final Component INVALID_GENERATOR = Component.translatable("tfcgenviewer.preview_world.invalid_generator");
     public static final Component APPLY = Component.translatable("button.tfcgenviewer.apply");
     public static final Component SAVE = Component.translatable("button.tfcgenviewer.save");
+    public static final Component EXPORT = Component.translatable("button.tfcgenviewer.export");
     public static final ResourceLocation COMPASS = TFCGenViewer.identifier("textures/gui/compass.png");
 
     // Taken from TFC's create world screen
@@ -225,6 +226,19 @@ public class PreviewGenerationScreen extends Screen {
                         @Override
                         public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
                             return Button.builder(APPLY, button -> applyUpdates(true)).bounds(pX, pY, pWidth, 20).build();
+                        }
+                    },
+                    new OptionInstance<>(
+                            "button.tfcgenviewer.export",
+                            OptionInstance.noTooltip(),
+                            (caption, bool) -> caption,
+                            OptionInstance.BOOLEAN_VALUES,
+                            false,
+                            bool -> {}
+                    ) {
+                        @Override
+                        public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
+                            return Button.builder(EXPORT, button -> ImageBuilder.exportImage()).bounds(pX, pY, pWidth, 20).build();
                         }
                     }
             );
