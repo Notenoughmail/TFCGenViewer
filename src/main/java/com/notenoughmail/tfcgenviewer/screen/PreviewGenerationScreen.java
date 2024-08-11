@@ -113,7 +113,6 @@ public class PreviewGenerationScreen extends Screen {
         generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
-        ImageBuilder.initPreviews();
         previewPixels = 2;
         previewInfo = PreviewInfo.EMPTY;
     }

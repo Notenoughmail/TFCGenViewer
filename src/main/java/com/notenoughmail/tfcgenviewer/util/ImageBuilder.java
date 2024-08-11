@@ -27,28 +27,22 @@ public class ImageBuilder {
         }
     });
 
-    private static DynamicTexture[] PREVIEWS;
+    private static final DynamicTexture[] PREVIEWS = Util.make(new DynamicTexture[7], array -> {
+        for (int i = 0 ; i < 7 ; i++) {
+            final int size = previewSize(i);
+            try {
+                // Do not try-with-resources or #close() these
+                DynamicTexture texture = new DynamicTexture(size, size, false);
+                array[i] = texture;
+                Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
+            } catch (Exception exception) {
+                TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
+            }
+        }
+    });
 
     public static ResourceLocation getPreview(int scale) {
         return PREVIEW_LOCATIONS[scale];
-    }
-
-    public static void initPreviews() {
-        if (PREVIEWS == null) {
-            PREVIEWS = Util.make(new DynamicTexture[7], array -> {
-                for (int i = 0 ; i < 7 ; i++) {
-                    final int size = previewSize(i);
-                    try {
-                        // Do not try-with-resources or #close() these
-                        DynamicTexture texture = new DynamicTexture(size, size, false);
-                        array[i] = texture;
-                        Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
-                    } catch (Exception exception) {
-                        TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
-                    }
-                }
-            });
-        }
     }
 
     private static void upload(int scale, NativeImage image) {
@@ -65,11 +59,11 @@ public class ImageBuilder {
      * Gets the preview size in grids from the scale option (0-6)
      */
     public static int previewSize(int scale) {
-        return (int) Math.pow(2, scale + 5);
+        return 2 << (scale + 4); // == Math.pow(2, scale + 5)
     }
 
     public static int lineWidth(int scale) {
-        return previewSize(scale) / 512;
+        return previewSize(scale) >> 9; // == previewSize(scale) / 128
     }
 
     public static String previewSizeKm(int scale) {
@@ -80,6 +74,7 @@ public class ImageBuilder {
     private static NativeImage currentImage;
     private static String imageName;
 
+    // TODO: Build image in background and populate screen once completed
     public static PreviewInfo build(
             RegionChunkDataGenerator generator,
             VisualizerType visualizer,
