@@ -77,5 +77,7 @@
   "tfcgenviewer.key.open_viewer": "Open World Viewer",
 
   "tfcgenviewer.message.viewing_disallowed": "You do not have permission to visualize the world!",
-  "tfcgenviewer.message.non_tfc_world": "This is not a TFC-like world! Cannot be visualized"
+  "tfcgenviewer.message.non_tfc_world": "This is not a TFC-like world! Cannot be visualized",
+
+  "tfcgenviewer.view_world.title": "View World"
 }

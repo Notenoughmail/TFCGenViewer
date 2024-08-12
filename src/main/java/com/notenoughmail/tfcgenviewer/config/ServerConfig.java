@@ -30,6 +30,8 @@ public class ServerConfig {
                            BY_CATEGORY  | Which information the player is able to access in the visualizer screen is dependent on the configuration options in the 'categories' section
                            DISALLOWED   | Disallows all players from visualizing the world
                            ALLOWED      | Allows all players to access all information in the visualizer screen
+                           ALLOW_LIST   | Allows players within the server's allow list to view the world, the information a player is dependent on the configuration options in the 'categories' section
+                           DENY_LIST    | Allows players outside of the server's deny list to view the world, the information they can view is dependent on the configuration options in the 'categories' section
                         """)
                 .defineEnum("viewPermission", Permissions.Universal.SEED_COMMAND);
 

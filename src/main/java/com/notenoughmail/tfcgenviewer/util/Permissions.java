@@ -33,6 +33,18 @@ public class Permissions {
         return (permissions & 0b11110000) == 0;
     }
 
+    public static boolean canExport(byte permissions) {
+        return (permissions & 1) != 0;
+    }
+
+    public static boolean canSeeSeed(byte permissions) {
+        return (permissions & 2) != 0;
+    }
+
+    public static boolean canSeeCoordinates(byte permissions) {
+        return (permissions & 4) != 0;
+    }
+
     public enum Universal {
         SEED_COMMAND((p, b) -> {
             if (p.hasPermissions(2)) {
@@ -44,7 +56,13 @@ public class Permissions {
             return b; // Unimplemented
         }),
         DISALLOWED((p, b) -> b),
-        ALWAYS(full, (p, b) -> b);
+        ALWAYS(full, (p, b) -> b),
+        ALLOW_LIST((p, b) -> {
+            return b; // Unimplemented
+        }),
+        DENY_LIST(full, (p, b) -> {
+            return b; // Unimplemented
+        });
 
         private final byte base;
         private final PermissionApplicator permissions;

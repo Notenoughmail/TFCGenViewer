@@ -21,6 +21,8 @@ import static net.minecraft.util.FastColor.ABGR32.alpha;
 
 public class ImageBuilder {
 
+    public static final ResourceLocation THROBBER = TFCGenViewer.identifier("textures/gui/throbber.png");
+
     private static final ResourceLocation[] PREVIEW_LOCATIONS = Util.make(new ResourceLocation[7], array -> {
         for (int i = 0 ; i < 7 ; i++) {
             array[i] = TFCGenViewer.identifier("preview/" + i);
@@ -41,18 +43,18 @@ public class ImageBuilder {
         }
     });
 
-    public static ResourceLocation getPreview(int scale) {
-        return PREVIEW_LOCATIONS[scale];
+    private static void upload(int scale, NativeImage image) {
+        clearPreviews();
+        final DynamicTexture preview = PREVIEWS[scale];
+        preview.setPixels(image);
+        preview.upload();
     }
 
-    private static void upload(int scale, NativeImage image) {
+    private static void clearPreviews() {
         for (int i = 0 ; i < 7 ; i++) {
             // Free the previously used image from memory
             PREVIEWS[i].setPixels(null);
         }
-        final DynamicTexture preview = PREVIEWS[scale];
-        preview.setPixels(image);
-        preview.upload();
     }
 
     /**
@@ -144,7 +146,7 @@ public class ImageBuilder {
                         visualizer.getName(),
                         visualizer.getColorKey()
                 ),
-                scale,
+                PREVIEW_LOCATIONS[scale],
                 previewSizeGrids * 128,
                 xDrawOffsetGrids * 128,
                 yDrawOffsetGrids * 128

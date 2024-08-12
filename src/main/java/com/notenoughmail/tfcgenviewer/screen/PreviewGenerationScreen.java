@@ -90,11 +90,10 @@ public class PreviewGenerationScreen extends Screen {
     @Nullable
     private RegionChunkDataGenerator regionGenerator;
     private Settings worldSettings;
-    private OptionInstance<VisualizerType> visualizerTask;
+    private OptionInstance<VisualizerType> visualizerType;
     private long seedInUse;
     private String editorSeed, localSeed;
     private Button seedbutton;
-    private int previewPixels;
     private InfoPane infoPane;
     private Runnable seedTick;
     private PreviewInfo previewInfo;
@@ -113,7 +112,6 @@ public class PreviewGenerationScreen extends Screen {
         generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
-        previewPixels = 2;
         previewInfo = PreviewInfo.EMPTY;
     }
 
@@ -158,7 +156,7 @@ public class PreviewGenerationScreen extends Screen {
     @Override
     protected void init() {
         assert minecraft != null;
-        previewPixels = Math.min(height - 64, width / 2);
+        final int previewPixels = Math.min(height - 64, width / 2);
 
         if (generator != null) {
 
@@ -193,7 +191,7 @@ public class PreviewGenerationScreen extends Screen {
                     ),
                     xOffset = offsetOption("tfcgenviewer.preview_world.x_offset"),
                     zOffset = offsetOption("tfcgenviewer.preview_world.z_offset"),
-                    visualizerTask = new OptionInstance<>(
+                    visualizerType = new OptionInstance<>(
                             "tfcgenviewer.preview_world.visualizer_type",
                             OptionInstance.noTooltip(),
                             (caption, task) -> task.getName(),
@@ -244,8 +242,7 @@ public class PreviewGenerationScreen extends Screen {
             addRenderableWidget(options);
 
             final int previewLeftEdge = (width - previewPixels) / 2;
-            previewPane = new PreviewPane(previewLeftEdge, (height - previewPixels) / 2, previewPixels, font);
-            addRenderableWidget(previewPane);
+            addRenderableWidget(previewPane = new PreviewPane(previewLeftEdge, (height - previewPixels) / 2, previewPixels, font, true));
 
             final int rightPos = (width + previewPixels) / 2 + 10;
             addRenderableWidget(infoPane = new InfoPane(rightPos, 32, width - rightPos - 10, height - 64, Component.empty(), font, COMPASS, 64));
@@ -300,7 +297,7 @@ public class PreviewGenerationScreen extends Screen {
                 assert regionGenerator != null;
                 previewInfo = ImageBuilder.build(
                         regionGenerator,
-                        visualizerTask.get(),
+                        visualizerType.get(),
                         xOffset.get(),
                         zOffset.get(),
                         spawnOverlay.get(),
