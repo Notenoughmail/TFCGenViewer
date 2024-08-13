@@ -2,7 +2,6 @@ package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
-import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
 import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
@@ -43,7 +42,6 @@ public class ViewWorldScreen extends Screen {
     private OptionInstance<VisualizerType> visualizerType;
     private PreviewPane viewPane;
     private InfoPane infoPane;
-    private PreviewInfo viewInfo;
 
     public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter) {
         super(TITLE);
@@ -57,7 +55,6 @@ public class ViewWorldScreen extends Screen {
         this.seedVisible = seedVisible;
         this.xCenter = xCenter;
         this.zCenter = zCenter;
-        viewInfo = PreviewInfo.EMPTY;
     }
 
     @Override
@@ -81,7 +78,7 @@ public class ViewWorldScreen extends Screen {
                         (cation, scale) -> Options.genericValueLabel(
                                 cation,
                                 Component.translatable(
-                                        scale > 4 ? "tfcgenviewer.preview_world.preview_scale_danger" : "tfcgenviewer.preview_world.km",
+                                        "tfcgenviewer.preview_world.km",
                                         ImageBuilder.previewSizeKm(scale)
                                 )
                         ),
@@ -155,22 +152,35 @@ public class ViewWorldScreen extends Screen {
         final int rightPos = (width + previewPixels) / 2 + 10;
         addRenderableWidget(infoPane = new InfoPane(rightPos, 32, width - rightPos - 10, height - 64, Component.empty(), font, PreviewGenerationScreen.COMPASS, 64));
 
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> minecraft.setScreen(null)).bounds(previewLeftEdge, height - 28, previewPixels, 20).build());
+        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> {
+            minecraft.setScreen(null);
+            ImageBuilder.cancelAndClearPreviews();
+        }).bounds(previewLeftEdge, height - 28, previewPixels, 20).build());
 
         apply();
     }
 
     private void apply() {
-        viewInfo = ImageBuilder.build(
+        ImageBuilder.build(
                 generator,
                 visualizerType.get(),
                 xCenter,
                 zCenter,
                 false,
                 0, 0, 0,
-                scale.get()
+                scale.get(),
+                info -> {
+                    infoPane.setMessage(info.rightInfo());
+                    viewPane.setInfo(info);
+                }
         );
-        infoPane.setMessage(viewInfo.rightInfo());
-        viewPane.setInfo(viewInfo);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (viewPane != null) {
+            viewPane.tick();
+        }
     }
 }

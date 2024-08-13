@@ -24,10 +24,10 @@
   "tfcgenviewer.preview_world.z_offset.tooltip": "The z offset, in km, of the preview's center from 0",
   "tfcgenviewer.preview_world.spawn_overlay": "Spawn Overlay",
 
-  "tfcgenviewer.preview_world.preview_info": "%s regions generated\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
+  "tfcgenviewer.preview_world.preview_info": "Generated %s regions in %s seconds\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
+  "tfcgenviewer.preview_world.preview_info.generating": "Generating...",
   "tfcgenviewer.preview_world.color_key_template": "%s : %s",
   "tfcgenviewer.preview_world.km": "%s km",
-  "tfcgenviewer.preview_world.preview_scale_danger": "%s km Danger!",
   "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
   "tfcgenviewer.preview_world.preview_pos": "(%s,%s)",
 

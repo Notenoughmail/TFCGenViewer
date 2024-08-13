@@ -4,7 +4,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -69,9 +68,7 @@ public class InfoPane extends AbstractScrollWidget {
 
     @Override
     protected void renderBorder(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight) {
-        pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
-        pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, pX, pY, width, (float) (height + scrollAmount()), width, height, 32, 32);
-        pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        pGuiGraphics.fill(pX + 1, pY + 1, pX + pWidth - 1, pY + pHeight - 1, 0x7F000000);
     }
 
     @Override

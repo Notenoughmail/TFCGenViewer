@@ -4,7 +4,6 @@ import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
-import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
 import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
@@ -96,7 +95,6 @@ public class PreviewGenerationScreen extends Screen {
     private Button seedbutton;
     private InfoPane infoPane;
     private Runnable seedTick;
-    private PreviewInfo previewInfo;
 
     private OptionInstance<Boolean> flatBedrock, spawnOverlay;
     private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset, previewScale;
@@ -112,7 +110,6 @@ public class PreviewGenerationScreen extends Screen {
         generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
-        previewInfo = PreviewInfo.EMPTY;
     }
 
     @Nullable
@@ -134,6 +131,9 @@ public class PreviewGenerationScreen extends Screen {
         super.tick();
         if (seedTick != null) {
             seedTick.run();
+        }
+        if (previewPane != null) {
+            previewPane.tick();
         }
     }
 
@@ -181,7 +181,7 @@ public class PreviewGenerationScreen extends Screen {
                             (caption, scale) -> Options.genericValueLabel(
                                     caption,
                                     Component.translatable(
-                                            scale > 4 ? "tfcgenviewer.preview_world.preview_scale_danger" : "tfcgenviewer.preview_world.km",
+                                            "tfcgenviewer.preview_world.km",
                                             ImageBuilder.previewSizeKm(scale)
                                     )
                             ),
@@ -259,8 +259,12 @@ public class PreviewGenerationScreen extends Screen {
             addRenderableWidget(Button.builder(SAVE, button -> {
                 applyUpdates(false);
                 minecraft.setScreen(parent);
+                ImageBuilder.cancelAndClearPreviews();
             }).bounds((width - previewPixels) / 2 - 90, height - 28, 80, 20).build());
-            addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> minecraft.setScreen(parent)).bounds((width + previewPixels) / 2 + 10, height - 28, 80, 20).build());
+            addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> {
+                minecraft.setScreen(parent);
+                ImageBuilder.cancelAndClearPreviews();
+            }).bounds((width + previewPixels) / 2 + 10, height - 28, 80, 20).build());
         } else {
             addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> minecraft.setScreen(parent)).bounds(width / 2 - 30, height - 28, 60, 20).build());
         }
@@ -295,7 +299,7 @@ public class PreviewGenerationScreen extends Screen {
             } else {
                 regionGenerator = getRegionGenerator();
                 assert regionGenerator != null;
-                previewInfo = ImageBuilder.build(
+                ImageBuilder.build(
                         regionGenerator,
                         visualizerType.get(),
                         xOffset.get(),
@@ -304,10 +308,12 @@ public class PreviewGenerationScreen extends Screen {
                         spawnDist.get(),
                         spawnCenterX.get(),
                         spawnCenterZ.get(),
-                        previewScale.get()
+                        previewScale.get(),
+                        info -> {
+                            infoPane.setMessage(info.rightInfo());
+                            previewPane.setInfo(info);
+                        }
                 );
-                infoPane.setMessage(previewInfo.rightInfo());
-                previewPane.setInfo(previewInfo);
             }
         }
     }

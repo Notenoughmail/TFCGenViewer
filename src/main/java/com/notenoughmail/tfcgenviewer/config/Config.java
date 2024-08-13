@@ -8,6 +8,8 @@ public class Config {
 
     public static ForgeConfigSpec.IntValue defaultPreviewSize;
 
+    public static ForgeConfigSpec.BooleanValue useThrobber;
+
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         register(builder);
@@ -22,5 +24,11 @@ public class Config {
                 "     (2 ^ (defaultPreviewSize + 5)) * 128 / 1000",
                 ""
                 ).defineInRange("defaultPreviewSize", 3, 0, 6);
+
+        useThrobber = builder.comment(
+                "",
+                " If the preview should change to a loading icon when a preview is being generated",
+                ""
+        ).define("loadingIcon", true);
     }
 }

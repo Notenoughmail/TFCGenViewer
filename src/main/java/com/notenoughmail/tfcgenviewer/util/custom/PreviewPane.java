@@ -15,6 +15,7 @@ public class PreviewPane extends AbstractWidget {
     private boolean showCoordinates;
     private final Font font;
     private final boolean allowCoordinates;
+    private int tick = 0;
 
     public PreviewPane(int pX, int pY, int size, Font font, boolean allowCoordinates) {
         super(pX, pY, size, size, Component.empty());
@@ -22,6 +23,7 @@ public class PreviewPane extends AbstractWidget {
         showCoordinates = false;
         this.font = font;
         this.allowCoordinates = allowCoordinates;
+        previewInfo = PreviewInfo.EMPTY;
     }
 
     public void setInfo(PreviewInfo info) {
@@ -30,7 +32,11 @@ public class PreviewPane extends AbstractWidget {
 
     @Override
     protected void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-        graphics.blit(previewInfo.image(), getX(), getY(), 0, 0, size, size, size, size);
+        if (previewInfo.empty()) {
+            graphics.blit(previewInfo.image(), getX(), getY(), 0, ((tick >> 1) % 7) * size, size, size, size, size * 8);
+        } else {
+            graphics.blit(previewInfo.image(), getX(), getY(), 0, 0, size, size, size, size);
+        }
         if (showCoordinates && !previewInfo.empty() && isMouseOver(pMouseX, pMouseY)) {
             final int
                     previewBlocks = previewInfo.previewSizeBlocks(),
@@ -53,4 +59,8 @@ public class PreviewPane extends AbstractWidget {
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {}
+
+    public void tick() {
+        tick++;
+    }
 }
