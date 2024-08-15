@@ -18,8 +18,8 @@ public class ClientHandoff {
                     info.seed(),
                     info.levelSettings(),
                     Permissions.canExport(perms),
-                    Permissions.canSeeSeed(perms),
                     Permissions.canSeeCoordinates(perms),
+                    Permissions.canSeeSeed(perms),
                     Units.blockToGrid(player.getBlockX()),
                     Units.blockToGrid(player.getBlockZ())
             ));

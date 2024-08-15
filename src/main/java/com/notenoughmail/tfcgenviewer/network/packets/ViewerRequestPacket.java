@@ -21,7 +21,7 @@ public enum ViewerRequestPacket {
     public void handle(@Nullable ServerPlayer player) {
         if (player != null) {
             final byte permission = Permissions.get(player);
-            if ((permission & 1) != 0 && !Permissions.isEmpty(permission)) {
+            if (!Permissions.isEmpty(permission)) {
                 if (player.level() instanceof ServerLevel sl && sl.getChunkSource().getGenerator() instanceof TFCChunkGenerator gen) {
                     TFCGVChannel.send(PacketDistributor.PLAYER.with(() -> player), new ViewerResponsePacket(permission, sl.getSeed(), gen.settings()));
                 } else {

@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config;
+package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
@@ -14,8 +14,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-import static com.notenoughmail.tfcgenviewer.config.Colors.FILL_OCEAN;
-import static com.notenoughmail.tfcgenviewer.config.Colors.GSON;
+import static com.notenoughmail.tfcgenviewer.config.color.Colors.FILL_OCEAN;
+import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
 public class BiomeAltitudeColors {
 

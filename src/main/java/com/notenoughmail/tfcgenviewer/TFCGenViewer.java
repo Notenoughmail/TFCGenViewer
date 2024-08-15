@@ -4,9 +4,11 @@ import com.mojang.logging.LogUtils;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.config.ServerConfig;
 import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
+import com.notenoughmail.tfcgenviewer.util.TFCGVCommands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
@@ -23,6 +25,8 @@ public class TFCGenViewer {
 
         TFCGVChannel.init();
         ServerConfig.register();
+
+        MinecraftForge.EVENT_BUS.addListener(TFCGVCommands::register);
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Config.register();

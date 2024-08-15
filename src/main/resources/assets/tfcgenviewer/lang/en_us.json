@@ -79,5 +79,13 @@
   "tfcgenviewer.message.viewing_disallowed": "You do not have permission to visualize the world!",
   "tfcgenviewer.message.non_tfc_world": "This is not a TFC-like world! Cannot be visualized",
 
-  "tfcgenviewer.view_world.title": "View World"
+  "tfcgenviewer.view_world.title": "View World",
+
+  "tfcgenviewer.commands.set.success": "Set %s to %s",
+  "tfcgenviewer.commands.set.fail": "\"%s\" is not a valid setting for %s",
+  "tfcgenviewer.commands.get": "%s is set to %s",
+  "tfcgenviewer.commands.add.success": "Added %s to %s filter",
+  "tfcgenviewer.commands.add.fail": "Player already in %s filter",
+  "tfcgenviewer.commands.remove.success": "Removed %s from %s filter",
+  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter"
 }

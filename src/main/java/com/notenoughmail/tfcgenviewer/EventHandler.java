@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer;
 
-import com.notenoughmail.tfcgenviewer.config.*;
+import com.notenoughmail.tfcgenviewer.config.KeyMappings;
+import com.notenoughmail.tfcgenviewer.config.color.*;
 import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
 import com.notenoughmail.tfcgenviewer.network.packets.ViewerRequestPacket;
 import net.minecraft.client.Minecraft;

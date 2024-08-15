@@ -8,7 +8,7 @@ public class Config {
 
     public static ForgeConfigSpec.IntValue defaultPreviewSize;
 
-    public static ForgeConfigSpec.BooleanValue useThrobber;
+    public static ForgeConfigSpec.BooleanValue useThrobber, dingWhenGenerated;
 
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -30,5 +30,11 @@ public class Config {
                 " If the preview should change to a loading icon when a preview is being generated",
                 ""
         ).define("loadingIcon", true);
+
+        dingWhenGenerated = builder.comment(
+                "",
+                "If a sound should be played when a preview finishes generating",
+                ""
+        ).define("dingWhenGenerated", true);
     }
 }

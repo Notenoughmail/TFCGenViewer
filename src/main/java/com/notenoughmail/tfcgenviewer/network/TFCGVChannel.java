@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public class TFCGVChannel {
 
     private static final String VERSION = ModList.get().getModFileById(TFCGenViewer.ID).versionString();
-    private static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(TFCGenViewer.identifier("network"), () -> VERSION, VERSION::equals, VERSION::equals); // TODO: Change this to accept any version, but only function when they are equal
+    private static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(TFCGenViewer.identifier("network"), () -> VERSION, VERSION::equals, VERSION::equals);
     private static final MutableInt ID = new MutableInt(0);
 
     public static void send(PacketDistributor.PacketTarget target, Object message) {

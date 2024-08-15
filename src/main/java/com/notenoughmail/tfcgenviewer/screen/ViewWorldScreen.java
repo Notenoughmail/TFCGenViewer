@@ -183,4 +183,10 @@ public class ViewWorldScreen extends Screen {
             viewPane.tick();
         }
     }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+        ImageBuilder.cancelAndClearPreviews();
+    }
 }

@@ -151,6 +151,7 @@ public class PreviewGenerationScreen extends Screen {
     public void onClose() {
         assert minecraft != null;
         minecraft.setScreen(parent);
+        ImageBuilder.cancelAndClearPreviews();
     }
 
     @Override
