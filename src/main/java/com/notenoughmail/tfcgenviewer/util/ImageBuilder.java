@@ -20,11 +20,27 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static net.minecraft.util.FastColor.ABGR32.alpha;
 
 public class ImageBuilder {
+
+    private static final AtomicInteger POOL_THREAD_COUNTER = new AtomicInteger(0);
+
+    private static final ForkJoinPool GENERATOR_THREAD_POOL = Util.make(() -> {
+        // Ensure the processBuilder is run on forge's class loader so TFC classes can be found
+        final ClassLoader classLoader = TFCGenViewer.class.getClassLoader();
+        return new ForkJoinPool(Math.max(2, Runtime.getRuntime().availableProcessors()) - 2, fjp -> {
+            final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
+            thread.setContextClassLoader(classLoader);
+            thread.setName("TFCGenViewer Generation Thread %s".formatted(POOL_THREAD_COUNTER.getAndIncrement()));
+            return thread;
+        }, null, true);
+    });
 
     public static final ResourceLocation THROBBER = TFCGenViewer.identifier("textures/gui/throbber.png");
 
@@ -167,7 +183,7 @@ public class ImageBuilder {
                     image,
                     "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())
             );
-        }).thenAccept(pr -> {
+        }, GENERATOR_THREAD_POOL).thenAccept(pr -> {
             transientImage = null;
             currentImage = pr.currentImage();
             imageName = pr.imageName();
