@@ -1,6 +1,9 @@
 package com.notenoughmail.tfcgenviewer;
 
-import com.notenoughmail.tfcgenviewer.config.*;
+import com.notenoughmail.tfcgenviewer.config.KeyMappings;
+import com.notenoughmail.tfcgenviewer.config.color.*;
+import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
+import com.notenoughmail.tfcgenviewer.network.packets.ViewerRequestPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -9,23 +12,31 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.locating.IModFile;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.resource.PathPackResources;
 
 import java.util.Map;
 
-public class EventHandler {
+public class /*Client*/EventHandler {
 
     public static void init() {
         final IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(EventHandler::reloadAssets);
         modBus.addListener(EventHandler::addPackFinders);
+        modBus.addListener(EventHandler::registerKeyMappings);
+
+        final IEventBus bus = MinecraftForge.EVENT_BUS;
+        bus.addListener(EventHandler::onKeyInput);
     }
 
     private static void reloadAssets(ModelEvent.RegisterAdditional e) {
@@ -42,7 +53,7 @@ public class EventHandler {
         final Map<ResourceLocation, Resource> rockTypes = rm.listResources("tfcgenviewer/rock_types", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
         rockTypes.forEach(RockTypeColors::assignGradient);
 
-        final Map<ResourceLocation, Resource> inlandHeights = rm.listResources("tfcgenviewer/inland_height", rl -> rl.getNamespace().endsWith(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
+        final Map<ResourceLocation, Resource> inlandHeights = rm.listResources("tfcgenviewer/inland_height", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
         inlandHeights.forEach(InlandHeightColors::assign);
 
         final Map<ResourceLocation, Resource> rivers = rm.listResources("tfcgenviewer/rivers_and_mountains", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
@@ -75,6 +86,16 @@ public class EventHandler {
                     }
                 });
             }
+        }
+    }
+
+    private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
+        event.register(KeyMappings.OPEN_VIEWER);
+    }
+
+    private static void onKeyInput(InputEvent.Key event) {
+        if (KeyMappings.OPEN_VIEWER.isDown()) {
+            TFCGVChannel.send(PacketDistributor.SERVER.noArg(), ViewerRequestPacket.INSTANCE);
         }
     }
 }

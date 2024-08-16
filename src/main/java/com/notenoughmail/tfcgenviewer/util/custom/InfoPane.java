@@ -68,7 +68,7 @@ public class InfoPane extends AbstractScrollWidget {
 
     @Override
     protected void renderBorder(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight) {
-        pGuiGraphics.fill(pX + 1, pY + 1, pX + pWidth - 1, pY + pHeight - 1, -16777216);
+        pGuiGraphics.fill(pX + 1, pY + 1, pX + pWidth - 1, pY + pHeight - 1, 0x7F000000);
     }
 
     @Override

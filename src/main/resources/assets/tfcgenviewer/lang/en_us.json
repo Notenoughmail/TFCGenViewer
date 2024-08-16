@@ -1,11 +1,14 @@
 {
-  "tfcgenviewer.preview_world.title": "Preview World",
   "button.tfcgenviewer.preview_world": "Preview World",
   "button.tfcgenviewer.apply": "Apply",
   "button.tfcgenviewer.export": "Export Preview",
-  "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
+  "button.tfcgenviewer.save": "Save",
   "button.tfcgenviewer.current_seed": "Current seed: %s",
   "button.tfcgenviewer.current_seed.tooltip": "Click to copy",
+
+  "tfcgenviewer.preview_world.title": "Preview World",
+  "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
+
   "tfcgenviewer.preview_world.visualizer_type": "Visualizer",
   "tfcgenviewer.preview_world.visualizer_type.biomes": "Biomes",
   "tfcgenviewer.preview_world.visualizer_type.rainfall": "Rainfall",
@@ -20,9 +23,14 @@
   "tfcgenviewer.preview_world.z_offset": "Z Offset",
   "tfcgenviewer.preview_world.z_offset.tooltip": "The z offset, in km, of the preview's center from 0",
   "tfcgenviewer.preview_world.spawn_overlay": "Spawn Overlay",
-  "button.tfcgenviewer.save": "Save",
-  "tfcgenviewer.preview_world.preview_info": "%s regions generated\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
+
+  "tfcgenviewer.preview_world.preview_info": "Generated %s regions in %s seconds\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
+  "tfcgenviewer.preview_world.preview_info.generating": "Generating...",
   "tfcgenviewer.preview_world.color_key_template": "%s : %s",
+  "tfcgenviewer.preview_world.km": "%s km",
+  "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
+  "tfcgenviewer.preview_world.preview_pos": "(%s,%s)",
+
   "rock.tfcgenviewer.unknown": "Unknown Rock",
   "rock.tfc.andesite": "Andesite",
   "rock.tfc.basalt": "Basalt",
@@ -44,8 +52,10 @@
   "rock.tfc.schist": "Schist",
   "rock.tfc.shale": "Shale",
   "rock.tfc.slate": "Slate",
+
   "biome.tfcgenviewer.unknown": "Unknown Biome",
   "biome.tfcgenviewer.mountainous_lake": "Mountainous Lake",
+
   "tfcgenviewer.rock_type.land": "Land",
   "tfcgenviewer.rock_type.oceanic": "Oceanic",
   "tfcgenviewer.rock_type.volcanic": "Volcanic",
@@ -63,8 +73,19 @@
   "tfcgenviewer.rivers.inland_mountain": "Inland Mountain",
   "tfcgenviewer.rivers.oceanic_volcanic_mountain": "Oceanic/Volcanic Mountain",
   "tfcgenviewer.fill_ocean": "Ocean",
-  "tfcgenviewer.preview_world.km": "%s km",
-  "tfcgenviewer.preview_world.preview_scale_danger": "%s km Danger!",
-  "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
-  "tfcgenviewer.preview_world.preview_pos": "(%s,%s)"
+
+  "tfcgenviewer.key.open_viewer": "Open World Viewer",
+
+  "tfcgenviewer.message.viewing_disallowed": "You do not have permission to visualize the world!",
+  "tfcgenviewer.message.non_tfc_world": "This is not a TFC-like world! Cannot be visualized",
+
+  "tfcgenviewer.view_world.title": "View World",
+
+  "tfcgenviewer.commands.set.success": "Set %s to %s",
+  "tfcgenviewer.commands.set.fail": "\"%s\" is not a valid setting for %s",
+  "tfcgenviewer.commands.get": "%s is set to %s",
+  "tfcgenviewer.commands.add.success": "Added %s to %s filter",
+  "tfcgenviewer.commands.add.fail": "Player already in %s filter",
+  "tfcgenviewer.commands.remove.success": "Removed %s from %s filter",
+  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter"
 }

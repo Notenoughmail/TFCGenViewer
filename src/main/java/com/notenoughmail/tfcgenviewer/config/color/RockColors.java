@@ -1,13 +1,12 @@
-package com.notenoughmail.tfcgenviewer.config;
+package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import net.dries007.tfc.world.biome.BiomeExtension;
-import net.dries007.tfc.world.biome.TFCBiomes;
-import net.dries007.tfc.world.layer.TFCLayers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -17,14 +16,13 @@ import java.util.function.Supplier;
 
 import static net.minecraft.util.FastColor.ABGR32.color;
 
-public class BiomeColors {
+public class RockColors {
 
-    private static final Map<BiomeExtension, ColorDefinition> COLORS = new IdentityHashMap<>();
+    private static final Map<Block, ColorDefinition> COLORS = new IdentityHashMap<>();
     private static final List<ColorDefinition> SORTED_COLORS = new ArrayList<>();
-
     private static ColorDefinition UNKNOWN = new ColorDefinition(
-            color(255, 170, 170, 170),
-            Component.translatable("biome.tfcgenviewer.unknown"),
+            color(255, 227, 88, 255),
+            Component.translatable("rock.tfcgenviewer.unknown"),
             100
     );
 
@@ -34,25 +32,25 @@ public class BiomeColors {
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ResourceLocation id = resourcePath.withPath(p -> p.substring(20, p.length() - 5));
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "biome", UNKNOWN.color(), id.toLanguageKey("biome"));
+        final ResourceLocation id = resourcePath.withPath(p -> p.substring(19, p.length() - 5));
+        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock", UNKNOWN.color(), id.withPath(p -> p.replace('/', '.')).toLanguageKey("rock"));
         if (def != null) {
-            if (id.getNamespace().equals(TFCGenViewer.ID) && id.getPath().equals("unknown")) {
+            if (resourcePath.getNamespace().equals(TFCGenViewer.ID) && resourcePath.getPath().equals("tfcgenviewer/rocks/unknown.json")) {
                 UNKNOWN = def;
             } else {
-                final BiomeExtension ext = TFCBiomes.getById(id);
-                if (ext != null) {
-                    COLORS.put(ext, def);
+                final Block block = ForgeRegistries.BLOCKS.getValue(id);
+                if (block != null) {
+                    COLORS.put(block, def);
                     SORTED_COLORS.add(def);
                 } else {
-                    TFCGenViewer.LOGGER.warn("Unable to assign rock color to unknown biome extension: {}", id);
+                    TFCGenViewer.LOGGER.warn("Unable to assign rock color to unknown block: {}", id);
                 }
             }
         }
     }
 
-    public static int get(int biome) {
-        final ColorDefinition def = COLORS.get(TFCLayers.getFromLayerId(biome));
+    public static int get(Block raw) {
+        final ColorDefinition def = COLORS.get(raw);
         if (def != null) {
             return def.color();
         }
@@ -62,7 +60,8 @@ public class BiomeColors {
     public static Supplier<Component> colorKey() {
         return () -> {
             final MutableComponent key = Component.empty();
-            SORTED_COLORS.stream().distinct().sorted().forEach(def -> def.appendTo(key));
+            SORTED_COLORS.sort(ColorDefinition::compareTo);
+            SORTED_COLORS.forEach(def -> def.appendTo(key));
             UNKNOWN.appendTo(key, true);
             return key;
         };

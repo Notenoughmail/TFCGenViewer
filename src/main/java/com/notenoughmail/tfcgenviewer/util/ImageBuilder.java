@@ -2,24 +2,47 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.config.Colors;
+import com.notenoughmail.tfcgenviewer.config.Config;
+import com.notenoughmail.tfcgenviewer.config.color.Colors;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import static net.minecraft.util.FastColor.ABGR32.alpha;
 
 public class ImageBuilder {
+
+    private static final AtomicInteger POOL_THREAD_COUNTER = new AtomicInteger(0);
+
+    private static final ForkJoinPool GENERATOR_THREAD_POOL = Util.make(() -> {
+        // Ensure the processBuilder is run on forge's class loader so TFC classes can be found
+        final ClassLoader classLoader = TFCGenViewer.class.getClassLoader();
+        return new ForkJoinPool(Math.max(2, Runtime.getRuntime().availableProcessors()) - 2, fjp -> {
+            final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
+            thread.setContextClassLoader(classLoader);
+            thread.setName("TFCGenViewer Generation Thread %s".formatted(POOL_THREAD_COUNTER.getAndIncrement()));
+            return thread;
+        }, null, true);
+    });
+
+    public static final ResourceLocation THROBBER = TFCGenViewer.identifier("textures/gui/throbber.png");
 
     private static final ResourceLocation[] PREVIEW_LOCATIONS = Util.make(new ResourceLocation[7], array -> {
         for (int i = 0 ; i < 7 ; i++) {
@@ -27,49 +50,43 @@ public class ImageBuilder {
         }
     });
 
-    private static DynamicTexture[] PREVIEWS;
-
-    public static ResourceLocation getPreview(int scale) {
-        return PREVIEW_LOCATIONS[scale];
-    }
-
-    public static void initPreviews() {
-        if (PREVIEWS == null) {
-            PREVIEWS = Util.make(new DynamicTexture[7], array -> {
-                for (int i = 0 ; i < 7 ; i++) {
-                    final int size = previewSize(i);
-                    try {
-                        // Do not try-with-resources or #close() these
-                        DynamicTexture texture = new DynamicTexture(size, size, false);
-                        array[i] = texture;
-                        Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
-                    } catch (Exception exception) {
-                        TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
-                    }
-                }
-            });
+    private static final DynamicTexture[] PREVIEWS = Util.make(new DynamicTexture[7], array -> {
+        for (int i = 0 ; i < 7 ; i++) {
+            final int size = previewSize(i);
+            try {
+                // Do not try-with-resources or #close() these
+                DynamicTexture texture = new DynamicTexture(size, size, false);
+                array[i] = texture;
+                Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
+            } catch (Exception exception) {
+                TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
+            }
         }
-    }
+    });
 
     private static void upload(int scale, NativeImage image) {
-        for (int i = 0 ; i < 7 ; i++) {
-            // Free the previously used image from memory
-            PREVIEWS[i].setPixels(null);
-        }
+        clearPreviews();
         final DynamicTexture preview = PREVIEWS[scale];
         preview.setPixels(image);
         preview.upload();
+    }
+
+    private static void clearPreviews() {
+        for (int i = 0 ; i < 7 ; i++) {
+            // Free the previously used images from memory
+            PREVIEWS[i].setPixels(null);
+        }
     }
 
     /**
      * Gets the preview size in grids from the scale option (0-6)
      */
     public static int previewSize(int scale) {
-        return (int) Math.pow(2, scale + 5);
+        return 2 << (scale + 4); // == Math.pow(2, scale + 5)
     }
 
     public static int lineWidth(int scale) {
-        return previewSize(scale) / 512;
+        return previewSize(scale) >> 9; // == previewSize(scale) / 128
     }
 
     public static String previewSizeKm(int scale) {
@@ -77,83 +94,130 @@ public class ImageBuilder {
     }
 
 
-    private static NativeImage currentImage;
+    private static NativeImage currentImage, transientImage;
     private static String imageName;
+    private static CompletableFuture<Void> builderProcess;
 
-    public static PreviewInfo build(
+    public static void build(
             RegionChunkDataGenerator generator,
             VisualizerType visualizer,
-            int xOffsetGrids,
-            int yOffsetGrids,
+            int xCenterGrids,
+            int zCenterGrids,
             boolean drawSpawn,
             int spawnDistBlocks,
             int spawnXBlocks,
-            int spawnYBlocks,
-            int scale
+            int spawnZBlocks,
+            int scale,
+            Consumer<PreviewInfo> infoReturn
     ) {
-        final int previewSizeGrids = previewSize(scale);
+        if (Config.useThrobber.get()) {
+            infoReturn.accept(PreviewInfo.EMPTY);
+            clearPreviews();
+        }
+        if (currentImage != null) {
+            currentImage.close();
+            currentImage = null;
+        }
+        cancelRunning();
+        builderProcess = CompletableFuture.supplyAsync(() -> {
+            final long start = System.currentTimeMillis();
+            final int previewSizeGrids = previewSize(scale);
 
-        final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
-        final Set<Region> visitedRegions = new HashSet<>();
-        final int halfPreviewGrids = previewSizeGrids / 2;
-        final int xDrawOffsetGrids = -xOffsetGrids - halfPreviewGrids;
-        final int yDrawOffsetGrids = -yOffsetGrids - halfPreviewGrids;
+            final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
+            transientImage = image;
+            final Set<Region> visitedRegions = new HashSet<>();
+            final int halfPreviewGrids = previewSizeGrids >> 1;
+            final int xDrawOffsetGrids = xCenterGrids - halfPreviewGrids;
+            final int zDrawOffsetGrids = zCenterGrids - halfPreviewGrids;
 
-        for (int x = 0; x < previewSizeGrids; x++) {
-            for (int y = 0; y < previewSizeGrids; y++) {
-                // Shift the generation by the offsets and
-                // subtract half preview to center the image
-                // relative to 0,0
-                final int xPos = x + xDrawOffsetGrids;
-                final int yPos = y + yDrawOffsetGrids;
-                final Region region = generator.regionGenerator().getOrCreateRegion(xPos, yPos);
-                visitedRegions.add(region);
-                final Region.Point point = generator.regionGenerator().getOrCreateRegionPoint(xPos, yPos);
-                visualizer.draw(x, y, xPos, yPos, generator, region, point, image);
+            for (int x = 0; x < previewSizeGrids; x++) {
+                for (int y = 0; y < previewSizeGrids; y++) {
+                    // Shift the generation by the offsets and
+                    // subtract half preview to center the image
+                    // relative to 0,0
+                    final int xPos = x + xDrawOffsetGrids;
+                    final int zPos = y + zDrawOffsetGrids;
+                    final Region region = generator.regionGenerator().getOrCreateRegion(xPos, zPos);
+                    visitedRegions.add(region);
+                    final Region.Point point = generator.regionGenerator().getOrCreateRegionPoint(xPos, zPos);
+                    visualizer.draw(x, y, xPos, zPos, generator, region, point, image);
+                }
             }
+
+            if (drawSpawn) {
+                final int xSpawnCenterGrids = (spawnXBlocks / (16 * 8)) - xDrawOffsetGrids;
+                final int zSpawnCenterGrids = (spawnZBlocks / (16 * 8)) - zDrawOffsetGrids;
+                final int radiusGrids = spawnDistBlocks / (16 * 8);
+
+                final int lineWidthPixels = lineWidth(scale);
+
+                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
+
+                final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
+                hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
+                vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
+            }
+
+            final String previewKm = previewSizeKm(scale);
+            return new ProcessReturn(
+                    new PreviewInfo(
+                        Component.translatable(
+                                "tfcgenviewer.preview_world.preview_info",
+                                visitedRegions.size(),
+                                "%.1f".formatted((System.currentTimeMillis() - start) / 1000F),
+                                previewKm,
+                                previewKm,
+                                xCenterGrids * 128,
+                                zCenterGrids * 128,
+                                visualizer.getName(),
+                                visualizer.getColorKey()
+                        ),
+                        PREVIEW_LOCATIONS[scale],
+                        previewSizeGrids * 128,
+                        xDrawOffsetGrids * 128,
+                        zDrawOffsetGrids * 128
+                    ),
+                    image,
+                    "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())
+            );
+        }, GENERATOR_THREAD_POOL).thenAccept(pr -> {
+            transientImage = null;
+            currentImage = pr.currentImage();
+            imageName = pr.imageName();
+            upload(scale, currentImage);
+            infoReturn.accept(pr.previewInfo());
+            if (Config.dingWhenGenerated.get()) {
+                Minecraft
+                        .getInstance()
+                        .getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
+            }
+            builderProcess = null;
+        });
+    }
+
+    private static void cancelRunning() {
+        if (builderProcess != null) {
+            builderProcess.cancel(true);
+            builderProcess = null;
         }
-
-        if (drawSpawn) {
-            final int xCenterGrids = (spawnXBlocks / (16 * 8)) - xDrawOffsetGrids;
-            final int yCenterGrids = (spawnYBlocks / (16 * 8)) - yDrawOffsetGrids;
-            final int radiusGrids = spawnDistBlocks / (16 * 8);
-
-            final int lineWidthPixels = lineWidth(scale);
-
-            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
-            hLine(image, xCenterGrids - radiusGrids, xCenterGrids + radiusGrids, yCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
-            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids + radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
-            vLine(image, yCenterGrids - radiusGrids, yCenterGrids + radiusGrids, xCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
-
-            final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
-            hLine(image, xCenterGrids - length, xCenterGrids + length, yCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
-            vLine(image, yCenterGrids - length, yCenterGrids + length, xCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
+        if (transientImage != null) {
+            transientImage.close();
+            transientImage = null;
         }
+    }
 
-        upload(scale, image);
-
-        currentImage = image;
-        imageName = "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name());
-
-        final String previewKm = previewSizeKm(scale);
-        final int xCenterBlocks = xOffsetGrids * 128;
-        final int yCenterBlocks = yOffsetGrids * 128;
-        return new PreviewInfo(
-                Component.translatable(
-                        "tfcgenviewer.preview_world.preview_info",
-                        visitedRegions.size(),
-                        previewKm,
-                        previewKm,
-                        xCenterBlocks,
-                        yCenterBlocks,
-                        visualizer.getName(),
-                        visualizer.getColorKey()
-                ),
-                scale,
-                previewSizeGrids * 128,
-                xDrawOffsetGrids * 128,
-                yDrawOffsetGrids * 128
-        );
+    public static void cancelAndClearPreviews() {
+        if (builderProcess != null && !builderProcess.isDone()) {
+            // A very rare error can happen when a build process finishes and the previews are cleared
+            // at just the right time where the screen will attempt to display a freed image
+            // The builder already clears the previews when it finishes so this should be fine
+            clearPreviews();
+        }
+        cancelRunning();
     }
 
     public static void setPixel(NativeImage image, int x, int y, int color) {
@@ -206,4 +270,6 @@ public class ImageBuilder {
             }
         }
     }
+
+    private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName) {}
 }

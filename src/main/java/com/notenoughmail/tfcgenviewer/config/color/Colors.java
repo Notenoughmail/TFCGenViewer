@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config;
+package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

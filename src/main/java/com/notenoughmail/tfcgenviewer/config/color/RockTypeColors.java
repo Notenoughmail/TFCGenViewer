@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config;
+package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;

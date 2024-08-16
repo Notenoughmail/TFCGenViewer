@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config;
+package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import static com.notenoughmail.tfcgenviewer.config.Colors.GSON;
+import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
 public record ColorDefinition(int color, Component name, int sort) implements Comparable<ColorDefinition> {
 

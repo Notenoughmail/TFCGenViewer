@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config;
+package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.function.DoubleToIntFunction;
 
-import static com.notenoughmail.tfcgenviewer.config.Colors.GSON;
+import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
 public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {
 
