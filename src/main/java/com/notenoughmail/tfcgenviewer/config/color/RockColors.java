@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static net.minecraft.util.FastColor.ABGR32.color;
 
@@ -25,10 +25,18 @@ public class RockColors {
             Component.translatable("rock.tfcgenviewer.unknown"),
             100
     );
+    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        SORTED_COLORS.sort(ColorDefinition::compareTo);
+        SORTED_COLORS.forEach(def -> def.appendTo(key));
+        UNKNOWN.appendTo(key, true);
+        return key;
+    });
 
     public static void clear() {
         COLORS.clear();
         SORTED_COLORS.clear();
+        KEY.clearCache();
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
@@ -55,15 +63,5 @@ public class RockColors {
             return def.color();
         }
         return UNKNOWN.color();
-    }
-
-    public static Supplier<Component> colorKey() {
-        return () -> {
-            final MutableComponent key = Component.empty();
-            SORTED_COLORS.sort(ColorDefinition::compareTo);
-            SORTED_COLORS.forEach(def -> def.appendTo(key));
-            UNKNOWN.appendTo(key, true);
-            return key;
-        };
     }
 }

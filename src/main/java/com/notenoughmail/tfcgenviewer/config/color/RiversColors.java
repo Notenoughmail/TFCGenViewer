@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Supplier;
 
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
@@ -39,6 +39,16 @@ public class RiversColors {
                     Component.translatable("tfcgenviewer.rivers.inland_mountain"),
                     0
             );
+
+    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        RIVER.appendTo(key);
+        VOLCANIC_MOUNTAIN.appendTo(key);
+        INLAND_MOUNTAIN.appendTo(key);
+        LAKE.appendTo(key);
+        BiomeAltitudeColors.append(key);
+        return key;
+    });
 
     public static ColorDefinition river() {
         return RIVER;
@@ -116,17 +126,5 @@ public class RiversColors {
                     exception
             );
         }
-    }
-
-    public static Supplier<Component> colorKey() {
-        return () -> {
-            final MutableComponent key = Component.empty();
-            RIVER.appendTo(key);
-            VOLCANIC_MOUNTAIN.appendTo(key);
-            INLAND_MOUNTAIN.appendTo(key);
-            LAKE.appendTo(key);
-            BiomeAltitudeColors.append(key);
-            return key;
-        };
     }
 }

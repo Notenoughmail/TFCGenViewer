@@ -68,4 +68,5 @@ public class ColorUtil {
             color(255, 60, 120, 200),
             color(255, 40, 40, 200)
     );
+    public static final DoubleToIntFunction grayscale = linearGradient(color(255, 255, 255, 255), color(255, 0, 0, 0));
 }

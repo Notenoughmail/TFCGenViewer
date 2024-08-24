@@ -1,16 +1,18 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 
-import java.util.function.Supplier;
+import java.util.Random;
 
 public class RockTypeColors {
     private static final ColorGradientDefinition[] DEFINITIONS = new ColorGradientDefinition[4];
+    private static final Random colorVarience = new Random(System.nanoTime());
 
     static {
         DEFINITIONS[0] = new ColorGradientDefinition(
@@ -30,9 +32,18 @@ public class RockTypeColors {
                 Component.translatable("tfcgenviewer.rock_type.uplift")
         );
     }
+    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        DEFINITIONS[2].appendTo(key);
+        DEFINITIONS[0].appendTo(key);
+        DEFINITIONS[1].appendTo(key);
+        DEFINITIONS[3].appendTo(key, true);
+        return key;
+    });
 
-    public static int apply(int type, double value) {
-        return DEFINITIONS[type].gradient().applyAsInt(value);
+    public static int apply(int type, long seed) {
+        colorVarience.setSeed(seed);
+        return DEFINITIONS[type].gradient().applyAsInt(colorVarience.nextDouble());
     }
 
     public static void assignGradient(ResourceLocation resourcePath, Resource resource) {
@@ -48,16 +59,5 @@ public class RockTypeColors {
                         DEFINITIONS[3] = ColorGradientDefinition.parse(resourcePath, resource, "rock_type.uplift", ColorUtil.uplift);
             }
         }
-    }
-
-    public static Supplier<Component> colorKey() {
-        return () -> {
-            final MutableComponent key = Component.empty();
-            DEFINITIONS[2].appendTo(key);
-            DEFINITIONS[0].appendTo(key);
-            DEFINITIONS[1].appendTo(key);
-            DEFINITIONS[3].appendTo(key, true);
-            return key;
-        };
     }
 }

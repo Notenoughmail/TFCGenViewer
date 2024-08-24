@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.function.DoubleToIntFunction;
 
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
@@ -51,7 +52,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         if (json.has("gradient")) {
             gradientValue = parseGradient(json.get("gradient"), fallback, type, resourcePath);
         } else if (json.has("reference")) {
-            final DoubleToIntFunction ref = reference(json.get("reference").getAsString());
+            final DoubleToIntFunction ref = reference(json.get("reference").getAsString().toLowerCase(Locale.ROOT));
             if (ref != null) {
                 gradientValue = ref;
             } else {
@@ -134,24 +135,15 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
 
     @Nullable
     public static DoubleToIntFunction reference(String ref) {
-        if (ref.equalsIgnoreCase("blue") || ref.equalsIgnoreCase("ocean")) {
-            return ColorUtil.blue;
-        } else if (ref.equalsIgnoreCase("green") || ref.equalsIgnoreCase("land")) {
-            return ColorUtil.green;
-        } else if (
-                ref.equalsIgnoreCase("climate") ||
-                ref.equalsIgnoreCase("temp") ||
-                ref.equalsIgnoreCase("temperature") ||
-                ref.equalsIgnoreCase("rain") ||
-                ref.equalsIgnoreCase("rainfall")
-        ) {
-            return ColorUtil.climate;
-        } else if (ref.equalsIgnoreCase("volcanic") || ref.equalsIgnoreCase("volcanic_rock")) {
-            return ColorUtil.volcanic;
-        } else if (ref.equalsIgnoreCase("uplift") || ref.equalsIgnoreCase("uplift_rock")) {
-            return ColorUtil.uplift;
-        }
-        return null;
+        return switch (ref) {
+            case "blue", "ocean" -> ColorUtil.blue;
+            case "green", "land" -> ColorUtil.green;
+            case "climate", "temp", "temperature", "rain", "rainfall" -> ColorUtil.climate;
+            case "volcanic", "volcanic_rock" -> ColorUtil.volcanic;
+            case "uplift", "uplift_rock" -> ColorUtil.uplift;
+            case "gray", "grey", "grayscale", "greyscale" -> ColorUtil.grayscale;
+            default -> null;
+        };
     }
 
     public void appendTo(MutableComponent text) {

@@ -1,5 +1,6 @@
 package com.notenoughmail.tfcgenviewer.util;
 
+import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
@@ -13,19 +14,21 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static net.minecraft.util.FastColor.ABGR32.alpha;
+import static net.minecraft.util.FastColor.ABGR32.color;
 
 public class ImageBuilder {
 
@@ -37,9 +40,9 @@ public class ImageBuilder {
         return new ForkJoinPool(Math.max(2, Runtime.getRuntime().availableProcessors()) - 2, fjp -> {
             final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
             thread.setContextClassLoader(classLoader);
-            thread.setName("TFCGenViewer Generation Thread %s".formatted(POOL_THREAD_COUNTER.getAndIncrement()));
-            return thread;
-        }, null, true);
+            thread.setName("TFCGenViewer Generation Thread #%s".formatted(POOL_THREAD_COUNTER.getAndIncrement()));
+            return thread; // Kill thread after 5 seconds, else default values
+        }, null, true, 0, 0x7FFF, 1, null, 5L, TimeUnit.SECONDS);
     });
 
     public static final ResourceLocation THROBBER = TFCGenViewer.identifier("textures/gui/throbber.png");
@@ -73,8 +76,12 @@ public class ImageBuilder {
 
     private static void clearPreviews() {
         for (int i = 0 ; i < 7 ; i++) {
+            final DynamicTexture preview = PREVIEWS[i];
+            // If someone is really "lucky" the game will attempt to render an image which has been closed via this
+            // If they decide to change this config mid-generation and it explodes, that's on them tbh
+            if (!Config.useThrobber.get() && preview.getPixels() == currentImage) continue;
             // Free the previously used images from memory
-            PREVIEWS[i].setPixels(null);
+            preview.setPixels(null);
         }
     }
 
@@ -114,13 +121,14 @@ public class ImageBuilder {
             infoReturn.accept(PreviewInfo.EMPTY);
             clearPreviews();
         }
+        // TODO: How did this ever work when the throbber was turned off?
         if (currentImage != null) {
             currentImage.close();
             currentImage = null;
         }
         cancelRunning();
         builderProcess = CompletableFuture.supplyAsync(() -> {
-            final long start = System.currentTimeMillis();
+            final Stopwatch timer = Stopwatch.createStarted();
             final int previewSizeGrids = previewSize(scale);
 
             final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
@@ -130,6 +138,7 @@ public class ImageBuilder {
             final int xDrawOffsetGrids = xCenterGrids - halfPreviewGrids;
             final int zDrawOffsetGrids = zCenterGrids - halfPreviewGrids;
 
+            // TODO: [Important] Eliminate region duplication
             for (int x = 0; x < previewSizeGrids; x++) {
                 for (int y = 0; y < previewSizeGrids; y++) {
                     // Shift the generation by the offsets and
@@ -161,13 +170,35 @@ public class ImageBuilder {
                 vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
             }
 
+            if (!FMLEnvironment.production) {
+                final List<Integer> regions = new ArrayList<>();
+                int duplicatesCount = 0;
+                for (Region region : visitedRegions) {
+                    final int color = color(255, region.hashCode());
+                    final int regionNum = region.minX() + (region.minZ() * region.sizeX()); // Should be relatively unique, not that false positives are all that common
+                    if (regions.contains(regionNum)) {
+                        TFCGenViewer.LOGGER.warn("Found duplicate region at ({},{})", region.minX() << 7, region.minZ() << 7); // Convert to blocks
+                        duplicatesCount++;
+                    }
+                    regions.add(regionNum);
+
+                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, 0, color);
+                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, 0, color);
+
+                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, 0, color);
+                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, 0, color);
+                }
+                TFCGenViewer.LOGGER.info("Found {} duplicate regions, there are only {} actual regions present", duplicatesCount, visitedRegions.size() - duplicatesCount);
+            }
+
             final String previewKm = previewSizeKm(scale);
+            timer.stop();
             return new ProcessReturn(
                     new PreviewInfo(
                         Component.translatable(
                                 "tfcgenviewer.preview_world.preview_info",
                                 visitedRegions.size(),
-                                "%.1f".formatted((System.currentTimeMillis() - start) / 1000F),
+                                "%.1f".formatted(timer.elapsed(TimeUnit.MILLISECONDS) / 1000F),
                                 previewKm,
                                 previewKm,
                                 xCenterGrids * 128,
@@ -183,12 +214,25 @@ public class ImageBuilder {
                     image,
                     "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())
             );
-        }, GENERATOR_THREAD_POOL).thenAccept(pr -> {
+        }, GENERATOR_THREAD_POOL).exceptionally(thr -> {
+            if (!(thr instanceof CompletionException compExc && compExc.getCause() instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage()))) {
+                // #cancelRunning() closes the transient image, this may happen before the builderProcess is fully finished
+                // Thus, this specific case the error can be ignored, as it is known and wanted, even if a bit ugly
+                TFCGenViewer.LOGGER.error("Error encountered during generation!", thr);
+            }
+            return null;
+        }).thenAccept(pr -> {
             transientImage = null;
-            currentImage = pr.currentImage();
-            imageName = pr.imageName();
-            upload(scale, currentImage);
-            infoReturn.accept(pr.previewInfo());
+            if (pr != null) {
+                currentImage = pr.currentImage();
+                imageName = pr.imageName();
+                upload(scale, currentImage);
+                infoReturn.accept(pr.previewInfo());
+            } else {
+                currentImage = null;
+                infoReturn.accept(PreviewInfo.ERROR);
+                clearPreviews();
+            }
             if (Config.dingWhenGenerated.get()) {
                 Minecraft
                         .getInstance()
@@ -207,6 +251,10 @@ public class ImageBuilder {
         if (transientImage != null) {
             transientImage.close();
             transientImage = null;
+        }
+        if (currentImage != null) {
+            currentImage.close();;
+            currentImage = null;
         }
     }
 

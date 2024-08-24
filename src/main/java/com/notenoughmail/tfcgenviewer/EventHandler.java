@@ -40,13 +40,20 @@ public class /*Client*/EventHandler {
     }
 
     private static void reloadAssets(ModelEvent.RegisterAdditional e) {
+        RockColors.clear();
+        BiomeColors.clear();
+        RockTypeColors.KEY.clearCache();
+        InlandHeightColors.KEY.clearCache();
+        RiversColors.KEY.clearCache();
+        BiomeAltitudeColors.KEY.clearCache();
+        Colors.TEMP_KEY.clearCache();
+        Colors.RAIN_KEY.clearCache();
+
         final ResourceManager rm = Minecraft.getInstance().getResourceManager();
 
-        RockColors.clear();
         final Map<ResourceLocation, Resource> rocks = rm.listResources("tfcgenviewer/rocks", rl -> rl.getPath().endsWith(".json"));
         rocks.forEach(RockColors::assignColor);
 
-        BiomeColors.clear();
         final Map<ResourceLocation, Resource> biomes = rm.listResources("tfcgenviewer/biomes", rl -> rl.getPath().endsWith(".json"));
         biomes.forEach(BiomeColors::assignColor);
 

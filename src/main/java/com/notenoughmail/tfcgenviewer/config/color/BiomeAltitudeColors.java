@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Supplier;
 
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.FILL_OCEAN;
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
@@ -43,6 +43,12 @@ public class BiomeAltitudeColors {
                 0
         );
     }
+
+    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        append(key);
+        return key;
+    });
 
     public static void assign(ResourceLocation resourcePath, Resource resource) {
         try (InputStream stream = resource.open()) {
@@ -108,14 +114,6 @@ public class BiomeAltitudeColors {
 
     public static int color(int altitude) {
         return COLORS[altitude].color();
-    }
-
-    public static Supplier<Component> colorKey() {
-        return () -> {
-            final MutableComponent key = Component.empty();
-            append(key);
-            return key;
-        };
     }
 
     public static void append(MutableComponent key) {

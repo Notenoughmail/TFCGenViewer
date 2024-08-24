@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.biome.TFCBiomes;
 import net.dries007.tfc.world.layer.TFCLayers;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static net.minecraft.util.FastColor.ABGR32.color;
 
@@ -27,10 +27,17 @@ public class BiomeColors {
             Component.translatable("biome.tfcgenviewer.unknown"),
             100
     );
+    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        SORTED_COLORS.stream().distinct().sorted().forEach(def -> def.appendTo(key));
+        UNKNOWN.appendTo(key, true);
+        return key;
+    });
 
     public static void clear() {
         COLORS.clear();
         SORTED_COLORS.clear();
+        KEY.clearCache();
     }
 
     public static void assignColor(ResourceLocation resourcePath, Resource resource) {
@@ -57,14 +64,5 @@ public class BiomeColors {
             return def.color();
         }
         return UNKNOWN.color();
-    }
-
-    public static Supplier<Component> colorKey() {
-        return () -> {
-            final MutableComponent key = Component.empty();
-            SORTED_COLORS.stream().distinct().sorted().forEach(def -> def.appendTo(key));
-            UNKNOWN.appendTo(key, true);
-            return key;
-        };
     }
 }

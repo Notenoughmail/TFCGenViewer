@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.network.chat.Component;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Supplier;
 
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
@@ -40,6 +40,14 @@ public class InlandHeightColors {
                     Component.translatable("tfcgenviewer.inland_height.very_deep_water"),
                     0
             );
+    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        HEIGHT.appendTo(key);
+        SHALLOW_WATER.appendTo(key);
+        DEEP_WATER.appendTo(key);
+        VERY_DEEP_WATER.appendTo(key);
+        return key;
+    });
 
     public static void assign(ResourceLocation resourcePath, Resource resource) {
         try (InputStream stream = resource.open()) {
@@ -115,16 +123,5 @@ public class InlandHeightColors {
                         point.baseOceanDepth < 8 ?
                                 DEEP_WATER.color() :
                                 VERY_DEEP_WATER.color();
-    }
-
-    public static Supplier<Component> colorKey() {
-        return () -> {
-            final MutableComponent key = Component.empty();
-            HEIGHT.appendTo(key);
-            SHALLOW_WATER.appendTo(key);
-            DEEP_WATER.appendTo(key);
-            VERY_DEEP_WATER.appendTo(key);
-            return key;
-        };
     }
 }

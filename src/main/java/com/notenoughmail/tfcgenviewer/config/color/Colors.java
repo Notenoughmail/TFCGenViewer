@@ -3,10 +3,12 @@ package com.notenoughmail.tfcgenviewer.config.color;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 
@@ -14,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+
+import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
 public class Colors {
 
@@ -45,6 +49,20 @@ public class Colors {
                     0
             );
 
+    public static final CacheableSupplier<Component>
+            TEMP_KEY = new CacheableSupplier<>(() -> {
+                final MutableComponent key = Component.empty();
+                temperature().appendTo(key);
+                fillOcean().appendTo(key, true);
+                return key;
+            }),
+            RAIN_KEY = new CacheableSupplier<>(() -> {
+                final MutableComponent key = Component.empty();
+                rainfall().appendTo(key);
+                fillOcean().appendTo(key, true);
+                return key;
+            });
+
     public static ColorGradientDefinition rainfall() {
         return RAINFALL;
     }
@@ -65,7 +83,10 @@ public class Colors {
         return SPAWN_RETICULE;
     }
 
-    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> ImageBuilder.setPixel(image, x, y, FILL_OCEAN.gradient().applyAsInt(region.noise() / 2));
+    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) ->
+            setPixel(image, x, y, FILL_OCEAN.gradient().applyAsInt(region.noise() / 2));
+    public static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image) ->
+            setPixel(image, x, y, ColorUtil.grayscale.applyAsInt((double) region.hashCode() / (double) Integer.MAX_VALUE));
 
     public static void assign(ResourceLocation resourcePath, Resource resource) {
         try (InputStream stream = resource.open()) {
