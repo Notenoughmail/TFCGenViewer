@@ -1,6 +1,7 @@
 {
   "button.tfcgenviewer.preview_world": "Preview World",
   "button.tfcgenviewer.apply": "Apply",
+  "button.tfcgenviewer.apply.will_not_apply": "%s will not proceed as the previous generation is finalizing",
   "button.tfcgenviewer.export": "Export Preview",
   "button.tfcgenviewer.save": "Save",
   "button.tfcgenviewer.current_seed": "Current seed: %s",

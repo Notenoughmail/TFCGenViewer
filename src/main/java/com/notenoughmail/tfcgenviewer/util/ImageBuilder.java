@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static net.minecraft.util.FastColor.ABGR32.alpha;
@@ -44,6 +45,8 @@ public class ImageBuilder {
             return thread; // Kill thread after 5 seconds, else default values
         }, null, true, 0, 0x7FFF, 1, null, 5L, TimeUnit.SECONDS);
     });
+
+    private static final AtomicReference<BuilderState> BUILDER_STATE = new AtomicReference<>(BuilderState.OFF);
 
     public static final ResourceLocation THROBBER = TFCGenViewer.identifier("textures/gui/throbber.png");
 
@@ -85,6 +88,10 @@ public class ImageBuilder {
         }
     }
 
+    public static BuilderState getState() {
+        return BUILDER_STATE.get();
+    }
+
     /**
      * Gets the preview size in grids from the scale option (0-6)
      */
@@ -105,6 +112,7 @@ public class ImageBuilder {
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
 
+    // TODO: There is a point at which point if a player is "lucky" they can click apply (while the throbber is disabled) and happen to kill a builder after it clears the previews, but before it sets the new texture, thus the game tries to render a closed texture and crashes
     public static void build(
             RegionChunkDataGenerator generator,
             VisualizerType visualizer,
@@ -117,17 +125,22 @@ public class ImageBuilder {
             int scale,
             Consumer<PreviewInfo> infoReturn
     ) {
+        if (BUILDER_STATE.get() == BuilderState.FINALIZE) {
+            TFCGenViewer.LOGGER.warn("Apply was called while a previous builder was finalizing. In very special cases this can cause a crash, thus the previous builder will continue and the request for a new builder will be discarded");
+            return;
+        }
+        BUILDER_STATE.set(BuilderState.SETUP);
         if (Config.useThrobber.get()) {
             infoReturn.accept(PreviewInfo.EMPTY);
             clearPreviews();
         }
-        // TODO: How did this ever work when the throbber was turned off?
         if (currentImage != null) {
             currentImage.close();
             currentImage = null;
         }
         cancelRunning();
         builderProcess = CompletableFuture.supplyAsync(() -> {
+            BUILDER_STATE.set(BuilderState.RUNNING);
             final Stopwatch timer = Stopwatch.createStarted();
             final int previewSizeGrids = previewSize(scale);
 
@@ -138,18 +151,31 @@ public class ImageBuilder {
             final int xDrawOffsetGrids = xCenterGrids - halfPreviewGrids;
             final int zDrawOffsetGrids = zCenterGrids - halfPreviewGrids;
 
-            // TODO: [Important] Eliminate region duplication
+            final Region[] cache = new Region[previewSizeGrids * previewSizeGrids];
+
             for (int x = 0; x < previewSizeGrids; x++) {
+                TFCGenViewer.LOGGER.info("Generating column {} of {}", x, previewSizeGrids);
                 for (int y = 0; y < previewSizeGrids; y++) {
                     // Shift the generation by the offsets and
                     // subtract half preview to center the image
                     // relative to 0,0
                     final int xPos = x + xDrawOffsetGrids;
                     final int zPos = y + zDrawOffsetGrids;
-                    final Region region = generator.regionGenerator().getOrCreateRegion(xPos, zPos);
-                    visitedRegions.add(region);
-                    final Region.Point point = generator.regionGenerator().getOrCreateRegionPoint(xPos, zPos);
-                    visualizer.draw(x, y, xPos, zPos, generator, region, point, image);
+                    final int cachePos = x * previewSizeGrids + y;
+                    if (cache[cachePos] == null) {
+                        final Region region = generator.regionGenerator().getOrCreateRegion(xPos, zPos);
+                        addRegionToCache(cache, region, xDrawOffsetGrids, zDrawOffsetGrids, previewSizeGrids);
+                        visitedRegions.add(region);
+                    }
+                    visualizer.draw(
+                            x, y,
+                            xPos,
+                            zPos,
+                            generator,
+                            cache[cachePos],
+                            cache[cachePos].requireAt(xPos, zPos),
+                            image
+                    );
                 }
             }
 
@@ -171,16 +197,8 @@ public class ImageBuilder {
             }
 
             if (!FMLEnvironment.production) {
-                final List<Integer> regions = new ArrayList<>();
-                int duplicatesCount = 0;
                 for (Region region : visitedRegions) {
                     final int color = color(255, region.hashCode());
-                    final int regionNum = region.minX() + (region.minZ() * region.sizeX()); // Should be relatively unique, not that false positives are all that common
-                    if (regions.contains(regionNum)) {
-                        TFCGenViewer.LOGGER.warn("Found duplicate region at ({},{})", region.minX() << 7, region.minZ() << 7); // Convert to blocks
-                        duplicatesCount++;
-                    }
-                    regions.add(regionNum);
 
                     hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, 0, color);
                     hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, 0, color);
@@ -188,7 +206,6 @@ public class ImageBuilder {
                     vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, 0, color);
                     vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, 0, color);
                 }
-                TFCGenViewer.LOGGER.info("Found {} duplicate regions, there are only {} actual regions present", duplicatesCount, visitedRegions.size() - duplicatesCount);
             }
 
             final String previewKm = previewSizeKm(scale);
@@ -222,6 +239,7 @@ public class ImageBuilder {
             }
             return null;
         }).thenAccept(pr -> {
+            BUILDER_STATE.set(BuilderState.FINALIZE);
             transientImage = null;
             if (pr != null) {
                 currentImage = pr.currentImage();
@@ -240,7 +258,22 @@ public class ImageBuilder {
                         .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
             }
             builderProcess = null;
+            BUILDER_STATE.set(BuilderState.OFF);
         });
+    }
+
+    private static void addRegionToCache(Region[] cache, Region region, int xOffset, int zOffset, int size) {
+        for (int x = region.minX() ; x <= region.maxX() ; x++) {
+            final int xImagePos = x - xOffset;
+            if (xImagePos >= 0 && xImagePos < size) {
+                for (int z = region.minZ() ; z <= region.maxZ() ; z++) {
+                    final int zImagePos = z - zOffset;
+                    if (zImagePos >= 0 && zImagePos < size && region.at(x, z) != null) {
+                        cache[xImagePos * size + zImagePos] = region;
+                    }
+                }
+            }
+        }
     }
 
     private static void cancelRunning() {
@@ -253,7 +286,7 @@ public class ImageBuilder {
             transientImage = null;
         }
         if (currentImage != null) {
-            currentImage.close();;
+            currentImage.close();
             currentImage = null;
         }
     }
@@ -320,4 +353,11 @@ public class ImageBuilder {
     }
 
     private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName) {}
+
+    public enum BuilderState {
+        OFF,
+        SETUP,
+        RUNNING,
+        FINALIZE
+    }
 }
