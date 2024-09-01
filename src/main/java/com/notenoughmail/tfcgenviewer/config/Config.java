@@ -8,7 +8,7 @@ public class Config {
 
     public static ForgeConfigSpec.IntValue defaultPreviewSize;
 
-    public static ForgeConfigSpec.BooleanValue useThrobber, dingWhenGenerated;
+    public static ForgeConfigSpec.BooleanValue useThrobber, dingWhenGenerated, generationProgress, cancelPreviewOnError;
 
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -33,8 +33,20 @@ public class Config {
 
         dingWhenGenerated = builder.comment(
                 "",
-                "If a sound should be played when a preview finishes generating",
+                " If a sound should be played when a preview finishes generating",
                 ""
         ).define("dingWhenGenerated", true);
+
+        generationProgress = builder.comment(
+                "",
+                " If the info pane should show a prgress bar while a preview is being generated",
+                ""
+        ).define("generationProgress", true);
+
+        cancelPreviewOnError = builder.comment(
+                "",
+                " If errors encountered during preview generation should cancel further generation or simply only be logged",
+                ""
+        ).define("cancelPreviewOnError", true);
     }
 }

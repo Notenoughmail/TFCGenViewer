@@ -5,6 +5,8 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.config.color.Colors;
+import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
+import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
@@ -19,9 +21,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,8 +47,6 @@ public class ImageBuilder {
     });
 
     private static final AtomicReference<BuilderState> BUILDER_STATE = new AtomicReference<>(BuilderState.OFF);
-
-    public static final ResourceLocation THROBBER = TFCGenViewer.identifier("textures/gui/throbber.png");
 
     private static final ResourceLocation[] PREVIEW_LOCATIONS = Util.make(new ResourceLocation[7], array -> {
         for (int i = 0 ; i < 7 ; i++) {
@@ -123,7 +121,9 @@ public class ImageBuilder {
             int spawnXBlocks,
             int spawnZBlocks,
             int scale,
-            Consumer<PreviewInfo> infoReturn
+            Consumer<PreviewInfo> infoReturn,
+            Consumer<Integer> progressReturn,
+            long seed // For error reports
     ) {
         if (BUILDER_STATE.get() == BuilderState.FINALIZE) {
             TFCGenViewer.LOGGER.warn("Apply was called while a previous builder was finalizing. In very special cases this can cause a crash, thus the previous builder will continue and the request for a new builder will be discarded");
@@ -146,15 +146,15 @@ public class ImageBuilder {
 
             final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
             transientImage = image;
-            final Set<Region> visitedRegions = new HashSet<>();
             final int halfPreviewGrids = previewSizeGrids >> 1;
             final int xDrawOffsetGrids = xCenterGrids - halfPreviewGrids;
             final int zDrawOffsetGrids = zCenterGrids - halfPreviewGrids;
 
+            final Set<Region> visitedRegions = new HashSet<>();
             final Region[] cache = new Region[previewSizeGrids * previewSizeGrids];
 
             for (int x = 0; x < previewSizeGrids; x++) {
-                TFCGenViewer.LOGGER.info("Generating column {} of {}", x, previewSizeGrids);
+                progressReturn.accept(100 * x / previewSizeGrids);
                 for (int y = 0; y < previewSizeGrids; y++) {
                     // Shift the generation by the offsets and
                     // subtract half preview to center the image
@@ -164,20 +164,59 @@ public class ImageBuilder {
                     final int cachePos = x * previewSizeGrids + y;
                     if (cache[cachePos] == null) {
                         final Region region = generator.regionGenerator().getOrCreateRegion(xPos, zPos);
-                        addRegionToCache(cache, region, xDrawOffsetGrids, zDrawOffsetGrids, previewSizeGrids);
-                        visitedRegions.add(region);
+                        if (!visitedRegions.contains(region)) {
+                            addRegionToCache(cache, region, xDrawOffsetGrids, zDrawOffsetGrids, previewSizeGrids);
+                            visitedRegions.add(region);
+                        }
+                        // Account for a rare edge case, see: https://discord.com/channels/432522930610765835/646085141847998484/1277429511608074302
+                        if (cache[cachePos] == null && region.requireAt(xPos, zPos) != null) {
+                            cache[cachePos] = region;
+                        }
                     }
-                    visualizer.draw(
-                            x, y,
-                            xPos,
-                            zPos,
-                            generator,
-                            cache[cachePos],
-                            cache[cachePos].requireAt(xPos, zPos),
-                            image
-                    );
+                    try {
+                        visualizer.draw(
+                                x, y,
+                                xPos,
+                                zPos,
+                                generator,
+                                cache[cachePos],
+                                cache[cachePos].requireAt(xPos, zPos),
+                                image
+                        );
+                    } catch (Throwable error) {
+                        if (error instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage())) {
+                            throw error; // This specific error is known and harmless (in this case) and can be ignored
+                        } else if (Config.cancelPreviewOnError.get()) {
+                            Helpers.throwAsUnchecked(new GeneratorPreviewException(
+                                    GeneratorPreviewException.buildMessage(
+                                            seed,
+                                            visualizer,
+                                            scale,
+                                            xCenterGrids,
+                                            zCenterGrids,
+                                            generator,
+                                            xPos,
+                                            zPos
+                                    ),
+                                    error
+                            ));
+                        } else {
+                            TFCGenViewer.LOGGER.warn("Encountered error while generating preview info pixel {},{}:\n{}{}", x, y, GeneratorPreviewException.buildMessage(
+                                    seed,
+                                    visualizer,
+                                    scale,
+                                    xCenterGrids,
+                                    zCenterGrids,
+                                    generator,
+                                    xPos,
+                                    zPos
+                            ), error.getMessage());
+                        }
+                    }
                 }
             }
+
+            progressReturn.accept(100);
 
             if (drawSpawn) {
                 final int xSpawnCenterGrids = (spawnXBlocks / (16 * 8)) - xDrawOffsetGrids;
@@ -192,11 +231,11 @@ public class ImageBuilder {
                 vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, lineWidthPixels, Colors.spawnBorder().color());
 
                 final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
-                hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
-                vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, lineWidthPixels, Colors.getSpawnReticule().color());
+                hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, lineWidthPixels, Colors.spawnReticule().color());
+                vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, lineWidthPixels, Colors.spawnReticule().color());
             }
 
-            if (!FMLEnvironment.production) {
+            if (!FMLEnvironment.production && false) {
                 for (Region region : visitedRegions) {
                     final int color = color(255, region.hashCode());
 
@@ -258,6 +297,7 @@ public class ImageBuilder {
                         .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
             }
             builderProcess = null;
+            progressReturn.accept(-1);
             BUILDER_STATE.set(BuilderState.OFF);
         });
     }

@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -79,7 +78,7 @@ public class Colors {
         return SPAWN_BORDER;
     }
 
-    public static ColorDefinition getSpawnReticule() {
+    public static ColorDefinition spawnReticule() {
         return SPAWN_RETICULE;
     }
 
