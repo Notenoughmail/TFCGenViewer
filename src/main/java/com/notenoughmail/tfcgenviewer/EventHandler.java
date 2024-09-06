@@ -1,19 +1,17 @@
 package com.notenoughmail.tfcgenviewer;
 
 import com.notenoughmail.tfcgenviewer.config.KeyMappings;
-import com.notenoughmail.tfcgenviewer.config.color.*;
+import com.notenoughmail.tfcgenviewer.config.color.BiomeColors;
+import com.notenoughmail.tfcgenviewer.config.color.Colors;
+import com.notenoughmail.tfcgenviewer.config.color.RockColors;
 import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
 import com.notenoughmail.tfcgenviewer.network.packets.ViewerRequestPacket;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
@@ -25,52 +23,16 @@ import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.resource.PathPackResources;
 
-import java.util.Map;
-
-public class /*Client*/EventHandler {
+public class EventHandler {
 
     public static void init() {
         final IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modBus.addListener(EventHandler::reloadAssets);
         modBus.addListener(EventHandler::addPackFinders);
         modBus.addListener(EventHandler::registerKeyMappings);
+        modBus.addListener(EventHandler::registerClientResourceReloadListeners);
 
         final IEventBus bus = MinecraftForge.EVENT_BUS;
         bus.addListener(EventHandler::onKeyInput);
-    }
-
-    private static void reloadAssets(ModelEvent.RegisterAdditional e) {
-        RockColors.clear();
-        BiomeColors.clear();
-        RockTypeColors.KEY.clearCache();
-        InlandHeightColors.KEY.clearCache();
-        RiversColors.KEY.clearCache();
-        BiomeAltitudeColors.KEY.clearCache();
-        Colors.TEMP_KEY.clearCache();
-        Colors.RAIN_KEY.clearCache();
-
-        final ResourceManager rm = Minecraft.getInstance().getResourceManager();
-
-        final Map<ResourceLocation, Resource> rocks = rm.listResources("tfcgenviewer/rocks", rl -> rl.getPath().endsWith(".json"));
-        rocks.forEach(RockColors::assignColor);
-
-        final Map<ResourceLocation, Resource> biomes = rm.listResources("tfcgenviewer/biomes", rl -> rl.getPath().endsWith(".json"));
-        biomes.forEach(BiomeColors::assignColor);
-
-        final Map<ResourceLocation, Resource> rockTypes = rm.listResources("tfcgenviewer/rock_types", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
-        rockTypes.forEach(RockTypeColors::assignGradient);
-
-        final Map<ResourceLocation, Resource> inlandHeights = rm.listResources("tfcgenviewer/inland_height", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
-        inlandHeights.forEach(InlandHeightColors::assign);
-
-        final Map<ResourceLocation, Resource> rivers = rm.listResources("tfcgenviewer/rivers_and_mountains", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
-        rivers.forEach(RiversColors::assign);
-
-        final Map<ResourceLocation, Resource> biomeAltitude = rm.listResources("tfcgenviewer/biome_altitude", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
-        biomeAltitude.forEach(BiomeAltitudeColors::assign);
-
-        final Map<ResourceLocation, Resource> misc = rm.listResources("tfcgenviewer/colors", rl -> rl.getNamespace().equals(TFCGenViewer.ID) && rl.getPath().endsWith(".json"));
-        misc.forEach(Colors::assign);
     }
 
     private static void addPackFinders(AddPackFindersEvent event) {
@@ -104,5 +66,16 @@ public class /*Client*/EventHandler {
         if (KeyMappings.OPEN_VIEWER.isDown()) {
             TFCGVChannel.send(PacketDistributor.SERVER.noArg(), ViewerRequestPacket.INSTANCE);
         }
+    }
+
+    private static void registerClientResourceReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(BiomeColors.Biomes);
+        event.registerReloadListener(RockColors.Rocks);
+        event.registerReloadListener(Colors.Colors);
+        event.registerReloadListener(Colors.RockTypes);
+        event.registerReloadListener(Colors.Spawn);
+        event.registerReloadListener(Colors.BiomeAltitudes);
+        event.registerReloadListener(Colors.Rivers);
+        event.registerReloadListener(Colors.InlandHeight);
     }
 }

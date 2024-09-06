@@ -1,67 +1,75 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
-import static net.minecraft.util.FastColor.ABGR32.color;
+public class RockColors extends SimpleJsonResourceReloadListener {
 
-public class RockColors {
+    public static final RockColors Rocks = new RockColors();
 
-    private static final Map<Block, ColorDefinition> COLORS = new IdentityHashMap<>();
-    private static final List<ColorDefinition> SORTED_COLORS = new ArrayList<>();
-    private static ColorDefinition UNKNOWN = new ColorDefinition(
-            color(255, 227, 88, 255),
+    private Map<Block, ColorDefinition> colorDefinitions = new IdentityHashMap<>();
+    private ColorDefinition unknown = new ColorDefinition(
+            0xFFE358FF,
             Component.translatable("rock.tfcgenviewer.unknown"),
             100
     );
-    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+    private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
         final MutableComponent key = Component.empty();
-        SORTED_COLORS.sort(ColorDefinition::compareTo);
-        SORTED_COLORS.forEach(def -> def.appendTo(key));
-        UNKNOWN.appendTo(key, true);
+        colorDefinitions.values().stream().distinct().sorted().forEach(def -> def.appendTo(key));
+        unknown.appendTo(key, true);
         return key;
     });
 
-    public static void clear() {
-        COLORS.clear();
-        SORTED_COLORS.clear();
-        KEY.clearCache();
+    private RockColors() {
+        super(Colors.GSON, "tfcgenviewer/rocks");
     }
 
-    public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ResourceLocation id = resourcePath.withPath(p -> p.substring(19, p.length() - 5));
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "rock", UNKNOWN.color(), id.withPath(p -> p.replace('/', '.')).toLanguageKey("rock"));
-        if (def != null) {
-            if (resourcePath.getNamespace().equals(TFCGenViewer.ID) && resourcePath.getPath().equals("tfcgenviewer/rocks/unknown.json")) {
-                UNKNOWN = def;
-            } else {
-                final Block block = ForgeRegistries.BLOCKS.getValue(id);
-                if (block != null) {
-                    COLORS.put(block, def);
-                    SORTED_COLORS.add(def);
+    public CacheableSupplier<Component> key() {
+        return key;
+    }
+
+    public int color(Block raw) {
+        final ColorDefinition def = colorDefinitions.get(raw);
+        return def == null ? unknown.color() : def.color();
+    }
+
+    @Override
+    protected void apply(Map<ResourceLocation, JsonElement> colors, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        colorDefinitions = new IdentityHashMap<>(colors.size() - 1); // Account for unknown rock not being in map
+        colors.forEach((id, json) -> {
+            if (json.isJsonObject()) {
+                final JsonObject obj = json.getAsJsonObject();
+                if (id.equals(Colors.UNKNOWN)) {
+                    unknown = ColorDefinition.parse(obj, unknown.color(), "rocks", id, "rock.tfcgenviewer.unknown");
                 } else {
-                    TFCGenViewer.LOGGER.warn("Unable to assign rock color to unknown block: {}", id);
+                    if (obj.has("disabled") && obj.get("disabled").isJsonPrimitive() && obj.getAsJsonPrimitive("disabled").getAsBoolean()) return;
+                    final Block raw = ForgeRegistries.BLOCKS.getValue(id);
+                    if (raw != null) {
+                        colorDefinitions.put(
+                                raw,
+                                ColorDefinition.parse(obj, unknown.color(), "rocks", id, raw.getDescriptionId())
+                        );
+                    } else {
+                        TFCGenViewer.LOGGER.warn("Unknown block \"{}\", skipping", id);
+                    }
                 }
+            } else {
+                TFCGenViewer.LOGGER.warn("Rock color \"{}\" was not a json object, skipping", id);
             }
-        }
-    }
-
-    public static int get(Block raw) {
-        final ColorDefinition def = COLORS.get(raw);
-        if (def != null) {
-            return def.color();
-        }
-        return UNKNOWN.color();
+        });
+        key.clearCache();
     }
 }

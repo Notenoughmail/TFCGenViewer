@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
+import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -21,30 +22,9 @@ import java.util.function.DoubleToIntFunction;
 
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
-public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {
+public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name) implements IWillAppendTo {
 
     private static final double[] keyValues = new double[] { 0, 0.2, 0.4, 0.6, 0.8, 0.999 };
-
-    @Nullable
-    public static ColorGradientDefinition parse(ResourceLocation resourcePath, Resource resource, String type, @Nullable DoubleToIntFunction fallback) {
-        try (InputStream stream = resource.open()) {
-            return parse(
-                    GSON.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class),
-                    resourcePath,
-                    type,
-                    fallback
-            );
-        } catch (IOException exception) {
-            TFCGenViewer.LOGGER.warn(
-                    "Unable to open {} color gradient resource at {}. Error:\n{}",
-                    type,
-                    resourcePath,
-                    exception
-            );
-        }
-        TFCGenViewer.LOGGER.warn("Unable to parse color gradient definition for {} at {}", type, resourcePath);
-        return null;
-    }
 
     @Nullable
     public static ColorGradientDefinition parse(JsonObject json, ResourceLocation resourcePath, String type, @Nullable DoubleToIntFunction fallback) {
@@ -144,10 +124,6 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
             case "gray", "grey", "grayscale", "greyscale" -> ColorUtil.grayscale;
             default -> null;
         };
-    }
-
-    public void appendTo(MutableComponent text) {
-        appendTo(text, false);
     }
 
     public void appendTo(MutableComponent text, boolean end) {

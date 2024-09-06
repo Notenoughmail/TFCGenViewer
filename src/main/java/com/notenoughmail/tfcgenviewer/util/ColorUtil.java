@@ -1,11 +1,17 @@
 package com.notenoughmail.tfcgenviewer.util;
 
+import com.notenoughmail.tfcgenviewer.config.color.ColorDefinition;
+import com.notenoughmail.tfcgenviewer.config.color.ColorGradientDefinition;
+import com.notenoughmail.tfcgenviewer.config.color.Colors;
+import net.dries007.tfc.world.region.Region;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
+import java.util.Random;
 import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
 
+import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 import static net.minecraft.util.FastColor.ABGR32.*;
 
 public class ColorUtil {
@@ -42,6 +48,37 @@ public class ColorUtil {
                 green(bgr),
                 blue(bgr)
         );
+    }
+
+    private static final Random RESETTING_RANDOM = new Random(System.nanoTime());
+    public static double nextWithSeed(long seed) {
+        RESETTING_RANDOM.setSeed(seed);
+        return RESETTING_RANDOM.nextDouble();
+    }
+
+    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) ->
+            setPixel(image, x, y, Colors.Colors.get(0).gradient().applyAsInt(region.noise() / 2));
+    static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image) ->
+            setPixel(image, x, y, ColorUtil.grayscale.applyAsInt((double) region.hashCode() / (double) Integer.MAX_VALUE));
+
+    static int inlandHeight(Region.Point point) {
+        final Colors<IWillAppendTo> colors = Colors.InlandHeight;
+        if (point.land()) {
+            return ((ColorGradientDefinition) colors.get(0)).gradient().applyAsInt(point.baseLandHeight / 24F);
+        }
+
+        // Deal with it
+        return ((ColorDefinition) colors.get(
+                point.shore() ?
+                point.river() ?
+                        1 :
+                        2 :
+                point.baseOceanDepth < 4 ?
+                        1 :
+                        point.baseOceanDepth < 8 ?
+                                2 :
+                                3
+        )).color();
     }
 
     // Default colors

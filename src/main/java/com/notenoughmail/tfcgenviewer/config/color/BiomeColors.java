@@ -1,68 +1,78 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.biome.TFCBiomes;
 import net.dries007.tfc.world.layer.TFCLayers;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
-import static net.minecraft.util.FastColor.ABGR32.color;
+public class BiomeColors extends SimpleJsonResourceReloadListener {
 
-public class BiomeColors {
+    public static final BiomeColors Biomes = new BiomeColors();
 
-    private static final Map<BiomeExtension, ColorDefinition> COLORS = new IdentityHashMap<>();
-    private static final List<ColorDefinition> SORTED_COLORS = new ArrayList<>();
+    private Map<BiomeExtension, ColorDefinition> colorDefinitions = new IdentityHashMap<>();
 
-    private static ColorDefinition UNKNOWN = new ColorDefinition(
-            color(255, 170, 170, 170),
+    private ColorDefinition unknown = new ColorDefinition(
+            0xFFAAAAAA,
             Component.translatable("biome.tfcgenviewer.unknown"),
             100
     );
-    public static final CacheableSupplier<Component> KEY = new CacheableSupplier<>(() -> {
+    private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
         final MutableComponent key = Component.empty();
-        SORTED_COLORS.stream().distinct().sorted().forEach(def -> def.appendTo(key));
-        UNKNOWN.appendTo(key, true);
+        colorDefinitions.values().stream().distinct().sorted().forEach(def -> def.appendTo(key));
+        unknown.appendTo(key, true);
         return key;
     });
 
-    public static void clear() {
-        COLORS.clear();
-        SORTED_COLORS.clear();
-        KEY.clearCache();
+    private BiomeColors() {
+        super(Colors.GSON, "tfcgenviewer/biomes");
     }
 
-    public static void assignColor(ResourceLocation resourcePath, Resource resource) {
-        final ResourceLocation id = resourcePath.withPath(p -> p.substring(20, p.length() - 5));
-        final ColorDefinition def = ColorDefinition.parse(resourcePath, resource, "biome", UNKNOWN.color(), id.toLanguageKey("biome"));
-        if (def != null) {
-            if (id.getNamespace().equals(TFCGenViewer.ID) && id.getPath().equals("unknown")) {
-                UNKNOWN = def;
-            } else {
-                final BiomeExtension ext = TFCBiomes.getById(id);
-                if (ext != null) {
-                    COLORS.put(ext, def);
-                    SORTED_COLORS.add(def);
+    public CacheableSupplier<Component> key() {
+        return key;
+    }
+
+    public int color(int biome) {
+        final ColorDefinition def = colorDefinitions.get(TFCLayers.getFromLayerId(biome));
+        return def == null ? unknown.color() : def.color();
+    }
+
+    @Override
+    protected void apply(Map<ResourceLocation, JsonElement> colors, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        colorDefinitions = new IdentityHashMap<>(colors.size() - 1); // Account for unknown biome not being in map
+        colors.forEach((id, json) -> {
+            if (json.isJsonObject()) {
+                final JsonObject obj = json.getAsJsonObject();
+                if (id.equals(Colors.UNKNOWN)) {
+                    unknown = ColorDefinition.parse(obj, unknown.color(), "biomes", id, "biome.tfcgenviewer.unknown");
                 } else {
-                    TFCGenViewer.LOGGER.warn("Unable to assign rock color to unknown biome extension: {}", id);
+                    if (obj.has("disabled") && obj.get("disabled").isJsonPrimitive() && obj.getAsJsonPrimitive("disabled").getAsBoolean()) return;
+                    final BiomeExtension biome = TFCBiomes.getById(id);
+                    if (biome != null) {
+                        colorDefinitions.put(
+                                biome,
+                                ColorDefinition.parse(obj, unknown.color(), "biomes", id, Util.makeDescriptionId("biome", id))
+                        );
+                    } else {
+                        TFCGenViewer.LOGGER.warn("Unknown biome \"{}\", skipping", id);
+                    }
                 }
+            } else {
+                TFCGenViewer.LOGGER.warn("Biome color \"{}\" was not a json object, skipping", id);
             }
-        }
-    }
-
-    public static int get(int biome) {
-        final ColorDefinition def = COLORS.get(TFCLayers.getFromLayerId(biome));
-        if (def != null) {
-            return def.color();
-        }
-        return UNKNOWN.color();
+        });
+        key.clearCache();
     }
 }
