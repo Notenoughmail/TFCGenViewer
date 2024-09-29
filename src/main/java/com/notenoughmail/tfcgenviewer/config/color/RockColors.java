@@ -17,7 +17,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-// TODO: Find a nice way to make this a DataManager
+// TODO: Find a nice way to make this a DataManager (or a datamap like thing in 1.21?)
 public class RockColors extends SimpleJsonResourceReloadListener {
 
     public static final RockColors Rocks = new RockColors();
@@ -44,8 +44,7 @@ public class RockColors extends SimpleJsonResourceReloadListener {
     }
 
     public int color(Block raw) {
-        final ColorDefinition def = colorDefinitions.get(raw);
-        return def == null ? unknown.color() : def.color();
+        return colorDefinitions.getOrDefault(raw, unknown).color();
     }
 
     @Override
@@ -60,7 +59,7 @@ public class RockColors extends SimpleJsonResourceReloadListener {
                         def = ColorDefinition.parse(obj, "rock.tfcgenviewer.unknown");
                         unknown = def;
                     } catch (Exception e) {
-                        TFCGenViewer.LOGGER.warn("TFCGenViewer Rock 'tfcgenviewer:unknown' failed to parse. {}: {}", e.getClass().getSimpleName(), e.getMessage());
+                        TFCGenViewer.LOGGER.warn("TFCGenViewer Rock 'tfcgenviewer:unknown' failed to parse. {}: {}, keeping previous value", e.getClass().getSimpleName(), e.getMessage());
                     }
                 } else {
                     if (obj.has("disabled") && obj.get("disabled").isJsonPrimitive() && obj.getAsJsonPrimitive("disabled").getAsBoolean()) return;

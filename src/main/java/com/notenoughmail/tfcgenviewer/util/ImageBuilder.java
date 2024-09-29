@@ -110,7 +110,7 @@ public class ImageBuilder {
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
 
-    // TODO: Sometimes, very rarely, the first created image will fail (?) or at least somehow break and cause a GFLW error to be printed to the console and show up completely empty | Fix that
+    // TODO: Sometimes, very rarely, the first created image will fail (?) or at least somehow break and cause a GFLW error to be printed to the console and show up completely empty | Find out how & why that ever happened the fix it
     public static void build(
             RegionChunkDataGenerator generator,
             VisualizerType visualizer,
@@ -169,23 +169,12 @@ public class ImageBuilder {
                             visitedRegions.add(region);
                         }
                         // Account for a rare edge case, see: https://discord.com/channels/432522930610765835/646085141847998484/1277429511608074302
-                        // TODO: This can explode too, 8369517796180450123 @ 262.1km
-                        // #isIn can't be trusted (for now?) and properly verifying #index would be minimally tedius
-                        try {
-                            if (cache[cachePos] == null && region.requireAt(xPos, zPos) != null) {
+                        // There are further, more insidious edge cases, for those we use FAILURE_STATE and deal with the issue case by case
+                        if (cache[cachePos] == null) {
+                            final int index = region.index(xPos, zPos);
+                            if (index >= 0 && index < region.data().length) {
                                 cache[cachePos] = region;
                             }
-                        } catch (Throwable ignored) {
-                            TFCGenViewer.LOGGER.warn("Ow x: {}, y: {}, {}", x, y, GeneratorPreviewException.buildMessage(
-                                    seed,
-                                    visualizer,
-                                    scale,
-                                    xCenterGrids,
-                                    zCenterGrids,
-                                    generator,
-                                    xPos,
-                                    zPos
-                            ));
                         }
                     }
                     try {
@@ -195,7 +184,7 @@ public class ImageBuilder {
                                 zPos,
                                 generator,
                                 cache[cachePos],
-                                cache[cachePos].requireAt(xPos, zPos),
+                                cache[cachePos] != null ? cache[cachePos].requireAt(xPos, zPos) : ColorUtil.FAILURE_STATE,
                                 image
                         );
                     } catch (Throwable error) {
@@ -218,7 +207,7 @@ public class ImageBuilder {
                                         error
                                 ));
                             } else {
-                                TFCGenViewer.LOGGER.warn("Encountered error while generating preview info pixel {},{}:\n{}{}", x, y, errorMsg, error.getMessage());
+                                TFCGenViewer.LOGGER.warn("Encountered error while generating preview info pixel %d,%d:\n%s".formatted(x, y, errorMsg), error);
                             }
                         }
                     }

@@ -5,7 +5,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Random;
 import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
@@ -17,6 +19,10 @@ import static net.minecraft.util.FastColor.ABGR32.*;
 public class ColorUtil {
 
     private static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
+
+    // A blank region for use when the region generator produces nonsense, which happens on occasion with 262km
+    // Attempting to travel to a location represented by the failure state will result in a JVM crash
+    public static final Region.Point FAILURE_STATE = new Region.Point();
 
     // Actual utils
     public static DoubleToIntFunction linearGradient(int from, int to) {
@@ -68,9 +74,9 @@ public class ColorUtil {
 
     // Drawers
     static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) ->
-            setPixel(image, x, y, FILL_OCEAN.get().gradient().applyAsInt(region.noise() / 2));
+            setPixel(image, x, y, FILL_OCEAN.get().gradient().applyAsInt(region != null ? region.noise() / 2 : 0));
     static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image) ->
-            setPixel(image, x, y, ColorUtil.grayscale.applyAsInt((double) region.hashCode() / (double) Integer.MAX_VALUE));
+            setPixel(image, x, y, ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1)));
 
     // Color getters that are not complex but also not easily (or cleanly) made single line
     static int inlandHeight(Region.Point point) {
@@ -81,14 +87,14 @@ public class ColorUtil {
         // Deal with it
         return (
                 point.shore() ?
-                point.river() ?
-                        IH_SHALLOW :
-                        IH_DEEP :
-                point.baseOceanDepth < 4 ?
-                        IH_SHALLOW :
-                        point.baseOceanDepth < 8 ?
+                        point.river() ?
+                                IH_SHALLOW :
                                 IH_DEEP :
-                                IH_VERY_DEEP
+                        point.baseOceanDepth < 4 ?
+                                IH_SHALLOW :
+                                point.baseOceanDepth < 8 ?
+                                        IH_DEEP :
+                                        IH_VERY_DEEP
         ).get().color();
     }
 
