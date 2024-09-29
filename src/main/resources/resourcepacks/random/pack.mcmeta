@@ -1,0 +1,8 @@
+{
+  "pack": {
+    "description": {
+      "text": "Randomizes all builtin colors with every resource reload"
+    },
+    "pack_format": 15
+  }
+}

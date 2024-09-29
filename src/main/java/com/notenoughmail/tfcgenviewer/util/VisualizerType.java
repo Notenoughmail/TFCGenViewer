@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
+import com.notenoughmail.tfcgenviewer.config.color.Colors;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RiverEdge;
@@ -19,57 +20,56 @@ import java.util.function.Supplier;
 import static com.notenoughmail.tfcgenviewer.config.color.BiomeColors.Biomes;
 import static com.notenoughmail.tfcgenviewer.config.color.Colors.*;
 import static com.notenoughmail.tfcgenviewer.config.color.RockColors.Rocks;
-import static com.notenoughmail.tfcgenviewer.util.ColorUtil.fillOcean;
-import static com.notenoughmail.tfcgenviewer.util.ColorUtil.inlandHeight;
+import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
 public enum VisualizerType implements IExtensibleEnum {
     BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, Biomes.color(point.biome)), Biomes.key()),
     RAINFALL(0b10000000, "rainfall", (x, y, xPos, zPos, generator, region, point, image) -> {
         if (point.land()) {
-            setPixel(image, x, y, Colors.get(1).gradient().applyAsInt(Mth.clampedMap(point.rainfall, 0F, 500F, 0, 0.999F)));
+            setPixel(image, x, y, Colors.RAINFALL.get().gradient().applyAsInt(Mth.clampedMap(point.rainfall, 0F, 500F, 0, 0.999F)));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image);
         }
-    }, Colors.key(false)),
+    }, RainKey),
     TEMPERATURE(0b10000000, "temperature", (x, y, xPos, zPos, generator, region, point, image) -> {
         if (point.land()) {
-            setPixel(image, x, y, Colors.get(2).gradient().applyAsInt(Mth.clampedMap(point.temperature, -33F, 33F, 0F, 0.999F)));
+            setPixel(image, x, y, Colors.TEMPERATURE.get().gradient().applyAsInt(Mth.clampedMap(point.temperature, -33F, 33F, 0F, 0.999F)));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image);
         }
-    }, Colors.key(true)),
+    }, TempKey),
     BIOME_ALTITUDE(0b00010000, "biome_altitude", (x, y, xPos, zPos, generator, region, point, image) -> {
         if (point.land()) {
-            setPixel(image, x, y, BiomeAltitudes.get(point.discreteBiomeAltitude()).color());
+            setPixel(image, x, y, biomeAltitude(point.discreteBiomeAltitude()));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image);
         }
-    }, BiomeAltitudes.key()),
-    INLAND_HEIGHT(0b00100000, "inland_height", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, inlandHeight(point)), InlandHeight.key()),
+    }, BiomeAltKey),
+    INLAND_HEIGHT(0b00100000, "inland_height", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, inlandHeight(point)), InlandHeightKey),
     RIVERS(0b00010000, "rivers_and_mountains", (x, y, xPos, zPos, generator, region, point, image) -> {
         if (point.land()) {
             final int color;
             if (point.mountain()) {
-                color = Rivers.get(point.baseLandHeight <= 2 ? 1 : 2).color();
+                color = (point.baseLandHeight <= 2 ? RM_OCEANIC_VOLCANIC_MOUNTAINS : RM_INLAND_MOUNTAIN).get().color();
             } else if (point.lake()) {
-                color = Rivers.get(3).color();
+                color = RM_LAKE.get().color();
             } else {
-                color = BiomeAltitudes.get(point.discreteBiomeAltitude()).color();
+                color = biomeAltitude(point.discreteBiomeAltitude());
             }
             setPixel(image, x, y, color);
             for (RiverEdge edge : generator.regionGenerator().getOrCreatePartitionPoint(xPos, zPos).rivers()) {
                 final MidpointFractal fractal = edge.fractal();
                 if (fractal.maybeIntersect(xPos, zPos, 0.1F) && fractal.intersect(xPos, zPos, 0.35F)) {
-                    setPixel(image, x, y, Rivers.get(0).color());
+                    setPixel(image, x, y, RM_RIVER.get().color());
                     return; // Stop looking for rivers, we already found one
                 }
             }
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image);
         }
-    }, Rivers.key()),
-    ROCK_TYPES(0b01000000, "rock_types", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, RockTypes.get(point.rock & 0b11).gradient().applyAsInt(ColorUtil.nextWithSeed(point.rock >> 2))), RockTypes.key()),
+    }, RiverKey),
+    ROCK_TYPES(0b01000000, "rock_types", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, rockType(point.rock)), RockTypeKey),
     ROCKS(0b01000000, "rocks", (x, y, xPos, zPos, generator, region, point, image) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 90, zPos * 128 - 64, 100, null).raw();
         setPixel(image, x, y, Rocks.color(raw));

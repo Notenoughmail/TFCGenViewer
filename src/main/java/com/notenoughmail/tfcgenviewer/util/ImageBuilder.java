@@ -234,14 +234,14 @@ public class ImageBuilder {
 
                 final int lineWidthPixels = lineWidth(scale);
 
-                int color = Colors.Spawn.get(0).color();
+                int color = Colors.SPAWN_BORDER.get().color();
 
                 hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, lineWidthPixels, color);
                 hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, lineWidthPixels, color);
                 vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids + radiusGrids, lineWidthPixels, color);
                 vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, lineWidthPixels, color);
 
-                color = Colors.Spawn.get(1).color();
+                color = Colors.SPAWN_RETICULE.get().color();
 
                 final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
                 hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, lineWidthPixels, color);

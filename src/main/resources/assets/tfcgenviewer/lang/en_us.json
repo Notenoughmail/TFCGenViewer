@@ -89,5 +89,9 @@
   "tfcgenviewer.commands.add.success": "Added %s to %s filter",
   "tfcgenviewer.commands.add.fail": "Player already in %s filter",
   "tfcgenviewer.commands.remove.success": "Removed %s from %s filter",
-  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter"
+  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter",
+
+  "tfcgenviewer.could_not_parse.color": "Error encountered while parsing '%s' color definition",
+  "tfcgenviewer.could_not_parse.gradient": "Error encountered while parsing '%s' gradient definition",
+  "tfcgenviewer.could_not_parse.biome": "Error encountered while parsing '%s' biome color definition"
 }

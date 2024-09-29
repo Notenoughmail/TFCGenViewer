@@ -1,5 +1,6 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
@@ -16,6 +17,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+// TODO: Find a nice way to make this a DataManager
 public class RockColors extends SimpleJsonResourceReloadListener {
 
     public static final RockColors Rocks = new RockColors();
@@ -34,7 +36,7 @@ public class RockColors extends SimpleJsonResourceReloadListener {
     });
 
     private RockColors() {
-        super(Colors.GSON, "tfcgenviewer/rocks");
+        super(new Gson(), "tfcgenviewer/rocks");
     }
 
     public CacheableSupplier<Component> key() {
@@ -53,15 +55,24 @@ public class RockColors extends SimpleJsonResourceReloadListener {
             if (json.isJsonObject()) {
                 final JsonObject obj = json.getAsJsonObject();
                 if (id.equals(Colors.UNKNOWN)) {
-                    unknown = ColorDefinition.parse(obj, unknown.color(), "rocks", id, "rock.tfcgenviewer.unknown");
+                    final ColorDefinition def;
+                    try {
+                        def = ColorDefinition.parse(obj, "rock.tfcgenviewer.unknown");
+                        unknown = def;
+                    } catch (Exception e) {
+                        TFCGenViewer.LOGGER.warn("TFCGenViewer Rock 'tfcgenviewer:unknown' failed to parse. {}: {}", e.getClass().getSimpleName(), e.getMessage());
+                    }
                 } else {
                     if (obj.has("disabled") && obj.get("disabled").isJsonPrimitive() && obj.getAsJsonPrimitive("disabled").getAsBoolean()) return;
                     final Block raw = ForgeRegistries.BLOCKS.getValue(id);
                     if (raw != null) {
-                        colorDefinitions.put(
-                                raw,
-                                ColorDefinition.parse(obj, unknown.color(), "rocks", id, raw.getDescriptionId())
-                        );
+                        final ColorDefinition def;
+                        try {
+                            def = ColorDefinition.parse(obj, raw.getDescriptionId());
+                            colorDefinitions.put(raw, def);
+                        } catch (Exception e) {
+                            TFCGenViewer.LOGGER.warn("TFCGenViewer Rock '{}', failed to parse. {}: {}", id, e.getClass().getSimpleName(), e.getMessage());
+                        }
                     } else {
                         TFCGenViewer.LOGGER.warn("Unknown block \"{}\", skipping", id);
                     }

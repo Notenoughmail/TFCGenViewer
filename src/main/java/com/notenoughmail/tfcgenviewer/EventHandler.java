@@ -54,6 +54,20 @@ public class EventHandler {
                         packConsumer.accept(pack);
                     }
                 });
+                event.addRepositorySource(packConsumer -> {
+                    final Pack pack = Pack.readMetaAndCreate(
+                            TFCGenViewer.identifier("random").toString(),
+                            Component.literal("Random Preview Colors"),
+                            false,
+                            id -> new PathPackResources(id, true, file.findResource("resourcepacks", "random")),
+                            PackType.CLIENT_RESOURCES,
+                            Pack.Position.TOP,
+                            PackSource.BUILT_IN
+                    );
+                    if (pack != null) {
+                        packConsumer.accept(pack);
+                    }
+                });
             }
         }
     }
@@ -71,11 +85,7 @@ public class EventHandler {
     private static void registerClientResourceReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(BiomeColors.Biomes);
         event.registerReloadListener(RockColors.Rocks);
-        event.registerReloadListener(Colors.Colors);
-        event.registerReloadListener(Colors.RockTypes);
-        event.registerReloadListener(Colors.Spawn);
-        event.registerReloadListener(Colors.BiomeAltitudes);
-        event.registerReloadListener(Colors.Rivers);
-        event.registerReloadListener(Colors.InlandHeight);
+        event.registerReloadListener(Colors.Color);
+        event.registerReloadListener(Colors.Gradient);
     }
 }

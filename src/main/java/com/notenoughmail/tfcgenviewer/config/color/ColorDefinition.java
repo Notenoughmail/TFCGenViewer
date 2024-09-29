@@ -2,86 +2,81 @@ package com.notenoughmail.tfcgenviewer.config.color;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-
-import static com.notenoughmail.tfcgenviewer.config.color.Colors.GSON;
 
 public record ColorDefinition(int color, Component name, int sort) implements Comparable<ColorDefinition>, IWillAppendTo {
 
-    public static ColorDefinition parse(JsonObject json, int fallback, String type, ResourceLocation resourcePath, String fallbackKey) {
-        resourcePath = resourcePath.withPath(s -> "tfcgenviewer/" + type + "/" + s);
-        final int colorValue;
+    public static ColorDefinition parse(JsonObject json, String fallbackKey) {
         if (json.has("color")) {
-            colorValue = parseColor(json.get("color"), fallback, type, resourcePath);
-        } else {
-            TFCGenViewer.LOGGER.warn("The {} color at {} does not have a 'color' property!", type, resourcePath);
-            colorValue = fallback;
+            return new ColorDefinition(
+                    parseColor(json.get("color")),
+                    json.has("key") ?
+                            Component.translatable(json.get("key").getAsString()) :
+                            Component.translatable(fallbackKey),
+                    json.has("sort") ? json.get("sort").getAsInt() : 100
+            );
         }
-        return new ColorDefinition(
-                colorValue,
-                json.has("key") ?
-                        Component.translatable(json.get("key").getAsString()) :
-                        Component.translatable(fallbackKey),
-                json.has("sort") ? json.get("sort").getAsInt() : 100
-        );
+        throw new JsonParseException("Color definition requires a 'color' field to be present");
     }
 
-    public static int parseColor(JsonElement color, int fallback, String type, ResourceLocation resourcePath) {
+    public static ColorDefinition parse(ResourceLocation id, JsonObject json) {
+        return parse(json, id.toLanguageKey("tfcgenviewer.color"));
+    }
+
+    private static final String[][] objColorKeys = new String[][] {
+            { "r", "g", "b" },
+            { "h", "s", "v" }
+    };
+
+    public static int parseColor(JsonElement color) {
         if (color.isJsonObject()) {
             final JsonObject value = color.getAsJsonObject();
-            if (value.has("r") && value.has("g") && value.has("b")) {
+            if (hasAll(value, objColorKeys[0])) {
                 return FastColor.ABGR32.color(
                         255,
                         value.get("b").getAsInt(),
                         value.get("g").getAsInt(),
                         value.get("r").getAsInt()
                 );
-            } else if (value.has("h") && value.has("s") && value.has("v")) {
+            } else if (hasAll(value, objColorKeys[1])) {
                 return ColorUtil.rgbToBgr(Mth.hsvToRgb(
                         value.get("h").getAsFloat(),
                         value.get("s").getAsFloat(),
                         value.get("v").getAsFloat()
                 ));
-            } else {
-                TFCGenViewer.LOGGER.warn("Unable to parse {} color value: {} at {}", type, value, resourcePath);
             }
+            throw new JsonParseException("A color of an object type should have fields of either [r, g, and b] or [h, s, and v]");
         } else if (color.isJsonPrimitive()) {
-            final JsonPrimitive primitive = color.getAsJsonPrimitive();
-            if (primitive.isNumber()) {
-                return ColorUtil.rgbToBgr(primitive.getAsInt());
-            } else if (primitive.isString()) {
-                try {
-                    return ColorUtil.rgbToBgr(Integer.parseInt(primitive.getAsString(), 16));
-                } catch (NumberFormatException exception) {
-                    TFCGenViewer.LOGGER.warn(
-                            "Unable to parse number for {} color at {}. Error:\n{}",
-                            type,
-                            resourcePath,
-                            exception
-                    );
-                }
+            final JsonPrimitive prim = color.getAsJsonPrimitive();
+            if (prim.isNumber()) {
+                return ColorUtil.rgbToBgr(prim.getAsInt());
+            } else if (prim.isString()) {
+                return ColorUtil.rgbToBgr(Integer.parseInt(prim.getAsString(), 16));
             }
-        } else {
-            TFCGenViewer.LOGGER.warn("Unable to parse {} color: {},", type, color);
+            throw new JsonParseException("Color should be an object, a string, or an integer");
+        } else if (color.isJsonNull()) {
+            return ColorUtil.randomColor();
         }
-        return fallback;
+        throw new JsonParseException("Color should be an object, a string, or an integer");
+    }
+
+    public static boolean hasAll(JsonObject value, String[] fields) {
+        for (String field : fields) {
+            if (!value.has(field)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void appendTo(MutableComponent text, boolean end) {

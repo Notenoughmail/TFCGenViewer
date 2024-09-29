@@ -1,9 +1,8 @@
 package com.notenoughmail.tfcgenviewer.util;
 
-import com.notenoughmail.tfcgenviewer.config.color.ColorDefinition;
-import com.notenoughmail.tfcgenviewer.config.color.ColorGradientDefinition;
-import com.notenoughmail.tfcgenviewer.config.color.Colors;
 import net.dries007.tfc.world.region.Region;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
@@ -11,11 +10,15 @@ import java.util.Random;
 import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
 
+import static com.notenoughmail.tfcgenviewer.config.color.Colors.*;
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 import static net.minecraft.util.FastColor.ABGR32.*;
 
 public class ColorUtil {
 
+    private static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
+
+    // Actual utils
     public static DoubleToIntFunction linearGradient(int from, int to) {
         return value -> color(
                 Mth.lerpInt((float) value, alpha(from), alpha(to)),
@@ -51,46 +54,61 @@ public class ColorUtil {
     }
 
     private static final Random RESETTING_RANDOM = new Random(System.nanoTime());
-    public static double nextWithSeed(long seed) {
+    private static double nextWithSeed(long seed) {
         RESETTING_RANDOM.setSeed(seed);
         return RESETTING_RANDOM.nextDouble();
     }
 
+    public static int randomColor() {
+        return FastColor.ABGR32.color(
+                255,
+                COLOR_GENERATOR.nextInt()
+        );
+    }
+
+    // Drawers
     static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) ->
-            setPixel(image, x, y, Colors.Colors.get(0).gradient().applyAsInt(region.noise() / 2));
+            setPixel(image, x, y, FILL_OCEAN.get().gradient().applyAsInt(region.noise() / 2));
     static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image) ->
             setPixel(image, x, y, ColorUtil.grayscale.applyAsInt((double) region.hashCode() / (double) Integer.MAX_VALUE));
 
+    // Color getters that are not complex but also not easily (or cleanly) made single line
     static int inlandHeight(Region.Point point) {
-        final Colors<IWillAppendTo> colors = Colors.InlandHeight;
         if (point.land()) {
-            return ((ColorGradientDefinition) colors.get(0)).gradient().applyAsInt(point.baseLandHeight / 24F);
+            return IH_LAND.get().gradient().applyAsInt(point.baseLandHeight / 24F);
         }
 
         // Deal with it
-        return ((ColorDefinition) colors.get(
+        return (
                 point.shore() ?
                 point.river() ?
-                        1 :
-                        2 :
+                        IH_SHALLOW :
+                        IH_DEEP :
                 point.baseOceanDepth < 4 ?
-                        1 :
+                        IH_SHALLOW :
                         point.baseOceanDepth < 8 ?
-                                2 :
-                                3
-        )).color();
+                                IH_DEEP :
+                                IH_VERY_DEEP
+        ).get().color();
     }
 
-    // Default colors
-    public static final int RIVER_BLUE = color(255, 250, 180, 100);
-    public static final int VOLCANIC_MOUNTAIN = color(255, 50, 110, 240);
-    public static final int GRAY = color(255, 150, 150, 150);
-    public static final int DARK_GRAY = color(255, 50, 50, 50);
-    public static final int SPAWN_RED = color(255, 48, 15, 198);
+    static int biomeAltitude(int discreteAlt) {
+        return (switch (discreteAlt) {
+            default -> BA_LOW;
+            case 1 -> BA_MEDIUM;
+            case 2 -> BA_HIGH;
+            case 3 -> BA_MOUNTAIN;
+        }).get().color();
+    }
 
-    public static final int SHALLOW_WATER = color(255, 255, 160, 150);
-    public static final int DEEP_WATER = color(255, 240, 120, 120);
-    public static final int VERY_DEEP_WATER = color(255, 200, 100, 100);
+    static int rockType(int rock) {
+        return (switch (rock & 0b11) {
+            default -> RT_OCEANIC;
+            case 1 -> RT_VOLCANIC;
+            case 2 -> RT_LAND;
+            case 3 -> RT_UPLIFT;
+        }).get().gradient().applyAsInt(nextWithSeed(rock >> 2));
+    }
 
     // Default/reference gradients
     public static final DoubleToIntFunction blue = linearGradient(color(255, 150, 50, 50), color(255, 255, 140, 100));
@@ -106,4 +124,56 @@ public class ColorUtil {
             color(255, 40, 40, 200)
     );
     public static final DoubleToIntFunction grayscale = linearGradient(color(255, 255, 255, 255), color(255, 0, 0, 0));
+
+    // Color keys
+    public static final CacheableSupplier<Component> RainKey = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        RAINFALL.get().appendTo(key);
+        FILL_OCEAN.get().appendTo(key, true);
+        return key;
+    });
+    public static final CacheableSupplier<Component> TempKey = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        TEMPERATURE.get().appendTo(key);
+        FILL_OCEAN.get().appendTo(key, true);
+        return key;
+    });
+    public static final CacheableSupplier<Component> BiomeAltKey = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        baKey(key);
+        return key;
+    });
+    public static final CacheableSupplier<Component> InlandHeightKey = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        IH_LAND.get().appendTo(key);
+        IH_SHALLOW.get().appendTo(key);
+        IH_DEEP.get().appendTo(key);
+        IH_VERY_DEEP.get().appendTo(key, true);
+        return key;
+    });
+    public static final CacheableSupplier<Component> RiverKey = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        RM_RIVER.get().appendTo(key);
+        RM_OCEANIC_VOLCANIC_MOUNTAINS.get().appendTo(key);
+        RM_INLAND_MOUNTAIN.get().appendTo(key);
+        RM_LAKE.get().appendTo(key);
+        baKey(key);
+        return key;
+    });
+    public static final CacheableSupplier<Component> RockTypeKey = new CacheableSupplier<>(() -> {
+        final MutableComponent key = Component.empty();
+        RT_LAND.get().appendTo(key);
+        RT_OCEANIC.get().appendTo(key);
+        RT_VOLCANIC.get().appendTo(key);
+        RT_UPLIFT.get().appendTo(key, true);
+        return key;
+    });
+
+    private static void baKey(MutableComponent key) {
+        BA_LOW.get().appendTo(key);
+        BA_MEDIUM.get().appendTo(key);
+        BA_HIGH.get().appendTo(key);
+        BA_MOUNTAIN.get().appendTo(key);
+        FILL_OCEAN.get().appendTo(key, true);
+    }
 }
