@@ -17,7 +17,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-// TODO: Find a nice way to make this a DataManager (or a datamap like thing in 1.21?)
 public class RockColors extends SimpleJsonResourceReloadListener {
 
     public static final RockColors Rocks = new RockColors();

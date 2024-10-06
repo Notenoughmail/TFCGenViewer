@@ -13,7 +13,6 @@ import net.minecraft.util.Mth;
 
 public class PreviewPane extends AbstractWidget {
 
-    // TODO: Improve this texture
     public static final ResourceLocation PROGRESS_BAR = TFCGenViewer.identifier("textures/gui/progress_bar.png");
 
     private PreviewInfo previewInfo;
@@ -61,9 +60,30 @@ public class PreviewPane extends AbstractWidget {
         }
         if (genProgress != -1F) {
             final int scale = Minecraft.getInstance().options.guiScale().get(); // [1, 4]
-            final int leftPos = getX() + (size >> 1) - (scale * 51);
-            graphics.blit(PROGRESS_BAR, leftPos, getY() + getHeight() - (scale * 10), 0, 0, scale * 102, scale * 9);
-            graphics.blit(PROGRESS_BAR, leftPos + scale, getY() + getHeight() - (scale * 9), scale, scale * 9, scale * genProgress, scale * 7);
+            final int leftPos = getX() + (getWidth() >> 1) - 51;
+            final int yPos = getY() + getHeight() - (scale * 8);
+            graphics.blit(
+                    PROGRESS_BAR,
+                    leftPos,
+                    yPos,
+                    0,
+                    0,
+                    102,
+                    5,
+                    128,
+                    128
+            );
+            graphics.blit(
+                    PROGRESS_BAR,
+                    leftPos,
+                    yPos,
+                    0,
+                    5,
+                    genProgress,
+                    5,
+                    128,
+                    128
+            );
         }
     }
 

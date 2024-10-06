@@ -63,7 +63,7 @@ public class ImageBuilder {
                 array[i] = texture;
                 Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
             } catch (Exception exception) {
-                TFCGenViewer.LOGGER.error("Could not make dynamic texture for size {} (scale {})! Error:\n{}", size, i, exception);
+                TFCGenViewer.LOGGER.error("Could not make dynamic texture for size %d (scale %d)! Error:\n".formatted(size, i), exception);
             }
         }
     });
@@ -154,7 +154,7 @@ public class ImageBuilder {
             final Region[] cache = new Region[previewSizeGrids * previewSizeGrids];
 
             for (int x = 0; x < previewSizeGrids; x++) {
-                progressReturn.accept(100 * x / previewSizeGrids);
+                progressReturn.accept(102 * x / previewSizeGrids);
                 for (int y = 0; y < previewSizeGrids; y++) {
                     // Shift the generation by the offsets and
                     // subtract half preview to center the image
@@ -213,8 +213,6 @@ public class ImageBuilder {
                     }
                 }
             }
-
-            progressReturn.accept(100);
 
             if (drawSpawn) {
                 final int xSpawnCenterGrids = (spawnXBlocks / (16 * 8)) - xDrawOffsetGrids;

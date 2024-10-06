@@ -34,6 +34,12 @@ public class ColorUtil {
         );
     }
 
+    /*
+    * This does not work if the input value is exactly 1 (due to the flooring of the value * parts.length)
+    * this is dealt with by clamping things 0.999 and ignoring it
+    * Something could be done to fix that, but doing so in a way that doesn't change the semantics of the
+    * returned gradient isn't worth the time
+    */
     public static DoubleToIntFunction multiLinearGradient(int... colors) {
         final DoubleToIntFunction[] parts = IntStream.range(0, colors.length - 1)
                 .mapToObj(i -> linearGradient(colors[i], colors[i + 1]))

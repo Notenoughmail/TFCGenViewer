@@ -55,9 +55,8 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
         );
         unknownGetter = register(Colors.UNKNOWN);
         for (BiomeExtension ext : TFCLayersAccessor.tfcgenviewer$BiomeLayers()) {
-            if (ext != null) {
-                register(ext.key().location());
-            }
+            if (ext == null) break; // Encountering a null value means all registered biomes have been visited
+            register(ext.key().location());
         }
     }
 
