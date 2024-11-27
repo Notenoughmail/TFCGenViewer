@@ -121,7 +121,7 @@ public enum VisualizerType implements IExtensibleEnum {
     }
 
     static VisualizerType create(String title, int permission, String name, DrawFunction drawer, Supplier<Component> colorKey) {
-        throw new IllegalStateException("VisualizerYpe not extended");
+        throw new IllegalStateException("VisualizerType not extended");
     }
 
     @FunctionalInterface

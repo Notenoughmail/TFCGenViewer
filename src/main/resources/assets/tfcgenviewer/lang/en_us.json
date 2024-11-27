@@ -27,7 +27,7 @@
 
   "tfcgenviewer.preview_world.preview_info": "Generated %s regions in %s seconds\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
   "tfcgenviewer.preview_world.preview_info.generating": "Generating...",
-  "tfcgenviewer.preview_world.preview_info.error": "An error occurred during generation\n\nPlease check the log, report the error, and restart the generator wit ha different seed",
+  "tfcgenviewer.preview_world.preview_info.error": "An error occurred during generation\n\nPlease check the log, report the error, and restart the generator with a different seed",
   "tfcgenviewer.preview_world.color_key_template": "%s : %s",
   "tfcgenviewer.preview_world.km": "%s km",
   "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
