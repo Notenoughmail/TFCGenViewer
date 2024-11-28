@@ -313,7 +313,9 @@ public class PreviewGenerationScreen extends Screen {
                         info -> {
                             infoPane.setMessage(info.rightInfo());
                             previewPane.setInfo(info);
-                        }
+                        },
+                        Config.generationProgress.get() ? previewPane::setProgress : i -> {},
+                        seedInUse
                 );
             }
         }

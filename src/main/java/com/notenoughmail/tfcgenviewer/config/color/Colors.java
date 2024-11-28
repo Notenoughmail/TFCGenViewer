@@ -1,140 +1,90 @@
 package com.notenoughmail.tfcgenviewer.config.color;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
-import com.notenoughmail.tfcgenviewer.util.VisualizerType;
+import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import net.dries007.tfc.util.RegisteredDataManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class Colors {
+import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 
-    static final Gson GSON = new Gson();
+public class Colors<T extends IWillAppendTo> extends RegisteredDataManager<T> {
 
-    static ColorGradientDefinition
-            RAINFALL = new ColorGradientDefinition(
-                    ColorUtil.climate,
-                    Component.translatable("tfcgenviewer.climate.rainfall")
+    public static final ResourceLocation UNKNOWN = TFCGenViewer.identifier("unknown");
+
+    public static final Colors<ColorDefinition> Color = new Colors<>(ColorDefinition::parse, id -> new ColorDefinition(
+            ColorUtil.randomColor(),
+            Component.translatable("tfcgenviewer.could_not_parse.color", id.toString()),
+            1000
+    ), "colors", "TFCGenViewer Color", () -> {
+        RainKey.clearCache();
+        TempKey.clearCache();
+        BiomeAltKey.clearCache();
+        InlandHeightKey.clearCache();
+        RiverKey.clearCache();
+        RockTypeKey.clearCache();
+    });
+    public static final Colors<ColorGradientDefinition> Gradient = new Colors<>(ColorGradientDefinition::parse, id -> new ColorGradientDefinition(
+            ColorUtil.linearGradient(
+                    ColorUtil.randomColor(),
+                    ColorUtil.randomColor()
             ),
-            TEMPERATURE = new ColorGradientDefinition(
-                    ColorUtil.climate,
-                    Component.translatable("tfcgenviewer.climate.temperature")
-            ),
-            FILL_OCEAN = new ColorGradientDefinition(
-                    ColorUtil.blue,
-                    Component.translatable("biome.tfc.ocean")
-            );
+            Component.translatable("tfcgenviewer.could_not_parse.gradient", id.toString())
+    ), "gradients", "TFCGenViewer Gradient", () -> {});
 
-    static ColorDefinition
-            SPAWN_BORDER = new ColorDefinition(
-                    ColorUtil.DARK_GRAY,
-                    Component.empty(),
-                    0
-            ),
-            SPAWN_RETICULE = new ColorDefinition(
-                    ColorUtil.SPAWN_RED,
-                    Component.empty(),
-                    0
-            );
+    // Colors
+    public static final Supplier<ColorDefinition> SPAWN_BORDER = color("spawn/border");
+    public static final Supplier<ColorDefinition> SPAWN_RETICULE = color("spawn/reticule");
+    public static final Supplier<ColorDefinition> RM_INLAND_MOUNTAIN = color("rivers_and_mountains/inland_mountain");
+    public static final Supplier<ColorDefinition> RM_LAKE = color("rivers_and_mountains/lake");
+    public static final Supplier<ColorDefinition> RM_OCEANIC_VOLCANIC_MOUNTAINS = color("rivers_and_mountains/oceanic_volcanic_mountain");
+    public static final Supplier<ColorDefinition> RM_RIVER = color("rivers_and_mountains/river");
+    public static final Supplier<ColorDefinition> IH_DEEP = color("inland_height/deep_water");
+    public static final Supplier<ColorDefinition> IH_SHALLOW = color("inland_height/shallow_water");
+    public static final Supplier<ColorDefinition> IH_VERY_DEEP = color("inland_height/very_deep_water");
+    public static final Supplier<ColorDefinition> BA_LOW = color("biome_altitude/low");
+    public static final Supplier<ColorDefinition> BA_MEDIUM = color("biome_altitude/medium");
+    public static final Supplier<ColorDefinition> BA_HIGH = color("biome_altitude/high");
+    public static final Supplier<ColorDefinition> BA_MOUNTAIN = color("biome_altitude/mountain");
 
-    public static ColorGradientDefinition rainfall() {
-        return RAINFALL;
+    // Color Gradients
+    public static final Supplier<ColorGradientDefinition> IH_LAND = gradient("inland_height");
+    public static final Supplier<ColorGradientDefinition> FILL_OCEAN = gradient("fill_ocean");
+    public static final Supplier<ColorGradientDefinition> RAINFALL = gradient("rainfall");
+    public static final Supplier<ColorGradientDefinition> TEMPERATURE = gradient("temperature");
+    public static final Supplier<ColorGradientDefinition> RT_LAND = gradient("rock_type/land");
+    public static final Supplier<ColorGradientDefinition> RT_OCEANIC = gradient("rock_type/oceanic");
+    public static final Supplier<ColorGradientDefinition> RT_UPLIFT = gradient("rock_type/uplift");
+    public static final Supplier<ColorGradientDefinition> RT_VOLCANIC = gradient("rock_type/volcanic");
+
+    private final Runnable onApply;
+
+    public Colors(BiFunction<ResourceLocation, JsonObject, T> factory, Function<ResourceLocation, T> fallbackFactory, String domain, String typeName, Runnable onApply) {
+        super(factory, fallbackFactory, TFCGenViewer.identifier(domain), typeName);
+        this.onApply = onApply;
     }
 
-    public static ColorGradientDefinition temperature() {
-        return TEMPERATURE;
+    @Override
+    protected void apply(Map<ResourceLocation, JsonElement> elements, ResourceManager resourceManager, ProfilerFiller profiler) {
+        super.apply(elements, resourceManager, profiler);
+        onApply.run();
     }
 
-    public static ColorGradientDefinition fillOcean() {
-        return FILL_OCEAN;
+    private static Supplier<ColorDefinition> color(String path) {
+        return Color.register(TFCGenViewer.identifier(path));
     }
 
-    public static ColorDefinition spawnBorder() {
-        return SPAWN_BORDER;
-    }
-
-    public static ColorDefinition getSpawnReticule() {
-        return SPAWN_RETICULE;
-    }
-
-    public static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) -> ImageBuilder.setPixel(image, x, y, FILL_OCEAN.gradient().applyAsInt(region.noise() / 2));
-
-    public static void assign(ResourceLocation resourcePath, Resource resource) {
-        try (InputStream stream = resource.open()) {
-            final JsonObject json = GSON.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
-            switch (resourcePath.getPath()) {
-                case "tfcgenviewer/colors/fill_ocean.json" -> {
-                    final ColorGradientDefinition def = ColorGradientDefinition.parse(
-                            json,
-                            resourcePath,
-                            "fill_ocean",
-                            null
-                    );
-                    if (def != null) {
-                        FILL_OCEAN = def;
-                    }
-                }
-                case "tfcgenviewer/colors/rainfall.json" -> {
-                    final ColorGradientDefinition def = ColorGradientDefinition.parse(
-                            json,
-                            resourcePath,
-                            "climate.rainfall",
-                            null
-                    );
-                    if (def != null) {
-                        RAINFALL = def;
-                    }
-                }
-                case "tfcgenviewer/colors/temperature.json" -> {
-                    final ColorGradientDefinition def = ColorGradientDefinition.parse(
-                            json,
-                            resourcePath,
-                            "climate.temperature",
-                            null
-                    );
-                    if (def != null) {
-                        TEMPERATURE = def;
-                    }
-                }
-                case "tfcgenviewer/spawn/border.json" -> {
-                    final ColorDefinition def = ColorDefinition.parse(
-                            json,
-                            0xF0000000,
-                            "spawn.border",
-                            resourcePath,
-                            null
-                    );
-                    if (def.color() != 0xF0000000) {
-                        SPAWN_BORDER = def;
-                    }
-                }
-                case "tfcgenviewer/spawn/reticule.json" -> {
-                    final ColorDefinition def = ColorDefinition.parse(
-                            json,
-                            0xF0000000,
-                            "spawn.reticule",
-                            resourcePath,
-                            null
-                    );
-                    if (def.color() != 0xF0000000) {
-                        SPAWN_RETICULE = def;
-                    }
-                }
-            }
-        } catch (IOException exception) {
-            TFCGenViewer.LOGGER.warn(
-                    "Could not open color file at {}, using previous value. Error:\n{}",
-                    resourcePath,
-                    exception
-            );
-        }
+    private static Supplier<ColorGradientDefinition> gradient(String path) {
+        return Gradient.register(TFCGenViewer.identifier(path));
     }
 }

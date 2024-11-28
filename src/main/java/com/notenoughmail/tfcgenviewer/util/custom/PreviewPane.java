@@ -1,14 +1,19 @@
 package com.notenoughmail.tfcgenviewer.util.custom;
 
+import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class PreviewPane extends AbstractWidget {
+
+    public static final ResourceLocation PROGRESS_BAR = TFCGenViewer.identifier("textures/gui/progress_bar.png");
 
     private PreviewInfo previewInfo;
     private final int size;
@@ -16,6 +21,7 @@ public class PreviewPane extends AbstractWidget {
     private final Font font;
     private final boolean allowCoordinates;
     private int tick = 0;
+    private int genProgress = -1;
 
     public PreviewPane(int pX, int pY, int size, Font font, boolean allowCoordinates) {
         super(pX, pY, size, size, Component.empty());
@@ -28,6 +34,10 @@ public class PreviewPane extends AbstractWidget {
 
     public void setInfo(PreviewInfo info) {
         previewInfo = info;
+    }
+
+    public void setProgress(int progress) {
+        genProgress = progress;
     }
 
     @Override
@@ -47,6 +57,33 @@ public class PreviewPane extends AbstractWidget {
                     x = (int) Mth.map(pMouseX, getX(), getX() + size, x0, x1),
                     y = (int) Mth.map(pMouseY, getY(), getY() + size, y0, y1);
             graphics.renderTooltip(font, Component.translatable("tfcgenviewer.preview_world.preview_pos", x, y), pMouseX, pMouseY);
+        }
+        if (genProgress != -1F) {
+            final int scale = Minecraft.getInstance().options.guiScale().get(); // [1, 4]
+            final int leftPos = getX() + (getWidth() >> 1) - 51;
+            final int yPos = getY() + getHeight() - (scale * 8);
+            graphics.blit(
+                    PROGRESS_BAR,
+                    leftPos,
+                    yPos,
+                    0,
+                    0,
+                    102,
+                    5,
+                    128,
+                    128
+            );
+            graphics.blit(
+                    PROGRESS_BAR,
+                    leftPos,
+                    yPos,
+                    0,
+                    5,
+                    genProgress,
+                    5,
+                    128,
+                    128
+            );
         }
     }
 

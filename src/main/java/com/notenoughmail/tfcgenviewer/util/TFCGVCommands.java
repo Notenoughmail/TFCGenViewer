@@ -117,13 +117,13 @@ public class TFCGVCommands {
 
     public enum TypeTarget {
         view_permission(() -> Permissions.Universal.class, () -> ServerConfig.viewPermission),
-        export(() -> ServerConfig.permissionsByType.get(Permissions.Category.export)),
-        seed(() -> ServerConfig.permissionsByType.get(Permissions.Category.seed)),
-        coords(() -> ServerConfig.permissionsByType.get(Permissions.Category.coords)),
-        climate(() -> ServerConfig.permissionsByType.get(Permissions.Category.climate)),
-        rocks(() -> ServerConfig.permissionsByType.get(Permissions.Category.rocks)),
-        biomes(() -> ServerConfig.permissionsByType.get(Permissions.Category.biomes)),
-        rivers(() -> ServerConfig.permissionsByType.get(Permissions.Category.rivers));
+        export(Permissions.Category.export),
+        seed(Permissions.Category.seed),
+        coords(Permissions.Category.coords),
+        climate(Permissions.Category.climate),
+        rocks(Permissions.Category.rocks),
+        biomes(Permissions.Category.biomes),
+        rivers(Permissions.Category.rivers);
 
         private final Supplier<Class<? extends Enum<?>>> clazz;
         private final Supplier<ForgeConfigSpec.EnumValue<?>> config;
@@ -133,8 +133,8 @@ public class TFCGVCommands {
             this.config = cast(config);
         }
 
-        TypeTarget(Supplier<ForgeConfigSpec.EnumValue<Permissions.Type>> config) {
-            this(() -> Permissions.Type.class, config);
+        TypeTarget(Permissions.Category category) {
+            this(() -> Permissions.Type.class, () -> ServerConfig.permissionsByType.get(category));
         }
     }
 

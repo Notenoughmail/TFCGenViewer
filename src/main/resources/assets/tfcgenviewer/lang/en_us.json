@@ -1,6 +1,7 @@
 {
   "button.tfcgenviewer.preview_world": "Preview World",
   "button.tfcgenviewer.apply": "Apply",
+  "button.tfcgenviewer.apply.will_not_apply": "%s will not proceed as the previous generation is finalizing",
   "button.tfcgenviewer.export": "Export Preview",
   "button.tfcgenviewer.save": "Save",
   "button.tfcgenviewer.current_seed": "Current seed: %s",
@@ -26,6 +27,7 @@
 
   "tfcgenviewer.preview_world.preview_info": "Generated %s regions in %s seconds\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
   "tfcgenviewer.preview_world.preview_info.generating": "Generating...",
+  "tfcgenviewer.preview_world.preview_info.error": "An error occurred during generation\n\nPlease check the log, report the error, and restart the generator with a different seed",
   "tfcgenviewer.preview_world.color_key_template": "%s : %s",
   "tfcgenviewer.preview_world.km": "%s km",
   "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
@@ -87,5 +89,9 @@
   "tfcgenviewer.commands.add.success": "Added %s to %s filter",
   "tfcgenviewer.commands.add.fail": "Player already in %s filter",
   "tfcgenviewer.commands.remove.success": "Removed %s from %s filter",
-  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter"
+  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter",
+
+  "tfcgenviewer.could_not_parse.color": "Error encountered while parsing '%s' color definition",
+  "tfcgenviewer.could_not_parse.gradient": "Error encountered while parsing '%s' gradient definition",
+  "tfcgenviewer.could_not_parse.biome": "Error encountered while parsing '%s' biome color definition"
 }

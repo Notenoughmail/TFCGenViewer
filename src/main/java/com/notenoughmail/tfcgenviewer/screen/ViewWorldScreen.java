@@ -172,7 +172,9 @@ public class ViewWorldScreen extends Screen {
                 info -> {
                     infoPane.setMessage(info.rightInfo());
                     viewPane.setInfo(info);
-                }
+                },
+                Config.generationProgress.get() ? viewPane::setProgress : i -> {},
+                seed
         );
     }
 

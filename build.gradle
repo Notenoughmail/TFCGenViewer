@@ -31,7 +31,7 @@ minecraft {
             workingDirectory project.file('run')
 
             property 'forge.logging.console.level', 'debug'
-            args '-mixin.config=tfcgen_viewer.mixins.json'
+            args '-mixin.config=tfcgenviewer.mixins.json'
 
             property "mixin.env.remapRefMap", "true"
             property "mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg"
@@ -119,7 +119,7 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                'MixinConfigs'            : "tfcgen_viewer.mixins.json"
+                'MixinConfigs'            : "tfcgenviewer.mixins.json"
         ])
     }
 
@@ -144,5 +144,5 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 mixin {
-    add sourceSets.main, "tfcgen_viewer.refmap.json"
+    add sourceSets.main, "tfcgenviewer.refmap.json"
 }
