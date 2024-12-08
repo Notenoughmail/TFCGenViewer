@@ -14,7 +14,7 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-public record ColorDefinition(int color, Component name, int sort, Component descriptor) implements Comparable<ColorDefinition>, IWillAppendTo {
+public record ColorDefinition(int color, Component name, int sort, Component tooltip) implements Comparable<ColorDefinition>, IWillAppendTo {
 
     public ColorDefinition(int color, Component name, int sort) {
         this(color, name, sort, name);

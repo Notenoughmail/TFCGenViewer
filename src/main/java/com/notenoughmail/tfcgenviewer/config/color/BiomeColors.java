@@ -39,7 +39,6 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
     });
 
     private final Supplier<ColorDefinition> unknownGetter;
-    private final Int2ObjectOpenHashMap<Component> colorDescriptors;
 
     private BiomeColors() {
         super(
@@ -60,19 +59,14 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
             if (ext == null) break; // Encountering a null value means all registered biomes have been visited
             register(ext.key().location());
         }
-        colorDescriptors = new Int2ObjectOpenHashMap<>(types.size());
     }
 
     public CacheableSupplier<Component> key() {
         return key;
     }
 
-    public Component getColorDescriptor(int color) {
-        return colorDescriptors.getOrDefault(color, unknown.descriptor());
-    }
-
-    public int color(int biome) {
-        return getOrThrow(TFCLayers.getFromLayerId(biome).key().location()).get().color();
+    public ColorDefinition color(int biome) {
+        return getOrThrow(TFCLayers.getFromLayerId(biome).key().location()).get();
     }
 
     @Override
@@ -80,7 +74,5 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
         super.apply(colors, pResourceManager, pProfiler);
         unknown = unknownGetter.get();
         key.clearCache();
-        colorDescriptors.clear();
-        types.forEach((rl, def) -> colorDescriptors.put(def.get().color(), def.get().descriptor()));
     }
 }

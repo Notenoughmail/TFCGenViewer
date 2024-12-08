@@ -6,6 +6,7 @@ import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.config.color.Colors;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
@@ -152,6 +153,7 @@ public class ImageBuilder {
 
             final Set<Region> visitedRegions = new HashSet<>();
             final Region[] cache = new Region[previewSizeGrids * previewSizeGrids];
+            final Int2ObjectOpenHashMap<Component> colorDescriptors = new Int2ObjectOpenHashMap<>();
 
             for (int x = 0; x < previewSizeGrids; x++) {
                 progressReturn.accept(102 * x / previewSizeGrids);
@@ -185,7 +187,8 @@ public class ImageBuilder {
                                 generator,
                                 cache[cachePos],
                                 cache[cachePos] != null ? cache[cachePos].requireAt(xPos, zPos) : ColorUtil.FAILURE_STATE,
-                                image
+                                image,
+                                colorDescriptors
                         );
                     } catch (Throwable error) {
                         if (error instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage())) {
@@ -222,6 +225,7 @@ public class ImageBuilder {
                 final int lineWidthPixels = lineWidth(scale);
 
                 int color = Colors.SPAWN_BORDER.get().color();
+                colorDescriptors.putIfAbsent(color, Colors.SPAWN_BORDER.get().tooltip());
 
                 hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, lineWidthPixels, color);
                 hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, lineWidthPixels, color);
@@ -229,15 +233,17 @@ public class ImageBuilder {
                 vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, lineWidthPixels, color);
 
                 color = Colors.SPAWN_RETICULE.get().color();
+                colorDescriptors.put(color, Colors.SPAWN_RETICULE.get().tooltip());
 
                 final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
                 hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, lineWidthPixels, color);
                 vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, lineWidthPixels, color);
             }
 
-            if (!FMLEnvironment.production && false) {
+            if (!FMLEnvironment.production && visualizer.name().equals("DEV")) {
                 for (Region region : visitedRegions) {
                     final int color = color(255, region.hashCode());
+                    colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
 
                     hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, 0, color);
                     hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, 0, color);
@@ -266,7 +272,8 @@ public class ImageBuilder {
                         previewSizeGrids,
                         xDrawOffsetGrids * 128,
                         zDrawOffsetGrids * 128,
-                        visualizer.tooltip()
+                        PreviewInfo.Mode.PREVIEW,
+                        colorDescriptors
                     ),
                     image,
                     "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())

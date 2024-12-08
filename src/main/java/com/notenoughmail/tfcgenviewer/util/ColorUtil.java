@@ -1,11 +1,13 @@
 package com.notenoughmail.tfcgenviewer.util;
 
+import com.notenoughmail.tfcgenviewer.config.color.ColorDefinition;
+import com.notenoughmail.tfcgenviewer.config.color.ColorGradientDefinition;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Random;
@@ -80,19 +82,27 @@ public class ColorUtil {
     }
 
     // Drawers
-    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image) ->
-            setPixel(image, x, y, FILL_OCEAN.get().gradient().applyAsInt(region != null ? region.noise() / 2 : 0));
-    static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image) ->
-            setPixel(image, x, y, ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1)));
+    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors) -> {
+        final int color = FILL_OCEAN.get().gradient().applyAsInt(region != null ? region.noise() / 2 : 0);
+        colorDescriptors.putIfAbsent(color, FILL_OCEAN.get().tooltip());
+        setPixel(image, x, y, color);
+    };
+    static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
+        final int color = ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1));
+        colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(Objects.hashCode(region))));
+        setPixel(image, x, y, color);
+    };
 
     // Color getters that are not complex but also not easily (or cleanly) made single line
-    static int inlandHeight(Region.Point point) {
+    static int inlandHeight(Region.Point point, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         if (point.land()) {
-            return IH_LAND.get().gradient().applyAsInt(point.baseLandHeight / 24F);
+            final int color = IH_LAND.get().gradient().applyAsInt(point.baseLandHeight / 24F);
+            colorDescriptors.putIfAbsent(color, IH_LAND.get().tooltip());
+            return color;
         }
 
         // Deal with it
-        return (
+        final ColorDefinition color = (
                 point.shore() ?
                         point.river() ?
                                 IH_SHALLOW :
@@ -102,25 +112,30 @@ public class ColorUtil {
                                 point.baseOceanDepth < 8 ?
                                         IH_DEEP :
                                         IH_VERY_DEEP
-        ).get().color();
+        ).get();
+        colorDescriptors.putIfAbsent(color.color(), color.tooltip());
+        return color.color();
     }
 
-    static int biomeAltitude(int discreteAlt) {
+    static ColorDefinition biomeAltitude(int discreteAlt) {
         return (switch (discreteAlt) {
             default -> BA_LOW;
             case 1 -> BA_MEDIUM;
             case 2 -> BA_HIGH;
             case 3 -> BA_MOUNTAIN;
-        }).get().color();
+        }).get();
     }
 
-    static int rockType(int rock) {
-        return (switch (rock & 0b11) {
+    static int rockType(int rock, Int2ObjectOpenHashMap<Component> colorDescriptors) {
+        final ColorGradientDefinition gradient = (switch (rock & 0b11) {
             default -> RT_OCEANIC;
             case 1 -> RT_VOLCANIC;
             case 2 -> RT_LAND;
             case 3 -> RT_UPLIFT;
-        }).get().gradient().applyAsInt(nextWithSeed(rock >> 2));
+        }).get();
+        final int color = gradient.gradient().applyAsInt(nextWithSeed(rock >> 2));
+        colorDescriptors.putIfAbsent(color, gradient.tooltip());
+        return color;
     }
 
     // Default/reference gradients

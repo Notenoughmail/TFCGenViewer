@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +22,6 @@ public class RockColors extends SimpleJsonResourceReloadListener {
     public static final RockColors Rocks = new RockColors();
 
     private Map<Block, ColorDefinition> colorDefinitions = new IdentityHashMap<>();
-    private final Int2ObjectOpenHashMap<Component> colorDescriptors = new Int2ObjectOpenHashMap<>();
     private ColorDefinition unknown = new ColorDefinition(
             0xFFE358FF,
             Component.translatable("rock.tfcgenviewer.unknown"),
@@ -44,12 +42,8 @@ public class RockColors extends SimpleJsonResourceReloadListener {
         return key;
     }
 
-    public int color(Block raw) {
-        return colorDefinitions.getOrDefault(raw, unknown).color();
-    }
-
-    public Component getColorDescriptor(int color) {
-        return colorDescriptors.getOrDefault(color, unknown.descriptor());
+    public ColorDefinition color(Block raw) {
+        return colorDefinitions.getOrDefault(raw, unknown);
     }
 
     @Override
@@ -86,8 +80,5 @@ public class RockColors extends SimpleJsonResourceReloadListener {
             }
         });
         key.clearCache();
-        colorDescriptors.clear();
-        colorDescriptors.put(unknown.color(), unknown.descriptor());
-        colorDefinitions.forEach((b, def) -> colorDescriptors.put(def.color(), def.descriptor()));
     }
 }

@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.util.custom;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
+import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,7 +36,6 @@ public class PreviewPane extends AbstractWidget {
 
     public void setInfo(PreviewInfo info) {
         previewInfo = info;
-        tooltipMode = tooltipMode.update(info.tooltip() != null, info.empty());
     }
 
     public void setProgress(int progress) {
@@ -49,7 +49,7 @@ public class PreviewPane extends AbstractWidget {
         } else {
             graphics.blit(previewInfo.image(), getX(), getY(), 0, 0, size, size, size, size);
         }
-        if (!previewInfo.empty() && isMouseOver(pMouseX, pMouseY)) {
+        if (!(previewInfo.empty() || previewInfo.error()) && isMouseOver(pMouseX, pMouseY)) {
             switch (tooltipMode) {
                 case COORDS -> {
                     final int
@@ -63,8 +63,8 @@ public class PreviewPane extends AbstractWidget {
                     graphics.renderTooltip(font, Component.translatable("tfcgenviewer.preview_world.preview_pos", x, y), pMouseX, pMouseY);
                 }
                 case COLOR_DESC -> {
-                    var tooltips = previewInfo.tooltip();
-                    assert tooltips != null;
+                    final Int2ObjectFunction<Component> tooltips = previewInfo.tooltip();
+                    assert tooltips != null : "A preview with mode of PREVIEW should have a tooltip map!";
                     final int
                             previewGrids = previewInfo.previewSizeGrids(),
                             xPixel = (int) Mth.map(pMouseX, getX(), getX() + size, 0, previewGrids),
@@ -106,8 +106,11 @@ public class PreviewPane extends AbstractWidget {
 
     @Override
     protected boolean clicked(double pMouseX, double pMouseY) {
+        if (previewInfo.empty() || previewInfo.error()) {
+            return false;
+        }
         final boolean click = super.clicked(pMouseX, pMouseY);
-        if (click) tooltipMode = tooltipMode.next(allowCoordinates, previewInfo.tooltip() != null);
+        if (click) tooltipMode = tooltipMode.next(allowCoordinates);
         return click;
     }
 
@@ -123,26 +126,14 @@ public class PreviewPane extends AbstractWidget {
         COORDS,
         COLOR_DESC;
 
-        private Mode next(boolean allowCoords, boolean colorDescExists) {
+        private Mode next(boolean allowCoords) {
             return switch (this) {
                 case NONE -> allowCoords ?
                         COORDS :
-                        colorDescExists ?
-                                COLOR_DESC :
-                                NONE;
-                case COORDS -> colorDescExists ?
-                        COLOR_DESC :
-                        NONE;
+                        COLOR_DESC;
+                case COORDS -> COLOR_DESC;
                 case COLOR_DESC -> NONE;
             };
-        }
-
-        private Mode update(boolean colorDescExists, boolean empty) {
-            return empty || this != COLOR_DESC ?
-                    this :
-                    colorDescExists ?
-                            COLOR_DESC :
-                            NONE;
         }
     }
 }

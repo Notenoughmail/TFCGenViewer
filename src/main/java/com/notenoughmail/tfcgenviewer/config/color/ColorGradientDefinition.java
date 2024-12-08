@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.function.DoubleToIntFunction;
 
+// TODO: Next | Support multiple tooltip values
 public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name, Component tooltip) implements IWillAppendTo {
 
     public ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {
@@ -44,8 +45,8 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         return new ColorGradientDefinition(
                 gradient,
                 key,
-                json.has("tooltip") ?
-                        Component.translatable(json.get("tooltip").getAsString()) :
+                json.has("tooltip_key") ?
+                        Component.translatable(json.get("tooltip_key").getAsString()) :
                         key
         );
     }

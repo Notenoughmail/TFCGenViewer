@@ -62,19 +62,29 @@
   "tfcgenviewer.rock_type.oceanic": "Oceanic",
   "tfcgenviewer.rock_type.volcanic": "Volcanic",
   "tfcgenviewer.rock_type.uplift": "Uplift",
+
   "tfcgenviewer.climate.temperature": "Temperature, -33 °C -> 33 °C",
   "tfcgenviewer.climate.rainfall": "Rainfall, 0mm -> 500mm",
+
   "tfcgenviewer.inland_height.land": "Land Height, low -> high",
   "tfcgenviewer.inland_height.shallow_water": "Shallow Water",
   "tfcgenviewer.inland_height.deep_water": "Deep Water",
   "tfcgenviewer.inland_height.very_deep_water": "Very Deep Water",
+
   "tfcgenviewer.biome_altitude.low": "Low",
+  "tfcgenviewer.biome_altitude.low.tooltip": "Low Elevation",
   "tfcgenviewer.biome_altitude.medium": "Medium",
+  "tfcgenviewer.biome_altitude.medium.tooltip": "Medium Elevation",
   "tfcgenviewer.biome_altitude.high": "High",
+  "tfcgenviewer.biome_altitude.high.tooltip": "High Elevation",
   "tfcgenviewer.biome_altitude.mountain": "Mountain",
+  "tfcgenviewer.biome_altitude.mountain.tooltip": "Mountainous Elevation",
+
   "tfcgenviewer.rivers.inland_mountain": "Inland Mountain",
   "tfcgenviewer.rivers.oceanic_volcanic_mountain": "Oceanic/Volcanic Mountain",
-  "tfcgenviewer.fill_ocean": "Ocean",
+
+  "tfcgenviewer.spawn.border": "Spawn Border",
+  "tfcgenviewer.spawn.reticule":  "Spawn Center",
 
   "tfcgenviewer.key.open_viewer": "Open World Viewer",
 
