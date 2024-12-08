@@ -15,7 +15,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.function.DoubleToIntFunction;
 
-public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name) implements IWillAppendTo {
+public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name, Component tooltip) implements IWillAppendTo {
+
+    public ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {
+        this(gradient, name, name);
+    }
 
     private static final double[] keyValues = new double[] { 0, 0.2, 0.4, 0.6, 0.8, 0.999 };
 
@@ -32,12 +36,17 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         } else {
             throw new JsonParseException("Color gradient definition requires a 'gradient' or 'reference' field");
         }
+        final Component key = Component.translatable(
+                json.has("key") ?
+                        json.get("key").getAsString() :
+                        id.toLanguageKey("tfcgenviewer.gradient")
+        );
         return new ColorGradientDefinition(
                 gradient,
-                json.has("key") ?
-                        Component.translatable(json.get("key").getAsString()) :
-                        Component.translatable(id.toLanguageKey("tfcgenviewer.gradient"))
-
+                key,
+                json.has("tooltip") ?
+                        Component.translatable(json.get("tooltip").getAsString()) :
+                        key
         );
     }
 

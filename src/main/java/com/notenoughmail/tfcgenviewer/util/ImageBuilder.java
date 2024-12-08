@@ -263,9 +263,10 @@ public class ImageBuilder {
                                 visualizer.getColorKey()
                         ),
                         PREVIEW_LOCATIONS[scale],
-                        previewSizeGrids * 128,
+                        previewSizeGrids,
                         xDrawOffsetGrids * 128,
-                        zDrawOffsetGrids * 128
+                        zDrawOffsetGrids * 128,
+                        visualizer.tooltip()
                     ),
                     image,
                     "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())

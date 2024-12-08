@@ -34,6 +34,7 @@ public class ColorUtil {
         );
     }
 
+    // TODO: 1.21.x / 1.5.0 | Rework this to make the below comment obsolete
     /*
     * This does not work if the input value is exactly 1 (due to the flooring of the value * parts.length)
     * this is dealt with by clamping things 0.999 and ignoring it

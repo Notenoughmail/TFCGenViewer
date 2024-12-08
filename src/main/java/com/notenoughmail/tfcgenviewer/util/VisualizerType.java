@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.config.color.Colors;
+import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RiverEdge;
@@ -12,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.IExtensibleEnum;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,17 +26,17 @@ import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
 public enum VisualizerType implements IExtensibleEnum {
-    BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, Biomes.color(point.biome)), Biomes.key()),
+    BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image) -> setPixel(image, x, y, Biomes.color(point.biome)), Biomes.key(), Biomes::getColorDescriptor),
     RAINFALL(0b10000000, "rainfall", (x, y, xPos, zPos, generator, region, point, image) -> {
         if (point.land()) {
-            setPixel(image, x, y, Colors.RAINFALL.get().gradient().applyAsInt(Mth.clampedMap(point.rainfall, 0F, 500F, 0, 0.999F)));
+            setPixel(image, x, y, Colors.RAINFALL.get().gradient().applyAsInt(Mth.clampedMap(point.rainfall, 0F, 500F, 0, 1F)));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image);
         }
     }, RainKey),
     TEMPERATURE(0b10000000, "temperature", (x, y, xPos, zPos, generator, region, point, image) -> {
         if (point.land()) {
-            setPixel(image, x, y, Colors.TEMPERATURE.get().gradient().applyAsInt(Mth.clampedMap(point.temperature, -33F, 33F, 0F, 0.999F)));
+            setPixel(image, x, y, Colors.TEMPERATURE.get().gradient().applyAsInt(Mth.clampedMap(point.temperature, -33F, 33F, 0F, 1F)));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image);
         }
@@ -73,7 +75,7 @@ public enum VisualizerType implements IExtensibleEnum {
     ROCKS(0b01000000, "rocks", (x, y, xPos, zPos, generator, region, point, image) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 90, zPos * 128 - 64, 100, null).raw();
         setPixel(image, x, y, Rocks.color(raw));
-    }, Rocks.key());
+    }, Rocks.key(), Rocks::getColorDescriptor);
 
     static {
         if (!FMLEnvironment.production) {
@@ -89,12 +91,19 @@ public enum VisualizerType implements IExtensibleEnum {
     private final Component name;
     private final DrawFunction drawer;
     private final Supplier<Component> colorKey;
+    @Nullable
+    private final Int2ObjectFunction<Component> tooltipGetter;
 
     VisualizerType(int permission, String name, DrawFunction drawer, Supplier<Component> colorKey) {
+        this(permission, name, drawer, colorKey, null);
+    }
+
+    VisualizerType(int permission, String name, DrawFunction drawer, Supplier<Component> colorKey, @Nullable Int2ObjectFunction<Component> tooltipGetter) {
         this.permission = (byte) permission;
         this.name = Component.translatable("tfcgenviewer.preview_world.visualizer_type." + name);
         this.drawer = drawer;
         this.colorKey = colorKey;
+        this.tooltipGetter = tooltipGetter;
     }
 
     public static List<VisualizerType> getVisualizers(byte permission) {
@@ -116,6 +125,11 @@ public enum VisualizerType implements IExtensibleEnum {
         return colorKey.get();
     }
 
+    @Nullable
+    public Int2ObjectFunction<Component> tooltip() {
+        return tooltipGetter;
+    }
+
     public void draw(int x, int y, int xPos, int zPos, RegionChunkDataGenerator generator, Region region, Region.Point point, NativeImage image) {
         drawer.draw(x, y, xPos, zPos, generator, region, point, image);
     }
@@ -126,6 +140,7 @@ public enum VisualizerType implements IExtensibleEnum {
 
     @FunctionalInterface
     public interface DrawFunction {
+        // TODO: Next | Accept a Int2ObjectOpenHashMap<Component> and fill it with colors as the image is built, instead of having the map attached to the visualizer type
         void draw(int x, int y, int xPos, int zPos, RegionChunkDataGenerator generator, Region region, Region.Point point, NativeImage image);
     }
 }
