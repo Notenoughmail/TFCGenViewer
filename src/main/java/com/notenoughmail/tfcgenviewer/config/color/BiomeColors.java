@@ -65,8 +65,8 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
         return key;
     }
 
-    public ColorDefinition color(int biome) {
-        return getOrThrow(TFCLayers.getFromLayerId(biome).key().location()).get();
+    public int color(int biome, Int2ObjectOpenHashMap<Component> colorDescriptors) {
+        return getOrThrow(TFCLayers.getFromLayerId(biome).key().location()).get().color(colorDescriptors);
     }
 
     @Override

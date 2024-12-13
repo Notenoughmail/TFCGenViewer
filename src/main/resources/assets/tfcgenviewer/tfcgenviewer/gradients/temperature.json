@@ -1,5 +1,11 @@
 {
   "reference": "climate",
   "key": "tfcgenviewer.climate.temperature",
-  "tooltip_key": "tfcgenviewer.rock_type.land"
+  "tooltip_keys": [
+    "tfcgenviewer.temperature.0",
+    "tfcgenviewer.temperature.1",
+    "tfcgenviewer.temperature.2",
+    "tfcgenviewer.temperature.3",
+    "tfcgenviewer.temperature.4"
+  ]
 }

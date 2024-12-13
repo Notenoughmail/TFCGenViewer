@@ -82,11 +82,16 @@ public class ColorUtil {
     }
 
     // Drawers
-    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors) -> {
-        final int color = FILL_OCEAN.get().gradient().applyAsInt(region != null ? region.noise() / 2 : 0);
-        colorDescriptors.putIfAbsent(color, FILL_OCEAN.get().tooltip());
-        setPixel(image, x, y, color);
-    };
+    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors) ->
+            setPixel(
+                    image, x, y,
+                    FILL_OCEAN.get().getColor(
+                            region != null ?
+                                    region.noise() / 2 :
+                                    0,
+                            colorDescriptors
+                    )
+            );
     static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         final int color = ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1));
         colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(Objects.hashCode(region))));
@@ -96,13 +101,11 @@ public class ColorUtil {
     // Color getters that are not complex but also not easily (or cleanly) made single line
     static int inlandHeight(Region.Point point, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         if (point.land()) {
-            final int color = IH_LAND.get().gradient().applyAsInt(point.baseLandHeight / 24F);
-            colorDescriptors.putIfAbsent(color, IH_LAND.get().tooltip());
-            return color;
+            return IH_LAND.get().getColor(point.baseLandHeight / 24F, colorDescriptors);
         }
 
         // Deal with it
-        final ColorDefinition color = (
+        return (
                 point.shore() ?
                         point.river() ?
                                 IH_SHALLOW :
@@ -112,30 +115,25 @@ public class ColorUtil {
                                 point.baseOceanDepth < 8 ?
                                         IH_DEEP :
                                         IH_VERY_DEEP
-        ).get();
-        colorDescriptors.putIfAbsent(color.color(), color.tooltip());
-        return color.color();
+        ).get().color(colorDescriptors);
     }
 
-    static ColorDefinition biomeAltitude(int discreteAlt) {
+    static int biomeAltitude(int discreteAlt, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         return (switch (discreteAlt) {
             default -> BA_LOW;
             case 1 -> BA_MEDIUM;
             case 2 -> BA_HIGH;
             case 3 -> BA_MOUNTAIN;
-        }).get();
+        }).get().color(colorDescriptors);
     }
 
     static int rockType(int rock, Int2ObjectOpenHashMap<Component> colorDescriptors) {
-        final ColorGradientDefinition gradient = (switch (rock & 0b11) {
+        return (switch (rock & 0b11) {
             default -> RT_OCEANIC;
             case 1 -> RT_VOLCANIC;
             case 2 -> RT_LAND;
             case 3 -> RT_UPLIFT;
-        }).get();
-        final int color = gradient.gradient().applyAsInt(nextWithSeed(rock >> 2));
-        colorDescriptors.putIfAbsent(color, gradient.tooltip());
-        return color;
+        }).get().getColor(nextWithSeed(rock >> 2), colorDescriptors);
     }
 
     // Default/reference gradients

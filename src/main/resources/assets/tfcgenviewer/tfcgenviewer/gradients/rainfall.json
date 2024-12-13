@@ -1,5 +1,11 @@
 {
   "reference": "climate",
   "key": "tfcgenviewer.climate.rainfall",
-  "tooltip_key": "tfcgenviewer.rock_type.land"
+  "tooltip_keys": [
+    "tfcgenviewer.rainfall.0",
+    "tfcgenviewer.rainfall.1",
+    "tfcgenviewer.rainfall.2",
+    "tfcgenviewer.rainfall.3",
+    "tfcgenviewer.rainfall.4"
+  ]
 }

@@ -26,15 +26,18 @@ import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
 public enum VisualizerType implements IExtensibleEnum {
-    BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
-        final ColorDefinition color = Biomes.color(point.biome);
-        colorDescriptors.putIfAbsent(color.color(), color.tooltip());
-        setPixel(image, x, y, color.color());
-    }, Biomes.key()),
+    BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, Biomes.color(point.biome, colorDescriptors)), Biomes.key()),
     RAINFALL(0b10000000, "rainfall", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
-            final int color = Colors.RAINFALL.get().gradient().applyAsInt(Mth.clampedMap(point.rainfall, 0F, 500F, 0, 0.999F));
-            colorDescriptors.putIfAbsent(color, Colors.RAINFALL.get().tooltip());
+            final int color = Colors.RAINFALL.get().getColor(
+                    Mth.clampedMap(
+                            point.rainfall,
+                            0F,
+                            500F,
+                            0,
+                            1F
+                    ), colorDescriptors
+            );
             setPixel(image, x, y, color);
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
@@ -42,8 +45,16 @@ public enum VisualizerType implements IExtensibleEnum {
     }, RainKey),
     TEMPERATURE(0b10000000, "temperature", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
-            final int color = Colors.TEMPERATURE.get().gradient().applyAsInt(Mth.clampedMap(point.temperature, -33F, 33F, 0F, 0.999F));
-            colorDescriptors.putIfAbsent(color, Colors.TEMPERATURE.get().tooltip());
+            final int color = Colors.TEMPERATURE.get().getColor(
+                    Mth.clampedMap(
+                            point.temperature,
+                            -20F,
+                            30F,
+                            0F,
+                            1F
+                    ),
+                    colorDescriptors
+            );
             setPixel(image, x, y, color);
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
@@ -51,9 +62,7 @@ public enum VisualizerType implements IExtensibleEnum {
     }, TempKey),
     BIOME_ALTITUDE(0b00010000, "biome_altitude", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
-            final ColorDefinition color = biomeAltitude(point.discreteBiomeAltitude());
-            colorDescriptors.putIfAbsent(color.color(), color.tooltip());
-            setPixel(image, x, y, color.color());
+            setPixel(image, x, y, biomeAltitude(point.discreteBiomeAltitude(), colorDescriptors));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
         }
@@ -61,21 +70,19 @@ public enum VisualizerType implements IExtensibleEnum {
     INLAND_HEIGHT(0b00100000, "inland_height", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, inlandHeight(point, colorDescriptors)), InlandHeightKey),
     RIVERS(0b00010000, "rivers_and_mountains", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
-            final ColorDefinition color;
+            final int color;
             if (point.mountain()) {
-                color = (point.baseLandHeight <= 2 ? RM_OCEANIC_VOLCANIC_MOUNTAINS : RM_INLAND_MOUNTAIN).get();
+                color = (point.baseLandHeight <= 2 ? RM_OCEANIC_VOLCANIC_MOUNTAINS : RM_INLAND_MOUNTAIN).get().color(colorDescriptors);
             } else if (point.lake()) {
-                color = RM_LAKE.get();
+                color = RM_LAKE.get().color(colorDescriptors);
             } else {
-                color = biomeAltitude(point.discreteBiomeAltitude());
+                color = biomeAltitude(point.discreteBiomeAltitude(), colorDescriptors);
             }
-            colorDescriptors.putIfAbsent(color.color(), color.tooltip());
-            setPixel(image, x, y, color.color());
+            setPixel(image, x, y, color);
             for (RiverEdge edge : generator.regionGenerator().getOrCreatePartitionPoint(xPos, zPos).rivers()) {
                 final MidpointFractal fractal = edge.fractal();
                 if (fractal.maybeIntersect(xPos, zPos, 0.1F) && fractal.intersect(xPos, zPos, 0.35F)) {
-                    colorDescriptors.putIfAbsent(RM_RIVER.get().color(), RM_RIVER.get().tooltip());
-                    setPixel(image, x, y, RM_RIVER.get().color());
+                    setPixel(image, x, y, RM_RIVER.get().color(colorDescriptors));
                     return; // Stop looking for rivers, we already found one
                 }
             }
@@ -86,9 +93,7 @@ public enum VisualizerType implements IExtensibleEnum {
     ROCK_TYPES(0b01000000, "rock_types", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, rockType(point.rock, colorDescriptors)), RockTypeKey),
     ROCKS(0b01000000, "rocks", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 90, zPos * 128 - 64, 100, null).raw();
-        final ColorDefinition color = Rocks.color(raw);
-        colorDescriptors.putIfAbsent(color.color(), color.tooltip());
-        setPixel(image, x, y, color.color());
+        setPixel(image, x, y, Rocks.color(raw).color(colorDescriptors));
     }, Rocks.key());
 
     static {

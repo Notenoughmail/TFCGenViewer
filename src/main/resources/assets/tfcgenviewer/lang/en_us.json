@@ -63,8 +63,20 @@
   "tfcgenviewer.rock_type.volcanic": "Volcanic",
   "tfcgenviewer.rock_type.uplift": "Uplift",
 
-  "tfcgenviewer.climate.temperature": "Temperature, -33 °C -> 33 °C",
+  "tfcgenviewer.climate.temperature": "Temperature, -20 °C -> 30 °C",
   "tfcgenviewer.climate.rainfall": "Rainfall, 0mm -> 500mm",
+
+  "tfcgenviewer.temperature.0": "-20 to -10 °C",
+  "tfcgenviewer.temperature.1": "-10 to 0 °C",
+  "tfcgenviewer.temperature.2": "0 to 10 °C",
+  "tfcgenviewer.temperature.3": "10 to 20 °C",
+  "tfcgenviewer.temperature.4": "20 to 30 °C",
+
+  "tfcgenviewer.rainfall.0": "0 to 100 mm",
+  "tfcgenviewer.rainfall.1": "100 to 200 mm",
+  "tfcgenviewer.rainfall.2": "200 to 300 mm",
+  "tfcgenviewer.rainfall.3": "300 to 400 mm",
+  "tfcgenviewer.rainfall.4": "400 to 500 mm",
 
   "tfcgenviewer.inland_height.land": "Land Height, low -> high",
   "tfcgenviewer.inland_height.shallow_water": "Shallow Water",
