@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import net.minecraft.client.Minecraft;
@@ -9,9 +10,11 @@ import net.minecraft.client.Options;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraftforge.common.util.Lazy;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum PreviewScale {
@@ -48,6 +51,7 @@ public enum PreviewScale {
     }
 
     public static final PreviewScale[] VALUES = values();
+    public static final Codec<PreviewScale> CODEC = Codec.intRange(0, VALUES.length - 1).xmap(i -> VALUES[i], Enum::ordinal);
 
     public static OptionInstance<PreviewScale> option() {
         return new OptionInstance<>(
@@ -57,7 +61,28 @@ public enum PreviewScale {
                         caption,
                         s.sizeDisplay
                 ),
-                new OptionInstance.IntRange(0, VALUES.length - 1).xmap(i -> VALUES[i], Enum::ordinal), // TODO: 1.4.1 | Change this to a custom range type to fix 242 km only appearing at the very edge of the slider
+                new OptionInstance.SliderableValueSet<>() {
+
+                    @Override
+                    public Optional<PreviewScale> validateValue(PreviewScale pValue) {
+                        return Optional.of(pValue);
+                    }
+
+                    @Override
+                    public Codec<PreviewScale> codec() {
+                        return CODEC;
+                    }
+
+                    @Override
+                    public double toSliderValue(PreviewScale pValue) {
+                        return (double) pValue.ordinal() / (VALUES.length - 1);
+                    }
+
+                    @Override
+                    public PreviewScale fromSliderValue(double pValue) {
+                        return VALUES[(int) (Mth.clamp(pValue, 0D, 0.999D) * VALUES.length)];
+                    }
+                },
                 VALUES[Config.defaultPreviewSize.get()],
                 s -> {}
         );
