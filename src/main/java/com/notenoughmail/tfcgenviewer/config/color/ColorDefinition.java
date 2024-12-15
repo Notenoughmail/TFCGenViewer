@@ -6,6 +6,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,16 +15,29 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-public record ColorDefinition(int color, Component name, int sort) implements Comparable<ColorDefinition>, IWillAppendTo {
+public record ColorDefinition(int color, Component name, int sort, Component tooltip, boolean enabled) implements Comparable<ColorDefinition>, IWillAppendTo {
+
+    public ColorDefinition(int color, Component name, int sort) {
+        this(color, name, sort, name, true);
+    }
 
     public static ColorDefinition parse(JsonObject json, String fallbackKey) {
         if (json.has("color")) {
+            final Component key = Component.translatable(
+                    json.has("key") ?
+                            json.get("key").getAsString() :
+                            fallbackKey
+            );
             return new ColorDefinition(
                     parseColor(json.get("color")),
-                    json.has("key") ?
-                            Component.translatable(json.get("key").getAsString()) :
-                            Component.translatable(fallbackKey),
-                    json.has("sort") ? json.get("sort").getAsInt() : 100
+                    key,
+                    json.has("sort") ?
+                            json.get("sort").getAsInt() :
+                            100,
+                    json.has("tooltip_key") ?
+                            Component.translatable(json.get("tooltip_key").getAsString()) :
+                            key,
+                    !json.has("disabled") || !json.get("disabled").getAsBoolean()
             );
         }
         throw new JsonParseException("Color definition requires a 'color' field to be present");
@@ -39,8 +53,7 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
     };
 
     public static int parseColor(JsonElement color) {
-        if (color.isJsonObject()) {
-            final JsonObject value = color.getAsJsonObject();
+        if (color instanceof JsonObject value) {
             if (hasAll(value, objColorKeys[0])) {
                 return FastColor.ABGR32.color(
                         255,
@@ -56,8 +69,7 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
                 ));
             }
             throw new JsonParseException("A color of an object type should have fields of either [r, g, and b] or [h, s, and v]");
-        } else if (color.isJsonPrimitive()) {
-            final JsonPrimitive prim = color.getAsJsonPrimitive();
+        } else if (color instanceof JsonPrimitive prim) {
             if (prim.isNumber()) {
                 return ColorUtil.rgbToBgr(prim.getAsInt());
             } else if (prim.isString()) {
@@ -97,5 +109,10 @@ public record ColorDefinition(int color, Component name, int sort) implements Co
             sorted = thisString.compareTo(otherString);
         }
         return sorted;
+    }
+
+    public int color(Int2ObjectOpenHashMap<Component> colorDescriptors) {
+        colorDescriptors.putIfAbsent(color, tooltip);
+        return color;
     }
 }

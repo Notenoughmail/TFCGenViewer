@@ -4,5 +4,6 @@
     "g": 100,
     "b": 0
   },
-  "key": "tfcgenviewer.biome_altitude.low"
+  "key": "tfcgenviewer.biome_altitude.low",
+  "tooltip_key": "tfcgenviewer.biome_altitude.low.tooltip"
 }

@@ -5,6 +5,7 @@ import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.mixin.TFCLayersAccessor;
 import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.RegisteredDataManager;
 import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.layer.TFCLayers;
@@ -28,7 +29,7 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
     );
     private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
         final MutableComponent key = Component.empty();
-        types.values().stream().map(Entry::get).distinct().sorted().forEach(def -> {
+        types.values().stream().map(Entry::get).filter(ColorDefinition::enabled).distinct().sorted().forEach(def -> {
             if (def != unknown) {
                 def.appendTo(key);
             }
@@ -64,8 +65,8 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
         return key;
     }
 
-    public int color(int biome) {
-        return getOrThrow(TFCLayers.getFromLayerId(biome).key().location()).get().color();
+    public int color(int biome, Int2ObjectOpenHashMap<Component> colorDescriptors) {
+        return getOrThrow(TFCLayers.getFromLayerId(biome).key().location()).get().color(colorDescriptors);
     }
 
     @Override

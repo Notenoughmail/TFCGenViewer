@@ -4,5 +4,6 @@
     "g": 200,
     "b": 80
   },
-  "key": "tfcgenviewer.biome_altitude.mountain"
+  "key": "tfcgenviewer.biome_altitude.mountain",
+  "tooltip_key": "tfcgenviewer.biome_altitude.mountain.tooltip"
 }

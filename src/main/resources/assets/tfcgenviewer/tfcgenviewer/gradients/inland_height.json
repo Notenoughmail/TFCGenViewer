@@ -1,4 +1,9 @@
 {
   "reference": "green",
-  "key": "tfcgenviewer.inland_height.land"
+  "key": "tfcgenviewer.inland_height.land",
+  "tooltip_keys": [
+    "tfcgenviewer.biome_altitude.low",
+    "tfcgenviewer.biome_altitude.medium",
+    "tfcgenviewer.biome_altitude.high"
+  ]
 }

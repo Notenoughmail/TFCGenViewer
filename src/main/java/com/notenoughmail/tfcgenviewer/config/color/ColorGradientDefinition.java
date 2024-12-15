@@ -6,18 +6,24 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.function.DoubleToIntFunction;
 
-public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name) implements IWillAppendTo {
+public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name, Component[] tooltips) implements IWillAppendTo {
 
-    private static final double[] keyValues = new double[] { 0, 0.2, 0.4, 0.6, 0.8, 0.999 };
+    public ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {
+        this(gradient, name, new Component[]{ name });
+    }
+
+    private static final double[] keyValues = new double[] { 0, 0.2, 0.4, 0.6, 0.8, 0.9999999 };
 
     public static ColorGradientDefinition parse(ResourceLocation id, JsonObject json) {
         final DoubleToIntFunction gradient;
@@ -32,13 +38,32 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         } else {
             throw new JsonParseException("Color gradient definition requires a 'gradient' or 'reference' field");
         }
+        final Component key = Component.translatable(
+                json.has("key") ?
+                        json.get("key").getAsString() :
+                        id.toLanguageKey("tfcgenviewer.gradient")
+        );
         return new ColorGradientDefinition(
                 gradient,
-                json.has("key") ?
-                        Component.translatable(json.get("key").getAsString()) :
-                        Component.translatable(id.toLanguageKey("tfcgenviewer.gradient"))
-
+                key,
+                json.has("tooltip_keys") ?
+                        getTooltips(json.get("tooltip_keys")) :
+                        new Component[] { key }
         );
+    }
+
+    private static Component[] getTooltips(JsonElement json) {
+        if (json instanceof JsonArray array) {
+            if (array.isEmpty()) {
+                throw new JsonParseException("tooltip_keys array should have at least one value!");
+            }
+            final Component[] tooltips = new Component[array.size()];
+            for (int i = 0 ; i < tooltips.length ; i++) {
+                tooltips[i] = Component.translatable(array.get(i).getAsString());
+            }
+            return tooltips;
+        }
+        throw new JsonParseException("tooltip_keys property should be an array of strings!");
     }
 
     private static final String[] gradientKeys = new String[] { "from", "to" };
@@ -47,16 +72,14 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         if (gradient.isJsonPrimitive()) {
             final int color = ColorDefinition.parseColor(gradient);
             return value -> color;
-        } else if (gradient.isJsonObject()) {
-            final JsonObject json = gradient.getAsJsonObject();
+        } else if (gradient instanceof JsonObject json) {
             if (ColorDefinition.hasAll(json, gradientKeys)) {
                 final int from = ColorDefinition.parseColor(json.get("from"));
                 final int to = ColorDefinition.parseColor(json.get("to"));
                 return ColorUtil.linearGradient(from, to);
             }
             throw new JsonParseException("A color gradient of an object type needs a 'from' and a 'to' field");
-        } else if (gradient.isJsonArray()) {
-            final JsonArray array = gradient.getAsJsonArray();
+        } else if (gradient instanceof JsonArray array) {
             return switch (array.size()) {
                 case 0 -> throw new JsonParseException("A color gradient array cannot be empty!");
                 case 1 -> {
@@ -94,6 +117,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         };
     }
 
+    @Override
     public void appendTo(MutableComponent text, boolean end) {
         final MutableComponent colors = Component.empty();
         for (double i : keyValues) {
@@ -105,5 +129,19 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
                 name
         ));
         if (!end) text.append(CommonComponents.NEW_LINE);
+    }
+
+    public int getColor(double d, Int2ObjectOpenHashMap<Component> colorDescriptors) {
+        d = Mth.clamp(d, 0D, 0.9999999D);
+        final int color = gradient.applyAsInt(d);
+        if (!colorDescriptors.containsKey(color)) {
+            colorDescriptors.put(color, tooltips[
+                    tooltips.length == 1 ?
+                            0 :
+                            (int) Mth.map(d, 0D, 1D, 0, tooltips.length)
+                    ]
+            );
+        }
+        return color;
     }
 }
