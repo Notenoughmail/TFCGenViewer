@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.PreviewScale;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
 import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
@@ -38,7 +39,7 @@ public class ViewWorldScreen extends Screen {
     private final boolean allowExport, coordinatesVisible, seedVisible;
     private final int xCenter, zCenter;
 
-    private OptionInstance<Integer> scale;
+    private OptionInstance<PreviewScale> scale;
     private OptionInstance<VisualizerType> visualizerType;
     private PreviewPane viewPane;
     private InfoPane infoPane;
@@ -72,28 +73,8 @@ public class ViewWorldScreen extends Screen {
         final SingleColumnOptionsList options = new SingleColumnOptionsList(minecraft, (width - previewPixels) / 2 -10, height, 32, height - 32, 25);
 
         options.add(
-                scale = new OptionInstance<>(
-                        "tfcgenviewer.preview_world.preview_scale",
-                        OptionInstance.noTooltip(),
-                        (cation, scale) -> Options.genericValueLabel(
-                                cation,
-                                Component.translatable(
-                                        "tfcgenviewer.preview_world.km",
-                                        ImageBuilder.previewSizeKm(scale)
-                                )
-                        ),
-                        new OptionInstance.IntRange(0, 6),
-                        Config.defaultPreviewSize.get(),
-                        scale -> {}
-                ),
-                visualizerType = new OptionInstance<>(
-                        "tfcgenviewer.preview_world.visualizer_type",
-                        OptionInstance.noTooltip(),
-                        (caption, task) -> task.getName(),
-                        new OptionInstance.Enum<>(visualizers, VisualizerType.CODEC),
-                        visualizers.contains(VisualizerType.RIVERS) ? VisualizerType.RIVERS : visualizers.get(0),
-                        task -> {}
-                ),
+                scale = PreviewScale.option(),
+                visualizerType = VisualizerType.option(visualizers),
                 new OptionInstance<>(
                         "button.tfcgenviewer.apply",
                         OptionInstance.noTooltip(),
@@ -174,6 +155,7 @@ public class ViewWorldScreen extends Screen {
                     viewPane.setInfo(info);
                 },
                 Config.generationProgress.get() ? viewPane::setProgress : i -> {},
+                coordinatesVisible,
                 seed
         );
     }

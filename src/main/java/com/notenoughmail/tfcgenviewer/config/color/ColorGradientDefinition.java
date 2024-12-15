@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -18,7 +17,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.function.DoubleToIntFunction;
 
-// TODO: Next | Support multiple tooltip values
 public record ColorGradientDefinition(DoubleToIntFunction gradient, Component name, Component[] tooltips) implements IWillAppendTo {
 
     public ColorGradientDefinition(DoubleToIntFunction gradient, Component name) {

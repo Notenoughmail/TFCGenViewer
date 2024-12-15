@@ -29,7 +29,7 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
     );
     private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
         final MutableComponent key = Component.empty();
-        types.values().stream().map(Entry::get).distinct().sorted().forEach(def -> {
+        types.values().stream().map(Entry::get).filter(ColorDefinition::enabled).distinct().sorted().forEach(def -> {
             if (def != unknown) {
                 def.appendTo(key);
             }

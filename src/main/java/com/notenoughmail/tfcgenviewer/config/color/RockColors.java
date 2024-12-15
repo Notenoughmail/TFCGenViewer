@@ -29,7 +29,7 @@ public class RockColors extends SimpleJsonResourceReloadListener {
     );
     private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
         final MutableComponent key = Component.empty();
-        colorDefinitions.values().stream().distinct().sorted().forEach(def -> def.appendTo(key));
+        colorDefinitions.values().stream().filter(ColorDefinition::enabled).distinct().sorted().forEach(def -> def.appendTo(key));
         unknown.appendTo(key, true);
         return key;
     });

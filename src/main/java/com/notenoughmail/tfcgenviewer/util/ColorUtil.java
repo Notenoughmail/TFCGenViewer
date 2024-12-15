@@ -1,7 +1,5 @@
 package com.notenoughmail.tfcgenviewer.util;
 
-import com.notenoughmail.tfcgenviewer.config.color.ColorDefinition;
-import com.notenoughmail.tfcgenviewer.config.color.ColorGradientDefinition;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.network.chat.Component;
@@ -36,7 +34,7 @@ public class ColorUtil {
         );
     }
 
-    // TODO: 1.21.x / 1.5.0 | Rework this to make the below comment obsolete
+    // TODO: 1.21.x | Rework this to make the below comment obsolete
     /*
     * This does not work if the input value is exactly 1 (due to the flooring of the value * parts.length)
     * this is dealt with by clamping things 0.999 and ignoring it

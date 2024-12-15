@@ -2,8 +2,6 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;

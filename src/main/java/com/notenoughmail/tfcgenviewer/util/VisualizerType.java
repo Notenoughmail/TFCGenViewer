@@ -2,13 +2,13 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
-import com.notenoughmail.tfcgenviewer.config.color.ColorDefinition;
 import com.notenoughmail.tfcgenviewer.config.color.Colors;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
@@ -116,6 +116,17 @@ public enum VisualizerType implements IExtensibleEnum {
         this.name = Component.translatable("tfcgenviewer.preview_world.visualizer_type." + name);
         this.drawer = drawer;
         this.colorKey = colorKey;
+    }
+
+    public static OptionInstance<VisualizerType> option(List<VisualizerType> visualizers) {
+        return new OptionInstance<>(
+                "tfcgenviewer.preview_world.visualizer_type",
+                OptionInstance.noTooltip(),
+                (caption, task) -> task.getName(),
+                new OptionInstance.Enum<>(visualizers, VisualizerType.CODEC),
+                visualizers.contains(VisualizerType.RIVERS) ? VisualizerType.RIVERS : visualizers.get(0),
+                task -> {}
+        );
     }
 
     public static List<VisualizerType> getVisualizers(byte permission) {

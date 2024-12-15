@@ -4,6 +4,7 @@ import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.PreviewScale;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
 import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
@@ -97,8 +98,9 @@ public class PreviewGenerationScreen extends Screen {
     private Runnable seedTick;
 
     private OptionInstance<Boolean> flatBedrock, spawnOverlay;
-    private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset, previewScale;
+    private OptionInstance<Integer> spawnDist, spawnCenterX, spawnCenterZ, tempScale, rainScale, xOffset, zOffset;
     private OptionInstance<Double> tempConst, rainConst, continentalness, grassDensity;
+    private OptionInstance<PreviewScale> previewScale;
     private PreviewPane previewPane;
 
     public PreviewGenerationScreen(CreateWorldScreen parent) {
@@ -176,30 +178,10 @@ public class PreviewGenerationScreen extends Screen {
                     continentalness = pctOpt("tfc.create_world.continentalness", worldSettings.continentalness()),
                     grassDensity = pctOpt("tfc.create_world.grass_density", worldSettings.grassDensity()),
                     spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.preview_world.spawn_overlay", false),
-                    previewScale = new OptionInstance<>(
-                            "tfcgenviewer.preview_world.preview_scale",
-                            OptionInstance.noTooltip(),
-                            (caption, scale) -> Options.genericValueLabel(
-                                    caption,
-                                    Component.translatable(
-                                            "tfcgenviewer.preview_world.km",
-                                            ImageBuilder.previewSizeKm(scale)
-                                    )
-                            ),
-                            new OptionInstance.IntRange(0, 6),
-                            Config.defaultPreviewSize.get(),
-                            scale -> {}
-                    ),
+                    previewScale = PreviewScale.option(),
                     xOffset = offsetOption("tfcgenviewer.preview_world.x_offset"),
                     zOffset = offsetOption("tfcgenviewer.preview_world.z_offset"),
-                    visualizerType = new OptionInstance<>(
-                            "tfcgenviewer.preview_world.visualizer_type",
-                            OptionInstance.noTooltip(),
-                            (caption, task) -> task.getName(),
-                            new OptionInstance.Enum<>(List.of(VisualizerType.VALUES), VisualizerType.CODEC),
-                            VisualizerType.RIVERS,
-                            task -> {}
-                    ),
+                    visualizerType = VisualizerType.option(List.of(VisualizerType.VALUES)),
                     new OptionInstance<>(
                             "selectWorld.enterSeed",
                             OptionInstance.noTooltip(),
@@ -315,6 +297,7 @@ public class PreviewGenerationScreen extends Screen {
                             previewPane.setInfo(info);
                         },
                         Config.generationProgress.get() ? previewPane::setProgress : i -> {},
+                        true,
                         seedInUse
                 );
             }

@@ -1,5 +1,6 @@
 package com.notenoughmail.tfcgenviewer.config;
 
+import com.notenoughmail.tfcgenviewer.util.PreviewScale;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -23,7 +24,7 @@ public class Config {
                 " Conversion to km:",
                 "     (2 ^ (defaultPreviewSize + 5)) * 128 / 1000",
                 ""
-                ).defineInRange("defaultPreviewSize", 3, 0, 6);
+                ).defineInRange("defaultPreviewSize", 3, 0, PreviewScale.VALUES.length - 1);
 
         useThrobber = builder.comment(
                 "",

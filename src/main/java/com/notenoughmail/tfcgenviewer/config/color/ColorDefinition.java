@@ -15,10 +15,10 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-public record ColorDefinition(int color, Component name, int sort, Component tooltip) implements Comparable<ColorDefinition>, IWillAppendTo {
+public record ColorDefinition(int color, Component name, int sort, Component tooltip, boolean enabled) implements Comparable<ColorDefinition>, IWillAppendTo {
 
     public ColorDefinition(int color, Component name, int sort) {
-        this(color, name, sort, name);
+        this(color, name, sort, name, true);
     }
 
     public static ColorDefinition parse(JsonObject json, String fallbackKey) {
@@ -36,7 +36,8 @@ public record ColorDefinition(int color, Component name, int sort, Component too
                             100,
                     json.has("tooltip_key") ?
                             Component.translatable(json.get("tooltip_key").getAsString()) :
-                            key
+                            key,
+                    !json.has("disabled") || !json.get("disabled").getAsBoolean()
             );
         }
         throw new JsonParseException("Color definition requires a 'color' field to be present");

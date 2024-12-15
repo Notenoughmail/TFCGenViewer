@@ -12,10 +12,8 @@ import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -49,64 +47,6 @@ public class ImageBuilder {
 
     private static final AtomicReference<BuilderState> BUILDER_STATE = new AtomicReference<>(BuilderState.OFF);
 
-    private static final ResourceLocation[] PREVIEW_LOCATIONS = Util.make(new ResourceLocation[7], array -> {
-        for (int i = 0 ; i < 7 ; i++) {
-            array[i] = TFCGenViewer.identifier("preview/" + i);
-        }
-    });
-
-    private static final DynamicTexture[] PREVIEWS = Util.make(new DynamicTexture[7], array -> {
-        for (int i = 0 ; i < 7 ; i++) {
-            final int size = previewSize(i);
-            try {
-                // Do not try-with-resources or #close() these
-                DynamicTexture texture = new DynamicTexture(size, size, false);
-                array[i] = texture;
-                Minecraft.getInstance().getTextureManager().register(PREVIEW_LOCATIONS[i], texture);
-            } catch (Exception exception) {
-                TFCGenViewer.LOGGER.error("Could not make dynamic texture for size %d (scale %d)! Error:\n".formatted(size, i), exception);
-            }
-        }
-    });
-
-    private static void upload(int scale, NativeImage image) {
-        clearPreviews();
-        final DynamicTexture preview = PREVIEWS[scale];
-        preview.setPixels(image);
-        preview.upload();
-    }
-
-    private static void clearPreviews() {
-        for (int i = 0 ; i < 7 ; i++) {
-            final DynamicTexture preview = PREVIEWS[i];
-            // If someone is really "lucky" the game will attempt to render an image which has been closed via this
-            // If they decide to change this config mid-generation and it explodes, that's on them tbh
-            if (!Config.useThrobber.get() && preview.getPixels() == currentImage) continue;
-            // Free the previously used images from memory
-            preview.setPixels(null);
-        }
-    }
-
-    public static BuilderState getState() {
-        return BUILDER_STATE.get();
-    }
-
-    /**
-     * Gets the preview size in grids from the scale option (0-6)
-     */
-    public static int previewSize(int scale) {
-        return 2 << (scale + 4); // == Math.pow(2, scale + 5)
-    }
-
-    public static int lineWidth(int scale) {
-        return previewSize(scale) >> 9; // == previewSize(scale) / 128
-    }
-
-    public static String previewSizeKm(int scale) {
-        return "%.1f".formatted(previewSize(scale) * 128 / 1000F);
-    }
-
-
     private static NativeImage currentImage, transientImage;
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
@@ -122,9 +62,10 @@ public class ImageBuilder {
             int spawnDistBlocks,
             int spawnXBlocks,
             int spawnZBlocks,
-            int scale,
+            PreviewScale scale,
             Consumer<PreviewInfo> infoReturn,
             Consumer<Integer> progressReturn,
+            boolean showCoords,
             long seed // For error reports
     ) {
         if (BUILDER_STATE.get() == BuilderState.FINALIZE) {
@@ -134,7 +75,7 @@ public class ImageBuilder {
         BUILDER_STATE.set(BuilderState.SETUP);
         if (Config.useThrobber.get()) {
             infoReturn.accept(PreviewInfo.EMPTY);
-            clearPreviews();
+            PreviewScale.clearPreviews(currentImage);
         }
         if (currentImage != null) {
             currentImage.close();
@@ -144,7 +85,7 @@ public class ImageBuilder {
         builderProcess = CompletableFuture.supplyAsync(() -> {
             BUILDER_STATE.set(BuilderState.RUNNING);
             final Stopwatch timer = Stopwatch.createStarted();
-            final int previewSizeGrids = previewSize(scale);
+            final int previewSizeGrids = scale.previewSize;
 
             final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
             transientImage = image;
@@ -198,7 +139,7 @@ public class ImageBuilder {
                             final String errorMsg = GeneratorPreviewException.buildMessage(
                                     seed,
                                     visualizer,
-                                    scale,
+                                    scale.ordinal(),
                                     xCenterGrids,
                                     zCenterGrids,
                                     generator,
@@ -223,20 +164,18 @@ public class ImageBuilder {
                 final int zSpawnCenterGrids = (spawnZBlocks / (16 * 8)) - zDrawOffsetGrids;
                 final int radiusGrids = spawnDistBlocks / (16 * 8);
 
-                final int lineWidthPixels = lineWidth(scale);
-
                 int color = Colors.SPAWN_BORDER.get().color(colorDescriptors);
 
-                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, lineWidthPixels, color);
-                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, lineWidthPixels, color);
-                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids + radiusGrids, lineWidthPixels, color);
-                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, lineWidthPixels, color);
+                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, scale.lineWidth, color);
+                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, scale.lineWidth, color);
+                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids + radiusGrids, scale.lineWidth, color);
+                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, scale.lineWidth, color);
 
                 color = Colors.SPAWN_RETICULE.get().color(colorDescriptors);
 
                 final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
-                hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, lineWidthPixels, color);
-                vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, lineWidthPixels, color);
+                hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, scale.lineWidth, color);
+                vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, scale.lineWidth, color);
             }
 
             if (!FMLEnvironment.production && visualizer.name().equals("DEV")) {
@@ -244,30 +183,41 @@ public class ImageBuilder {
                     final int color = color(255, region.hashCode());
                     colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
 
-                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, 0, color);
-                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, 0, color);
+                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
 
-                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, 0, color);
-                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, 0, color);
+                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
+                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
                 }
             }
 
-            final String previewKm = previewSizeKm(scale);
+            final String previewKm = scale.previewSizeKm;
             timer.stop();
+            final String time = "%.1f".formatted(timer.elapsed(TimeUnit.MILLISECONDS) / 1000F);
             return new ProcessReturn(
                     new PreviewInfo(
-                        Component.translatable(
-                                "tfcgenviewer.preview_world.preview_info",
-                                visitedRegions.size(),
-                                "%.1f".formatted(timer.elapsed(TimeUnit.MILLISECONDS) / 1000F),
-                                previewKm,
-                                previewKm,
-                                xCenterGrids * 128,
-                                zCenterGrids * 128,
-                                visualizer.getName(),
-                                visualizer.getColorKey()
-                        ),
-                        PREVIEW_LOCATIONS[scale],
+                        showCoords ?
+                                Component.translatable(
+                                        "tfcgenviewer.preview_world.preview_info",
+                                        visitedRegions.size(),
+                                        time,
+                                        previewKm,
+                                        previewKm,
+                                        xCenterGrids * 128,
+                                        zCenterGrids * 128,
+                                        visualizer.getName(),
+                                        visualizer.getColorKey()
+                                ) :
+                                Component.translatable(
+                                    "tfcgenviewer.preview_world.preview_info.no_coords",
+                                    visitedRegions.size(),
+                                    time,
+                                    previewKm,
+                                    previewKm,
+                                    visualizer.getName(),
+                                    visualizer.getColorKey()
+                                ),
+                        scale.textureId,
                         previewSizeGrids,
                         xDrawOffsetGrids * 128,
                         zDrawOffsetGrids * 128,
@@ -290,12 +240,12 @@ public class ImageBuilder {
             if (pr != null) {
                 currentImage = pr.currentImage();
                 imageName = pr.imageName();
-                upload(scale, currentImage);
+                scale.upload(currentImage);
                 infoReturn.accept(pr.previewInfo());
             } else {
                 currentImage = null;
                 infoReturn.accept(PreviewInfo.ERROR);
-                clearPreviews();
+                PreviewScale.clearPreviews(currentImage);
             }
             if (Config.dingWhenGenerated.get()) {
                 Minecraft
@@ -343,7 +293,7 @@ public class ImageBuilder {
             // A very rare error can happen when a build process finishes and the previews are cleared
             // at just the right time where the screen will attempt to display a freed image
             // The builder already clears the previews when it finishes so this should be fine
-            clearPreviews();
+            PreviewScale.clearPreviews(currentImage);
         }
         cancelRunning();
     }
