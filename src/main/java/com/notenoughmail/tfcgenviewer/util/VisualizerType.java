@@ -2,7 +2,8 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
-import com.notenoughmail.tfcgenviewer.config.color.Colors;
+import com.notenoughmail.tfcgenviewer.color.ColorGradientDefinition;
+import com.notenoughmail.tfcgenviewer.color.Colors;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
@@ -10,6 +11,7 @@ import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.IExtensibleEnum;
@@ -19,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static com.notenoughmail.tfcgenviewer.config.color.BiomeColors.Biomes;
-import static com.notenoughmail.tfcgenviewer.config.color.Colors.*;
-import static com.notenoughmail.tfcgenviewer.config.color.RockColors.Rocks;
+import static com.notenoughmail.tfcgenviewer.color.BiomeColors.Biomes;
+import static com.notenoughmail.tfcgenviewer.color.Colors.*;
+import static com.notenoughmail.tfcgenviewer.color.RockColors.Rocks;
 import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
 
@@ -48,8 +50,8 @@ public enum VisualizerType implements IExtensibleEnum {
             final int color = Colors.TEMPERATURE.get().getColor(
                     Mth.clampedMap(
                             point.temperature,
-                            -20F,
-                            30F,
+                            -23F,
+                            33F,
                             0F,
                             1F
                     ),
@@ -98,7 +100,14 @@ public enum VisualizerType implements IExtensibleEnum {
 
     static {
         if (!FMLEnvironment.production) {
-            create("DEV", 0, "dev", ColorUtil.dev, Component::empty);
+            create("DEV", 0, "dev", dev, Component::empty);
+            create("BORDER", 0, "border", dev, Component::empty);
+            create("GRADIENT_TESTS", 0, "gradient_tests", gradientTest, () -> {
+                final MutableComponent text = Component.empty();
+                new ColorGradientDefinition(experimentalGradient.get(), Component.literal("Experimental Gradient")).appendTo(text, true);
+                experimentalGradient.clearCache();
+                return text;
+            });
         }
     }
 
@@ -136,6 +145,8 @@ public enum VisualizerType implements IExtensibleEnum {
         }
         if (!FMLEnvironment.production) {
             visualizers.add(valueOf("DEV"));
+            visualizers.add(valueOf("BORDER"));
+            visualizers.add(valueOf("GRADIENT_TESTS"));
         }
         return visualizers;
     }

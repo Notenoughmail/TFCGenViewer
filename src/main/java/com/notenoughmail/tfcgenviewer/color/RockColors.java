@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config.color;
+package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -27,7 +27,7 @@ public class RockColors extends SimpleJsonResourceReloadListener {
             Component.translatable("rock.tfcgenviewer.unknown"),
             100
     );
-    private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
+    private final CacheableSupplier<Component> key = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         colorDefinitions.values().stream().filter(ColorDefinition::enabled).distinct().sorted().forEach(def -> def.appendTo(key));
         unknown.appendTo(key, true);

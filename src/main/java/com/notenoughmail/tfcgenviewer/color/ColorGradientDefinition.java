@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config.color;
+package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -108,7 +108,9 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         return switch (ref.toLowerCase(Locale.ROOT)) {
             case "blue", "ocean" -> ColorUtil.blue;
             case "green", "land" -> ColorUtil.green;
-            case "climate", "temp", "temperature", "rain", "rainfall" -> ColorUtil.climate;
+            case "climate" -> ColorUtil.legacy_climate;
+            case "temp", "temperature" -> ColorUtil.temperature;
+            case "rain", "rainfall" -> ColorUtil.rainfall;
             case "volcanic", "volcanic_rock" -> ColorUtil.volcanic;
             case "uplift", "uplift_rock" -> ColorUtil.uplift;
             case "gray", "grey", "grayscale", "greyscale" -> ColorUtil.grayscale;

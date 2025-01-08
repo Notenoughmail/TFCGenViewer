@@ -3,8 +3,8 @@ package com.notenoughmail.tfcgenviewer.util;
 import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.config.Config;
-import com.notenoughmail.tfcgenviewer.config.color.Colors;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
@@ -96,6 +96,7 @@ public class ImageBuilder {
             final Set<Region> visitedRegions = new HashSet<>();
             final Region[] cache = new Region[previewSizeGrids * previewSizeGrids];
             final Int2ObjectOpenHashMap<Component> colorDescriptors = new Int2ObjectOpenHashMap<>();
+            colorDescriptors.defaultReturnValue(Component.literal("No tooltip available"));
 
             for (int x = 0; x < previewSizeGrids; x++) {
                 progressReturn.accept(102 * x / previewSizeGrids);
@@ -178,7 +179,7 @@ public class ImageBuilder {
                 vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, scale.lineWidth, color);
             }
 
-            if (!FMLEnvironment.production && visualizer.name().equals("DEV")) {
+            if (!FMLEnvironment.production && visualizer.name().equals("BORDER")) {
                 for (Region region : visitedRegions) {
                     final int color = color(255, region.hashCode());
                     colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));

@@ -8,6 +8,10 @@ import java.util.function.Supplier;
  */
 public class CacheableSupplier<T> implements Supplier<T> {
 
+    public static <T> CacheableSupplier<T> of(Supplier<T> supplier) {
+        return new CacheableSupplier<>(supplier);
+    }
+
     private final Supplier<T> supplier;
     private T value;
 
