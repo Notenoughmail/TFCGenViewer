@@ -7,7 +7,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.DoubleToIntFunction;
@@ -19,7 +18,7 @@ import static net.minecraft.util.FastColor.ABGR32.*;
 
 public class ColorUtil {
 
-    private static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
+    public static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
 
     // A blank region for use when the region generator produces nonsense, which happens on occasion with 262km
     // Attempting to travel to a location represented by the failure state will result in a JVM crash
@@ -80,7 +79,7 @@ public class ColorUtil {
         return value -> parts[Mth.floor(value * parts.length)].applyAsInt((value * parts.length) % 1);
     }
 
-    public static int rgbToBgr(int rgb) {
+    public static int rgb2bgr(int rgb) {
         return color(
                 255,
                 FastColor.ARGB32.blue(rgb),
@@ -89,7 +88,7 @@ public class ColorUtil {
         );
     }
 
-    public static int bgrToRgb(int bgr) {
+    public static int bgr2rgb(int bgr) {
         return FastColor.ARGB32.color(
                 255,
                 red(bgr),

@@ -123,7 +123,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
     public void appendTo(MutableComponent text, boolean end) {
         final MutableComponent colors = Component.empty();
         for (double i : keyValues) {
-            colors.append(Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgrToRgb(gradient.applyAsInt(i)))));
+            colors.append(Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgr2rgb(gradient.applyAsInt(i)))));
         }
         text.append(Component.translatable(
                 "tfcgenviewer.preview_world.color_key_template",

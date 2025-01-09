@@ -6,6 +6,7 @@
   "button.tfcgenviewer.save": "Save",
   "button.tfcgenviewer.current_seed": "Current seed: %s",
   "button.tfcgenviewer.current_seed.tooltip": "Click to copy",
+  "button.tfcgenviewer.edit_rocks": "Edit Rocks",
 
   "tfcgenviewer.preview_world.title": "Preview World",
   "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
@@ -33,6 +34,18 @@
   "tfcgenviewer.preview_world.km": "%s km",
   "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
   "tfcgenviewer.preview_world.preview_pos": "(%s,%s)",
+
+  "tfcgenviewer.rock_editor.title": "Edit Rocks",
+  "tfcgenviewer.rock_editor.graph": "Graph",
+  "tfcgenviewer.rock_editor.validate": "Validate",
+  "tfcgenviewer.rock_editor.validate.fail": "Failed to validate: %s",
+  "tfcgenviewer.rock_editor.validate.success": "Validation Successful",
+  "tfcgenviewer.rock_editor.validate.success_special": "Congratulations! Validation Successful!",
+  "tfcgenviewer.rock_editor.rock_settings": "Rock Settings",
+
+  "tfcgenviewer.rock_editor.no_spike": "No Spike Block",
+  "tfcgenviewer.rock_editor.no_loose": "No Loose Block",
+  "tfcgenviewer.rock_editor.no_mossy_loose": "No Mossy Loose Block",
 
   "rock.tfcgenviewer.unknown": "Unknown Rock",
   "rock.tfc.andesite": "Andesite",

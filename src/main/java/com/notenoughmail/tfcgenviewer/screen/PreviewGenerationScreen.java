@@ -6,19 +6,16 @@ import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.PreviewScale;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
-import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
-import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
-import com.notenoughmail.tfcgenviewer.util.custom.SeedValueSet;
-import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
+import com.notenoughmail.tfcgenviewer.util.custom.*;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
+import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,17 +32,18 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
-import java.util.function.Consumer;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PreviewGenerationScreen extends Screen {
 
-    public static final Component TITLE = Component.translatable("tfcgenviewer.preview_world.title");
-    public static final Component INVALID_GENERATOR = Component.translatable("tfcgenviewer.preview_world.invalid_generator");
-    public static final Component APPLY = Component.translatable("button.tfcgenviewer.apply");
-    public static final Component SAVE = Component.translatable("button.tfcgenviewer.save");
-    public static final Component EXPORT = Component.translatable("button.tfcgenviewer.export");
+    public static final Component
+            TITLE = Component.translatable("tfcgenviewer.preview_world.title"),
+            INVALID_GENERATOR = Component.translatable("tfcgenviewer.preview_world.invalid_generator"),
+            APPLY = Component.translatable("button.tfcgenviewer.apply"),
+            SAVE = Component.translatable("button.tfcgenviewer.save"),
+            EXPORT = Component.translatable("button.tfcgenviewer.export"),
+            EDIT_ROCKS = Component.translatable("button.tfcgenviewer.edit_rocks");
     public static final ResourceLocation COMPASS = TFCGenViewer.identifier("textures/gui/compass.png");
 
     // Taken from TFC's create world screen
@@ -102,6 +100,8 @@ public class PreviewGenerationScreen extends Screen {
     private OptionInstance<Double> tempConst, rainConst, continentalness, grassDensity;
     private OptionInstance<PreviewScale> previewScale;
     private PreviewPane previewPane;
+    @Nullable
+    private RockLayerSettings rocks;
 
     public PreviewGenerationScreen(CreateWorldScreen parent) {
         super(TITLE);
@@ -112,6 +112,7 @@ public class PreviewGenerationScreen extends Screen {
         generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
+        rocks = worldSettings == null ? null : worldSettings.rockLayerSettings();
     }
 
     @Nullable
@@ -153,6 +154,10 @@ public class PreviewGenerationScreen extends Screen {
     public void onClose() {
         assert minecraft != null;
         minecraft.setScreen(parent);
+    }
+
+    @Override
+    public void removed() {
         ImageBuilder.cancelAndClearPreviews();
     }
 
@@ -195,32 +200,9 @@ public class PreviewGenerationScreen extends Screen {
                             String.valueOf(seedInUse),
                             s -> {}
                     ),
-                    new OptionInstance<>(
-                            "button.tfcgenviewer.apply",
-                            OptionInstance.noTooltip(),
-                            (caption, bool) -> caption,
-                            OptionInstance.BOOLEAN_VALUES,
-                            false,
-                            bool -> {}
-                    ) {
-                        @Override
-                        public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
-                            return Button.builder(APPLY, button -> applyUpdates(true)).bounds(pX, pY, pWidth, 20).build();
-                        }
-                    },
-                    new OptionInstance<>(
-                            "button.tfcgenviewer.export",
-                            OptionInstance.noTooltip(),
-                            (caption, bool) -> caption,
-                            OptionInstance.BOOLEAN_VALUES,
-                            false,
-                            bool -> {}
-                    ) {
-                        @Override
-                        public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer pOnValueChanged) {
-                            return Button.builder(EXPORT, button -> ImageBuilder.exportImage()).bounds(pX, pY, pWidth, 20).build();
-                        }
-                    }
+                    new ButtonOption("button.tfcgenviewer.apply", APPLY, b -> applyUpdates(true)),
+                    new ButtonOption("button.tfcgenviewer.export", EXPORT, b -> ImageBuilder.exportImage()),
+                    new ButtonOption("button.tfcgenviewer.edit_rocks", EDIT_ROCKS, b -> minecraft.setScreen(new EditRocksScreen(this, worldSettings.rockLayerSettings())))
             );
             addRenderableWidget(options);
 
@@ -242,11 +224,9 @@ public class PreviewGenerationScreen extends Screen {
             addRenderableWidget(Button.builder(SAVE, button -> {
                 applyUpdates(false);
                 minecraft.setScreen(parent);
-                ImageBuilder.cancelAndClearPreviews();
             }).bounds((width - previewPixels) / 2 - 90, height - 28, 80, 20).build());
             addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> {
                 minecraft.setScreen(parent);
-                ImageBuilder.cancelAndClearPreviews();
             }).bounds((width + previewPixels) / 2 + 10, height - 28, 80, 20).build());
         } else {
             addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> minecraft.setScreen(parent)).bounds(width / 2 - 30, height - 28, 60, 20).build());
@@ -263,8 +243,8 @@ public class PreviewGenerationScreen extends Screen {
                     0.49 < tempConst.get() && tempConst.get() < 0.51 ? tempScale.get() : 0,
                     (float) (tempConst.get() * 2.0 - 1.0),
                     0.49 < rainConst.get() && rainConst.get() < 0.51 ? rainScale.get() : 0,
-                    (float) (rainConst.get() * 2.0 -1.0),
-                    worldSettings.rockLayerSettings(),
+                    (float) (rainConst.get() * 2.0 - 1.0),
+                    rocks,
                     continentalness.get().floatValue(),
                     grassDensity.get().floatValue()
             );
@@ -302,5 +282,9 @@ public class PreviewGenerationScreen extends Screen {
                 );
             }
         }
+    }
+
+    public void setRocks(RockLayerSettings rocks) {
+        this.rocks = rocks;
     }
 }

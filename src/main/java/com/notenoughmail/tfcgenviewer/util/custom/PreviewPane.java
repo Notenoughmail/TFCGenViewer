@@ -49,7 +49,7 @@ public class PreviewPane extends AbstractWidget {
         } else {
             graphics.blit(previewInfo.image(), getX(), getY(), 0, 0, size, size, size, size);
         }
-        if (!(previewInfo.empty() || previewInfo.error()) && isMouseOver(pMouseX, pMouseY)) {
+        if (previewInfo.preview() && isMouseOver(pMouseX, pMouseY)) {
             switch (tooltipMode) {
                 case COORDS -> {
                     final int
