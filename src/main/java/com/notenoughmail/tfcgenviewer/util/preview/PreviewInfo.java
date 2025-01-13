@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.preview;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;

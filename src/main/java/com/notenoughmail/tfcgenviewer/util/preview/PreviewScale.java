@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.preview;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;

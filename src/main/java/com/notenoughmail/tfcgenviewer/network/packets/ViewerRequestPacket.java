@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 public enum ViewerRequestPacket {
     INSTANCE;
 
-    // TODO: 1.21 | Use neo's html-like formatting in the lang file instead
     public static final Component VIEWING_DISALLOWED = Component.translatable("tfcgenviewer.message.viewing_disallowed").withStyle(ChatFormatting.RED);
     public static final Component NON_TFC_WORLD = Component.translatable("tfcgenviewer.message.non_tfc_world").withStyle(ChatFormatting.YELLOW);
 

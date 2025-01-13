@@ -25,7 +25,7 @@ import static com.notenoughmail.tfcgenviewer.color.BiomeColors.Biomes;
 import static com.notenoughmail.tfcgenviewer.color.Colors.*;
 import static com.notenoughmail.tfcgenviewer.color.RockColors.Rocks;
 import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
-import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
+import static com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder.setPixel;
 
 public enum VisualizerType implements IExtensibleEnum {
     BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, Biomes.color(point.biome, colorDescriptors)), Biomes.key()),

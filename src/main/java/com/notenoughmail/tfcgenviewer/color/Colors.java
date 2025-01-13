@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import com.notenoughmail.tfcgenviewer.util.preview.IWillAppendTo;
 import net.dries007.tfc.util.RegisteredDataManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

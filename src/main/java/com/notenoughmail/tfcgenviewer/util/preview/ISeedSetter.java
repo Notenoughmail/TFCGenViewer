@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.preview;
 
 public interface ISeedSetter {
 

@@ -3,12 +3,8 @@ package com.notenoughmail.tfcgenviewer.screen;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import com.notenoughmail.tfcgenviewer.mixin.RockLayerSettingsAccessor;
-import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.RockLayerSettingsBuilder;
-import com.notenoughmail.tfcgenviewer.util.custom.ExpiringTextWidget;
-import com.notenoughmail.tfcgenviewer.util.custom.IAmATabWithNonWidgetChildren;
-import com.notenoughmail.tfcgenviewer.util.custom.RockSettingsEditor;
-import com.notenoughmail.tfcgenviewer.util.custom.SlightlyImprovedTabManager;
+import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.custom.rock.*;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
@@ -39,7 +35,6 @@ public class EditRocksScreen extends Screen {
             VALIDATE = Component.translatable("tfcgenviewer.rock_editor.validate"),
             GRAPH = Component.translatable("tfcgenviewer.rock_editor.graph"),
             VALIDATE_SUCCESS = Component.translatable("tfcgenviewer.rock_editor.validate.success"),
-            VALIDATE_SUCCESS_SPECIAL = Component.translatable("tfcgenviewer.rock_editor.validate.success_special"),
             ROCK_SETTINGS = Component.translatable("tfcgenviewer.rock_editor.rock_settings");
 
     private final TabManager tabManager = new SlightlyImprovedTabManager<>(this::addRenderableWidget, this::removeWidget, this::addRenderableWidget, this::removeWidget);
@@ -52,20 +47,15 @@ public class EditRocksScreen extends Screen {
 
     private final PreviewGenerationScreen parent;
     private final RockLayerSettings before;
-    private final RockLayerSettingsBuilder edit;
+    private final MutableRockLayerSettings edit;
     @Nullable
-    private ExpiringTextWidget validationMessage;
+    private ExpiringTextWidget messages;
 
     public EditRocksScreen(PreviewGenerationScreen parent, RockLayerSettings before) {
         super(TITLE);
         this.parent = parent;
         this.before = before;
-        edit = RockLayerSettingsBuilder.init(before);
-    }
-
-    @Override
-    public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        edit = MutableRockLayerSettings.init(before);
     }
 
     @Override
@@ -73,8 +63,8 @@ public class EditRocksScreen extends Screen {
         assert minecraft != null;
         if (validate()) {
             assert built != null;
-            minecraft.setScreen(parent);
             parent.setRocks(built.orThrow());
+            minecraft.setScreen(parent);
         }
     }
 
@@ -86,30 +76,34 @@ public class EditRocksScreen extends Screen {
         }
     }
 
+    private void setMessage(Component message) {
+        messages = addRenderableWidget(new ExpiringTextWidget(
+                this,
+                font,
+                message,
+                60
+        ));
+    }
+
     @Override
     protected void init() {
         tabNavigationBar = TabNavigationBar.builder(tabManager, width).addTabs(
                 new SettingsTab()
         ).build();
         addRenderableWidget(tabNavigationBar);
-        // TODO : For some reason the backgrounds of the buttons do not render, onl the text is visible | Find out why
         bottomButtons = new GridLayout().columnSpacing(4);
         final GridLayout.RowHelper rowHelper = bottomButtons.createRowHelper(4);
         rowHelper.addChild(Button.builder(PreviewGenerationScreen.APPLY, b -> back(true)).build());
         rowHelper.addChild(Button.builder(VALIDATE, b -> {
             if (validate()) {
-                validationMessage = addRenderableWidget(new ExpiringTextWidget(
-                        this,
-                        font,
-                        ColorUtil.COLOR_GENERATOR.nextFloat() > 0.95F ?
-                                VALIDATE_SUCCESS_SPECIAL :
-                                VALIDATE_SUCCESS,
-                        60));
+                setMessage(VALIDATE_SUCCESS);
             }
         }).build());
         rowHelper.addChild(Button.builder(GRAPH, b -> graph()).build());
         rowHelper.addChild(Button.builder(CommonComponents.GUI_CANCEL, b -> back(false)).build());
+        final int buttonWidth = Math.min(150, Math.max(50, (width - 20) / 4));
         bottomButtons.visitWidgets(w -> {
+            w.setWidth(buttonWidth);
             w.setTabOrderGroup(1);
             addRenderableWidget(w);
         });
@@ -131,9 +125,9 @@ public class EditRocksScreen extends Screen {
 
     @Override
     public void tick() {
-        if (validationMessage != null && validationMessage.tick()) {
-            removeWidget(validationMessage);
-            validationMessage = null;
+        if (messages != null && messages.tick()) {
+            removeWidget(messages);
+            messages = null;
         }
     }
 
@@ -141,12 +135,7 @@ public class EditRocksScreen extends Screen {
         build();
         assert built != null;
         return built.map(settings -> true, partial -> {
-            validationMessage = addRenderableWidget(new ExpiringTextWidget(
-                    this,
-                    font,
-                    Component.translatable("tfcgenviewer.rock_editor.validate.fail", partial.message()),
-                    60
-            ));
+            setMessage(Component.translatable("tfcgenviewer.rock_editor.validate.fail", partial.message()));
             return false;
         });
     }
@@ -155,6 +144,7 @@ public class EditRocksScreen extends Screen {
         built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
     }
 
+    // TODO: Implement
     private void graph() {
         if (validate()) {
 
@@ -177,9 +167,34 @@ public class EditRocksScreen extends Screen {
         }
     }
 
+    @Override
+    public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+        renderBackground(pGuiGraphics);
+        super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+    }
+
     class SettingsTab implements Tab, IAmATabWithNonWidgetChildren {
 
-        private final RockSettingsEditor editor = new RockSettingsEditor(minecraft, width, height, edit.rocks, font);
+        private final RockEditor editor = new RockEditor(
+                minecraft,
+                width / 2,
+                height,
+                font,
+                this::add,
+                EditRocksScreen.this::setMessage
+        );
+        private final RockSettingsDisplay display = new RockSettingsDisplay(
+                minecraft,
+                width / 2,
+                height,
+                edit.rocks,
+                font,
+                editor::load
+        );
+
+        private boolean add(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
+            return display.add(name, mrs);
+        }
 
         @Override
         public Component getTabTitle() {
@@ -190,12 +205,26 @@ public class EditRocksScreen extends Screen {
         public void visitChildren(Consumer<AbstractWidget> pConsumer) {}
 
         @Override
-        public void doLayout(ScreenRectangle pRectangle) {}
+        public void doLayout(ScreenRectangle pRectangle) {
+            final int
+                    halfScreenWidth = pRectangle.width() / 2,
+                    y0 = pRectangle.top() + 24,
+                    y1 = pRectangle.bottom() - 24;
+            display.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
+            editor.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
+            editor.setLeftPos(halfScreenWidth);
+        }
 
         @SuppressWarnings("unchecked")
         @Override
         public <T extends GuiEventListener & Renderable> void visitNonWidgets(Consumer<T> visitor) {
-            visitor.accept((T) editor); // Yes, the editor is within the bounds, but a cast is still required
+            visitor.accept((T) display); // Yes, these are within the bounds, but a cast is still required
+            visitor.accept((T) editor);
+        }
+
+        @Override
+        public void tick() {
+            editor.tick();
         }
     }
 }

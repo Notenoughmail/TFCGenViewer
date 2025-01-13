@@ -5,14 +5,15 @@ import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.RockSettings;
 import net.minecraft.Util;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class RockLayerSettingsBuilder {
+public class MutableRockLayerSettings {
 
-    public static RockLayerSettingsBuilder init(RockLayerSettings settings) {
-        final RockLayerSettingsBuilder builder = new RockLayerSettingsBuilder();
+    public static MutableRockLayerSettings init(RockLayerSettings settings) {
+        final MutableRockLayerSettings builder = new MutableRockLayerSettings();
         final RockLayerSettings.Data data = ((RockLayerSettingsAccessor) (Object) settings).tfcgenviewer$GetData();
         data.rocks().forEach((name, rock) -> builder.rocks.put(name, new MutableRockSettings(rock)));
         builder.bottom.addAll(data.bottom());
@@ -70,6 +71,10 @@ public class RockLayerSettingsBuilder {
             spike = init.spike().orElse(null);
             loose = init.loose().orElse(null);
             mossyLoose = init.mossyLoose().orElse(null);
+        }
+
+        public MutableRockSettings() {
+            raw = hardened = gravel = cobble = sand = sandstone = Blocks.STONE;
         }
 
         private RockSettings build() {

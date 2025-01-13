@@ -1,6 +1,6 @@
 package com.notenoughmail.tfcgenviewer.mixin;
 
-import com.notenoughmail.tfcgenviewer.util.ISeedSetter;
+import com.notenoughmail.tfcgenviewer.util.preview.ISeedSetter;
 import net.minecraft.client.gui.components.EditBox;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

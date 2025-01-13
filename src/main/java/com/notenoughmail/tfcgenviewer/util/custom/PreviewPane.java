@@ -1,7 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util.custom;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.util.PreviewInfo;
+import com.notenoughmail.tfcgenviewer.util.preview.PreviewInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

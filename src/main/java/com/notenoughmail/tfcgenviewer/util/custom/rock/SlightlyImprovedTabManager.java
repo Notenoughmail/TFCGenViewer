@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util.custom;
+package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;

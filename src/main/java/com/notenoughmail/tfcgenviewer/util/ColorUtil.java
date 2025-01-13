@@ -13,7 +13,7 @@ import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
 
 import static com.notenoughmail.tfcgenviewer.color.Colors.*;
-import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
+import static com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder.setPixel;
 import static net.minecraft.util.FastColor.ABGR32.*;
 
 public class ColorUtil {
@@ -26,7 +26,7 @@ public class ColorUtil {
 
     // Actual utils
     /**
-     * Converts a 8-bit RGB channel into its equivalent linear sRGB value using an approximate gamma value of {@code 2.2}
+     * Converts an 8-bit RGB channel into its equivalent linear sRGB value using an approximate gamma value of {@code 2.2}
      * @param channel The RGB component, in the range [{@code 0x00}, {@code 0xFF}]
      * @return The linear sRGB value, in the range [{@code 0}, {@code 1}]
      */
@@ -192,8 +192,18 @@ public class ColorUtil {
     // Default/reference gradients
     public static final DoubleToIntFunction blue = linearGradient(0xFF963232, 0xFFFF8C64);
     public static final DoubleToIntFunction green = linearGradient(0xFF006400, 0xFF50C850);
-    public static final DoubleToIntFunction volcanic = value -> color(0xFF, 0x64, (int) (0x64 * value), 0xC8);
-    public static final DoubleToIntFunction uplift = value -> color(0xFF, 0xC8, (int) (0xB4 * value), 0xB4);
+    public static final DoubleToIntFunction volcanic = value -> color(
+            0xFF,
+            0x64,
+            delinearize(value * 0.1264363868D), // 0x64 linearized
+            0xC8
+    );
+    public static final DoubleToIntFunction uplift = value -> color(
+            0xFF,
+            0xC8,
+            delinearize(value * 0.4607566240D), // 0xB4 linearized
+            0xB4
+    );
     public static final DoubleToIntFunction legacy_climate = multiLinearGradient(
             0xFFF014B4,
             0xFFF0B400,
