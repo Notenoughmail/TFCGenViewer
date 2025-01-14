@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util;
 
 import com.notenoughmail.tfcgenviewer.mixin.RockLayerSettingsAccessor;
+import com.notenoughmail.tfcgenviewer.util.custom.rock.LayerType;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.RockSettings;
 import net.minecraft.Util;
@@ -16,35 +17,38 @@ public class MutableRockLayerSettings {
         final MutableRockLayerSettings builder = new MutableRockLayerSettings();
         final RockLayerSettings.Data data = ((RockLayerSettingsAccessor) (Object) settings).tfcgenviewer$GetData();
         data.rocks().forEach((name, rock) -> builder.rocks.put(name, new MutableRockSettings(rock)));
-        builder.bottom.addAll(data.bottom());
-        data.layers().forEach(layer -> builder.layers.add(new MutableLayerData(layer)));
-        builder.ocean.addAll(data.oceanFloor());
-        builder.land.addAll(data.land());
-        builder.volcanic.addAll(data.volcanic());
-        builder.uplift.addAll(data.uplift());
+        builder.layers.get(LayerType.BOTTOM).addAll(data.bottom());
+        data.layers().forEach(layer -> builder.layerDefs.put(layer.id(), new MutableLayerData(layer)));
+        builder.layers.get(LayerType.OCEAN).addAll(data.oceanFloor());
+        builder.layers.get(LayerType.LAND).addAll(data.land());
+        builder.layers.get(LayerType.VOLCANIC).addAll(data.volcanic());
+        builder.layers.get(LayerType.UPLIFT).addAll(data.uplift());
         return builder;
     }
 
     public RockLayerSettings.Data build() {
         return new RockLayerSettings.Data(
                 Util.make(new HashMap<>(), m -> rocks.forEach((n, mrs) -> m.put(n, mrs.build()))),
-                bottom,
-                layers.stream().map(MutableLayerData::build).toList(),
-                ocean,
-                land,
-                volcanic,
-                uplift
+                layers.get(LayerType.BOTTOM),
+                layerDefs.values().stream().map(MutableLayerData::build).toList(),
+                layers.get(LayerType.OCEAN),
+                layers.get(LayerType.LAND),
+                layers.get(LayerType.VOLCANIC),
+                layers.get(LayerType.UPLIFT)
         );
     }
 
     public final Map<String, MutableRockSettings> rocks = new HashMap<>();
-    public final List<String>
-            bottom = new ArrayList<>(),
-            ocean = new ArrayList<>(),
-            land = new ArrayList<>(),
-            volcanic = new ArrayList<>(),
-            uplift = new ArrayList<>();
-    private final List<MutableLayerData> layers = new ArrayList<>();
+    public final Map<LayerType, List<String>> layers = Util.make(new EnumMap<>(LayerType.class), m -> {
+        m.put(LayerType.BOTTOM, new ArrayList<>());
+        m.put(LayerType.OCEAN, new ArrayList<>());
+        m.put(LayerType.LAND, new ArrayList<>());
+        m.put(LayerType.VOLCANIC, new ArrayList<>());
+        m.put(LayerType.UPLIFT, new ArrayList<>());
+    });
+    // TODO: Order is important! a LayerData which references a LaterData after itself in the original list will cause parsing to fail, joy!
+    // Will probably implement a custom linked list map with insertAfter/insertBefore method
+    private final Map<String, MutableLayerData> layerDefs = new LinkedHashMap<>();
 
     public static class MutableRockSettings {
 

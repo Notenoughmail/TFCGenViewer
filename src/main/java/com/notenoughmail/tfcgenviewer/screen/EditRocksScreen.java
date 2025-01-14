@@ -8,9 +8,7 @@ import com.notenoughmail.tfcgenviewer.util.custom.rock.*;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
@@ -35,7 +33,9 @@ public class EditRocksScreen extends Screen {
             VALIDATE = Component.translatable("tfcgenviewer.rock_editor.validate"),
             GRAPH = Component.translatable("tfcgenviewer.rock_editor.graph"),
             VALIDATE_SUCCESS = Component.translatable("tfcgenviewer.rock_editor.validate.success"),
-            ROCK_SETTINGS = Component.translatable("tfcgenviewer.rock_editor.rock_settings");
+            ROCK_SETTINGS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.rock_settings"),
+            LAYERS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layers"),
+            LAYER_DEFINITIONS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layer_definitions");
 
     private final TabManager tabManager = new SlightlyImprovedTabManager<>(this::addRenderableWidget, this::removeWidget, this::addRenderableWidget, this::removeWidget);
     @Nullable
@@ -77,6 +77,9 @@ public class EditRocksScreen extends Screen {
     }
 
     private void setMessage(Component message) {
+        if (messages != null) {
+            removeWidget(messages);
+        }
         messages = addRenderableWidget(new ExpiringTextWidget(
                 this,
                 font,
@@ -88,7 +91,9 @@ public class EditRocksScreen extends Screen {
     @Override
     protected void init() {
         tabNavigationBar = TabNavigationBar.builder(tabManager, width).addTabs(
-                new SettingsTab()
+                new SettingsTab(),
+                new LayersTab(),
+                new LayerDefinitionsTab()
         ).build();
         addRenderableWidget(tabNavigationBar);
         bottomButtons = new GridLayout().columnSpacing(4);
@@ -117,7 +122,7 @@ public class EditRocksScreen extends Screen {
             tabNavigationBar.setWidth(width);
             tabNavigationBar.arrangeElements();
             bottomButtons.arrangeElements();
-            FrameLayout.centerInRectangle(bottomButtons, 0, height - 36, width, 36);
+            FrameLayout.centerInRectangle(bottomButtons, 0, height - 30, width, 30);
             final int i = tabNavigationBar.getRectangle().bottom();
             tabManager.setTabArea(new ScreenRectangle(0, i, width, bottomButtons.getY() - i));
         }
@@ -175,7 +180,7 @@ public class EditRocksScreen extends Screen {
 
     class SettingsTab implements Tab, IAmATabWithNonWidgetChildren {
 
-        private final RockEditor editor = new RockEditor(
+        private final RockSettingsEditor editor = new RockSettingsEditor(
                 minecraft,
                 width / 2,
                 height,
@@ -198,7 +203,7 @@ public class EditRocksScreen extends Screen {
 
         @Override
         public Component getTabTitle() {
-            return ROCK_SETTINGS;
+            return ROCK_SETTINGS_TAB;
         }
 
         @Override
@@ -208,8 +213,8 @@ public class EditRocksScreen extends Screen {
         public void doLayout(ScreenRectangle pRectangle) {
             final int
                     halfScreenWidth = pRectangle.width() / 2,
-                    y0 = pRectangle.top() + 24,
-                    y1 = pRectangle.bottom() - 24;
+                    y0 = pRectangle.top() + 12,
+                    y1 = pRectangle.bottom() - 12;
             display.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
             editor.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
             editor.setLeftPos(halfScreenWidth);
@@ -225,6 +230,111 @@ public class EditRocksScreen extends Screen {
         @Override
         public void tick() {
             editor.tick();
+        }
+    }
+
+    class LayersTab implements Tab, IAmATabWithNonWidgetChildren {
+
+        private LayerType currentlyEditing = LayerType.NONE;
+        private final StringWidget editTitle = new StringWidget(width / 2 + 2, 24, width / 2 - 10, font.lineHeight, CommonComponents.EMPTY, font).alignCenter();
+        private final LayerEditor editor = new LayerEditor(
+                minecraft,
+                width / 2,
+                height,
+                () -> currentlyEditing,
+                edit,
+                font
+        );
+        private final LayerDisplay display = new LayerDisplay(
+                minecraft,
+                width / 2,
+                height,
+                edit,
+                font,
+                lt -> {
+                    currentlyEditing = lt;
+                    editor.reload();
+                    editTitle.setMessage(Component.translatable("tfcgenviewer.rock_editor.currently_editing_layer", lt.title));
+                },
+                () -> currentlyEditing
+        );
+        private final EditBox input = new EditBox(font, width / 2 + 24, height - 46, width / 2 - 30, 16, CommonComponents.EMPTY);
+        private final ImageButton addButton = new ImageButton(width / 2 + 2, height - 48, 20, 20, 40 ,0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> {
+            final String val = input.getValue();
+            if (currentlyEditing != LayerType.NONE && !val.isEmpty()) {
+                // TODO: Sanitize input values so they won't break the graphing site
+                if (editor.add(val)) {
+                    setMessage(Component.translatable("tfcgenviewer.rock_editor.layer_already_has", currentlyEditing.title, val));
+                } else {
+                    input.setValue("");
+                }
+            }
+        });
+
+        @Override
+        public Component getTabTitle() {
+            return LAYERS_TAB;
+        }
+
+        @Override
+        public void visitChildren(Consumer<AbstractWidget> pConsumer) {
+            pConsumer.accept(input);
+            pConsumer.accept(addButton);
+            pConsumer.accept(editTitle);
+        }
+
+        @Override
+        public void doLayout(ScreenRectangle pRectangle) {
+            final int
+                    halfScreenWidth = pRectangle.width() / 2,
+                    y0 = pRectangle.top() + 12,
+                    y1 = pRectangle.bottom() - 12;
+            display.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
+            editor.updateSize(halfScreenWidth, pRectangle.height(), y0 + 12, y1 - 24);
+            editor.setLeftPos(halfScreenWidth);
+            addButton.setX(halfScreenWidth + 2);
+            addButton.setY(y1 - 20);
+            input.setX(halfScreenWidth + 24);
+            input.setY(y1 - 18);
+            input.setWidth(halfScreenWidth - 30);
+            editTitle.setX(halfScreenWidth + 2);
+            editTitle.setY(y0);
+            editTitle.setWidth(halfScreenWidth - 10);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T extends GuiEventListener & Renderable> void visitNonWidgets(Consumer<T> visitor) {
+            visitor.accept((T) display);
+            visitor.accept((T) editor);
+        }
+
+        @Override
+        public void tick() {
+            input.tick();
+        }
+    }
+
+    class LayerDefinitionsTab implements Tab, IAmATabWithNonWidgetChildren {
+
+        @Override
+        public <T extends GuiEventListener & Renderable> void visitNonWidgets(Consumer<T> visitor) {
+
+        }
+
+        @Override
+        public Component getTabTitle() {
+            return LAYER_DEFINITIONS_TAB;
+        }
+
+        @Override
+        public void visitChildren(Consumer<AbstractWidget> pConsumer) {
+
+        }
+
+        @Override
+        public void doLayout(ScreenRectangle pRectangle) {
+
         }
     }
 }

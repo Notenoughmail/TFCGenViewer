@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -42,6 +43,8 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
         this.toEditor = toEditor;
         rockSettings.forEach((n, mrs) -> addEntry(new SettingsHolder(n, mrs)));
         setRenderBackground(false);
+        setRenderSelection(false);
+        setRenderTopAndBottom(false);
     }
 
     public boolean add(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
@@ -52,6 +55,13 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
         rockSettings.put(name, mrs);
         addEntry(new SettingsHolder(name, mrs));
         return false;
+    }
+
+    @Override
+    protected void renderBackground(GuiGraphics pGuiGraphics) {
+        pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
+        pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
+        pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

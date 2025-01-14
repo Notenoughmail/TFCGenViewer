@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.*;
 
-public class RockEditor extends ContainerObjectSelectionList<RockEditor.Entry> {
+public class RockSettingsEditor extends ContainerObjectSelectionList<RockSettingsEditor.Entry> {
 
     public static final Component
             NAME_HINT = Component.translatable("tfcgenviewer.rock_editor.edit_rock_settings_name_hint").withStyle(ChatFormatting.DARK_GRAY),
@@ -50,7 +51,7 @@ public class RockEditor extends ContainerObjectSelectionList<RockEditor.Entry> {
     private final BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> save;
     private final Consumer<Component> errorMessage;
 
-    public RockEditor(Minecraft minecraft, int width, int height, Font font, BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> save, Consumer<Component> errorMessage) {
+    public RockSettingsEditor(Minecraft minecraft, int width, int height, Font font, BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> save, Consumer<Component> errorMessage) {
         super(minecraft, width, height, 24, height + 24, 20);
         name = new EditBox(font, width, 24, width, 20, NAME_HINT);
         name.setHint(NAME_HINT);
@@ -60,7 +61,7 @@ public class RockEditor extends ContainerObjectSelectionList<RockEditor.Entry> {
         this.errorMessage = errorMessage;
         setRenderBackground(false);
         setRenderSelection(false);
-        // TODO: Get EditBoxes working
+        setRenderTopAndBottom(false);
         addEntry(new NameEntry());
         addEntry(new BlockEntry(b -> mrs.raw = b, () -> mrs.raw, ROCK_BLOCK_NAMES[0]));
         addEntry(new BlockEntry(b -> mrs.hardened = b, () -> mrs.hardened, ROCK_BLOCK_NAMES[1]));
@@ -102,8 +103,15 @@ public class RockEditor extends ContainerObjectSelectionList<RockEditor.Entry> {
     }
 
     @Override
+    protected void renderBackground(GuiGraphics pGuiGraphics) {
+        pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
+        pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
+        pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    @Override
     protected int getScrollbarPosition() {
-        return x0 + super.getScrollbarPosition() - 8;
+        return x0 + super.getScrollbarPosition() - 12;
     }
 
     public void load(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
