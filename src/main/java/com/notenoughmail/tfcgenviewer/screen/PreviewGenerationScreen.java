@@ -2,11 +2,11 @@ package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
+import com.notenoughmail.tfcgenviewer.util.VisualizerType;
+import com.notenoughmail.tfcgenviewer.util.custom.*;
 import com.notenoughmail.tfcgenviewer.util.preview.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
-import com.notenoughmail.tfcgenviewer.util.VisualizerType;
-import com.notenoughmail.tfcgenviewer.util.custom.*;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;

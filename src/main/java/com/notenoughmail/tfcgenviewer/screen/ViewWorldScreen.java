@@ -1,12 +1,12 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.config.Config;
-import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
-import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
 import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
 import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
+import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;

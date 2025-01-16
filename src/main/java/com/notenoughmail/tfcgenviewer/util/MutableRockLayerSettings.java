@@ -30,7 +30,7 @@ public class MutableRockLayerSettings {
         return new RockLayerSettings.Data(
                 Util.make(new HashMap<>(), m -> rocks.forEach((n, mrs) -> m.put(n, mrs.build()))),
                 layers.get(LayerType.BOTTOM),
-                layerDefs.values().stream().map(MutableLayerData::build).toList(),
+                layerDefs.values().stream().map(MutableLayerData::build).toList(), // TODO: This crashes if layerDefs is empty, maybe fix that (in addition to side-stepping it)
                 layers.get(LayerType.OCEAN),
                 layers.get(LayerType.LAND),
                 layers.get(LayerType.VOLCANIC),
@@ -46,9 +46,7 @@ public class MutableRockLayerSettings {
         m.put(LayerType.VOLCANIC, new ArrayList<>());
         m.put(LayerType.UPLIFT, new ArrayList<>());
     });
-    // TODO: Order is important! a LayerData which references a LaterData after itself in the original list will cause parsing to fail, joy!
-    // Will probably implement a custom linked list map with insertAfter/insertBefore method
-    private final Map<String, MutableLayerData> layerDefs = new LinkedHashMap<>();
+    public final OrderedMap<String, MutableLayerData> layerDefs = new OrderedMapImpl<>();
 
     public static class MutableRockSettings {
 
@@ -96,15 +94,20 @@ public class MutableRockLayerSettings {
         }
     }
 
-    private static class MutableLayerData {
+    public static class MutableLayerData {
 
-        public final String id;
+        public String id;
         public final Map<String, String> mapping;
 
         private MutableLayerData(RockLayerSettings.LayerData init) {
             id = init.id();
             mapping = new HashMap<>();
             mapping.putAll(init.layers());
+        }
+
+        public MutableLayerData(String id) {
+            this.id = id;
+            mapping = new HashMap<>();
         }
 
         private RockLayerSettings.LayerData build() {

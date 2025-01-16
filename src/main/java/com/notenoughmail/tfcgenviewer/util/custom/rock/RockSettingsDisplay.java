@@ -6,7 +6,10 @@ import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,7 +33,8 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
     public static Component
             NO_SPIKE = Component.translatable("tfcgenviewer.rock_editor.no_spike"),
             NO_LOOSE = Component.translatable("tfcgenviewer.rock_editor.no_loose"),
-            NO_MOSSY_LOOSE = Component.translatable("tfcgenviewer.rock_editor.no_mossy_loose");
+            NO_MOSSY_LOOSE = Component.translatable("tfcgenviewer.rock_editor.no_mossy_loose"),
+            CONFIRM  = Component.translatable("tfcgenviewer.rock_editor.confirm");
 
     private final Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings;
     private final Font font;
@@ -106,14 +110,14 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
                 removeEntry(this);
                 setScrollAmount(getScrollAmount());
             });
-            delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_rock_tooltip", rockName)));
+            delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", rockName)));
             edit = new ImageButton(0, 0, 20, 20, 20, 0, 20, GUI_ELEMENTS, 64, 64, b -> {
                 rockSettings.remove(rockName);
                 removeEntry(this);
                 toEditor.accept(rockName, mrs);
                 setScrollAmount(getScrollAmount());
             });
-            edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_rock_tooltip", rockName)));
+            edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_tooltip", rockName)));
             title = Component.literal(rockName);
             simpleRenders = new Block[] {
                     mrs.raw,
@@ -179,11 +183,6 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
         @Override
         public List<? extends GuiEventListener> children() {
             return ImmutableList.of(delete, edit);
-        }
-
-        @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            return delete.mouseClicked(pMouseX, pMouseY, pButton) || edit.mouseClicked(pMouseX, pMouseY, pButton);
         }
 
         @Override

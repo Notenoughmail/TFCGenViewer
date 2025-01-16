@@ -7,6 +7,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,19 +15,22 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LayerEditor extends ContainerObjectSelectionList<LayerEditor.Entry> {
+public class LayerTypesEditor extends ContainerObjectSelectionList<LayerTypesEditor.Entry> {
 
     private final MutableRockLayerSettings mrls;
     private final Font font;
     private final Supplier<LayerType> currentlyEditing;
+    private final Consumer<Component> sendErrors;
 
-    public LayerEditor(Minecraft pMinecraft, int pWidth, int pHeight, Supplier<LayerType> currentlyEditing, MutableRockLayerSettings mrls, Font font) {
+    public LayerTypesEditor(Minecraft pMinecraft, int pWidth, int pHeight, Supplier<LayerType> currentlyEditing, MutableRockLayerSettings mrls, Font font, Consumer<Component> sendErrors) {
         super(pMinecraft, pWidth, pHeight, 24, pHeight + 24, 20);
         this.mrls = mrls;
         this.font = font;
         this.currentlyEditing = currentlyEditing;
+        this.sendErrors = sendErrors;
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
@@ -45,16 +49,31 @@ public class LayerEditor extends ContainerObjectSelectionList<LayerEditor.Entry>
     }
 
     public boolean add(String ref) {
+        switch (currentlyEditing.get()) {
+            case NONE -> {}
+            case BOTTOM -> {
+                if (!mrls.rocks.containsKey(ref)) {
+                    sendErrors.accept(Component.translatable("tfcgenviewer.rock_editor.error.unknown_rock_setting", ref));
+                }
+            }
+            default -> {
+                if (!mrls.layerDefs.containsKey(ref)) {
+                    sendErrors.accept(Component.translatable("tfcgenviewer.rock_editor.error.unknown_layer_def", ref));
+                }
+            }
+        }
+
         @Nullable
         final List<String> refs = mrls.layers.get(currentlyEditing.get());
         if (refs != null) {
             if (refs.contains(ref)) {
-                return true;
+                sendErrors.accept(Component.translatable("tfcgenviewer.rock_editor.error.layer_already_has", currentlyEditing.get().title, ref));
+                return false;
             }
             refs.add(ref);
             reload();
         }
-        return false;
+        return true;
     }
 
     public void reload() {
@@ -85,6 +104,7 @@ public class LayerEditor extends ContainerObjectSelectionList<LayerEditor.Entry>
                 removeEntry(this);
                 remove(ref);
             });
+            delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", ref)));
         }
 
         @Override

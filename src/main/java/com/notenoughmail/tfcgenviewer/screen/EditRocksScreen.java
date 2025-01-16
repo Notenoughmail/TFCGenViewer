@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @MethodsReturnNonnullByDefault
@@ -34,8 +35,16 @@ public class EditRocksScreen extends Screen {
             GRAPH = Component.translatable("tfcgenviewer.rock_editor.graph"),
             VALIDATE_SUCCESS = Component.translatable("tfcgenviewer.rock_editor.validate.success"),
             ROCK_SETTINGS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.rock_settings"),
-            LAYERS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layers"),
-            LAYER_DEFINITIONS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layer_definitions");
+            LAYER_TYPES_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layer_types"),
+            LAYER_DEFINITIONS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layer_definitions"),
+            ADD_LAYER_DEFINITION = Component.translatable("tfcgenviewer.rock_editor.add_layer_definition"),
+            EMPTY_LAYER_DEFS = Component.translatable("tfcgenviewer.rock_editor.error.no_layer_definitions"),
+            EMPTY_ROCK_SETTINGS = Component.translatable("tfcgenviewer.rock_editor.error.no_rock_settings"),
+            EMPTY_BOTTOM_ROCKS = Component.translatable("tfcgenviewer.rock_editor.error.no_bottom_rocks"),
+            EMPTY_OCEAN_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_ocean_layer_definitions"),
+            EMPTY_VOLCANIC_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_volcanic_layer_definitions"),
+            EMPTY_LAND_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_land_layer_definitions"),
+            EMPTY_UPLIFT_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_uplift_layer_definitions");
 
     private final TabManager tabManager = new SlightlyImprovedTabManager<>(this::addRenderableWidget, this::removeWidget, this::addRenderableWidget, this::removeWidget);
     @Nullable
@@ -58,41 +67,28 @@ public class EditRocksScreen extends Screen {
         edit = MutableRockLayerSettings.init(before);
     }
 
-    @Override
-    public void onClose() {
-        assert minecraft != null;
-        if (validate()) {
-            assert built != null;
-            parent.setRocks(built.orThrow());
-            minecraft.setScreen(parent);
-        }
-    }
-
-    @Override
-    public void removed() {
-        if (validate()) {
-            assert built != null;
-            parent.setRocks(built.orThrow());
-        }
-    }
-
-    private void setMessage(Component message) {
+    private void setMessage(Component message, int time) {
         if (messages != null) {
             removeWidget(messages);
         }
         messages = addRenderableWidget(new ExpiringTextWidget(
-                this,
                 font,
                 message,
-                60
+                time,
+                width / 4 * 3
         ));
+        messages.centeredOn(width / 2, height / 2);
+    }
+
+    private void setMessage(Component message) {
+        setMessage(message, 60);
     }
 
     @Override
     protected void init() {
         tabNavigationBar = TabNavigationBar.builder(tabManager, width).addTabs(
                 new SettingsTab(),
-                new LayersTab(),
+                new LayerTypesTab(),
                 new LayerDefinitionsTab()
         ).build();
         addRenderableWidget(tabNavigationBar);
@@ -146,7 +142,27 @@ public class EditRocksScreen extends Screen {
     }
 
     private void build() {
-        built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
+        if (edit.layerDefs.isEmpty()) {
+            err(EMPTY_LAYER_DEFS);
+        } else if (edit.rocks.isEmpty()) {
+            err(EMPTY_ROCK_SETTINGS);
+        } else if (edit.layers.get(LayerType.BOTTOM).isEmpty()) {
+            err(EMPTY_BOTTOM_ROCKS);
+        } else if (edit.layers.get(LayerType.OCEAN).isEmpty()) {
+            err(EMPTY_OCEAN_LAYERS);
+        } else if (edit.layers.get(LayerType.VOLCANIC).isEmpty()) {
+            err(EMPTY_VOLCANIC_LAYERS);
+        } else if (edit.layers.get(LayerType.LAND).isEmpty()) {
+            err(EMPTY_LAND_LAYERS);
+        } else if (edit.layers.get(LayerType.UPLIFT).isEmpty()) {
+            err(EMPTY_UPLIFT_LAYERS);
+        } else {
+            built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
+        }
+    }
+
+    private void err(Component err) {
+        built = Either.right(new DataResult.PartialResult<>(err::getString, Optional.empty()));
     }
 
     // TODO: Implement
@@ -161,7 +177,7 @@ public class EditRocksScreen extends Screen {
     private void back(boolean keepChanges) {
         assert minecraft != null;
         if (keepChanges) {
-            // These two if statements cannot be merged together
+            // These two if statements should not be merged together
             if (validate()) {
                 assert built != null;
                 minecraft.setScreen(parent);
@@ -233,19 +249,20 @@ public class EditRocksScreen extends Screen {
         }
     }
 
-    class LayersTab implements Tab, IAmATabWithNonWidgetChildren {
+    class LayerTypesTab implements Tab, IAmATabWithNonWidgetChildren {
 
         private LayerType currentlyEditing = LayerType.NONE;
         private final StringWidget editTitle = new StringWidget(width / 2 + 2, 24, width / 2 - 10, font.lineHeight, CommonComponents.EMPTY, font).alignCenter();
-        private final LayerEditor editor = new LayerEditor(
+        private final LayerTypesEditor editor = new LayerTypesEditor(
                 minecraft,
                 width / 2,
                 height,
                 () -> currentlyEditing,
                 edit,
-                font
+                font,
+                EditRocksScreen.this::setMessage
         );
-        private final LayerDisplay display = new LayerDisplay(
+        private final LayerTypesDisplay display = new LayerTypesDisplay(
                 minecraft,
                 width / 2,
                 height,
@@ -261,19 +278,15 @@ public class EditRocksScreen extends Screen {
         private final EditBox input = new EditBox(font, width / 2 + 24, height - 46, width / 2 - 30, 16, CommonComponents.EMPTY);
         private final ImageButton addButton = new ImageButton(width / 2 + 2, height - 48, 20, 20, 40 ,0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> {
             final String val = input.getValue();
-            if (currentlyEditing != LayerType.NONE && !val.isEmpty()) {
-                // TODO: Sanitize input values so they won't break the graphing site
-                if (editor.add(val)) {
-                    setMessage(Component.translatable("tfcgenviewer.rock_editor.layer_already_has", currentlyEditing.title, val));
-                } else {
-                    input.setValue("");
-                }
+            // TODO: Sanitize input values so they won't break the graphing site
+            if (currentlyEditing != LayerType.NONE && !val.isEmpty() && editor.add(val)) {
+                input.setValue("");
             }
         });
 
         @Override
         public Component getTabTitle() {
-            return LAYERS_TAB;
+            return LAYER_TYPES_TAB;
         }
 
         @Override
@@ -317,9 +330,34 @@ public class EditRocksScreen extends Screen {
 
     class LayerDefinitionsTab implements Tab, IAmATabWithNonWidgetChildren {
 
+        private final LayerDefinitionEditor editor  = new LayerDefinitionEditor(
+                minecraft, width / 2,
+                height,
+                font,
+                this::add,
+                EditRocksScreen.this::setMessage,
+                edit
+        );
+        private final LayerDefinitionDisplay display = new LayerDefinitionDisplay(
+                minecraft,
+                width / 2,
+                height,
+                font,
+                edit,
+                editor::accept,
+                EditRocksScreen.this::setMessage
+        );
+        private final Button add = Button.builder(ADD_LAYER_DEFINITION, b -> editor.add()).build();
+
+        private boolean add(MutableRockLayerSettings.MutableLayerData mld) {
+            return display.add(mld);
+        }
+
+        @SuppressWarnings("unchecked")
         @Override
         public <T extends GuiEventListener & Renderable> void visitNonWidgets(Consumer<T> visitor) {
-
+            visitor.accept((T) display);
+            visitor.accept((T) editor);
         }
 
         @Override
@@ -329,12 +367,26 @@ public class EditRocksScreen extends Screen {
 
         @Override
         public void visitChildren(Consumer<AbstractWidget> pConsumer) {
-
+            pConsumer.accept(add);
         }
 
         @Override
         public void doLayout(ScreenRectangle pRectangle) {
+            final int
+                    halfScreenWidth = pRectangle.width() / 2,
+                    y0 = pRectangle.top() + 12,
+                    y1 = pRectangle.bottom() - 12;
+            display.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
+            editor.updateSize(halfScreenWidth, pRectangle.height(), y0, y1 - 24);
+            editor.setLeftPos(halfScreenWidth);
+            add.setX(halfScreenWidth + 2);
+            add.setY(y1 - 20);
+            add.setWidth(halfScreenWidth - 8);
+        }
 
+        @Override
+        public void tick() {
+            editor.tick();
         }
     }
 }

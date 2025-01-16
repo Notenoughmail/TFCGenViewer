@@ -8,6 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LayerDisplay extends ContainerObjectSelectionList<LayerDisplay.Entry> {
+public class LayerTypesDisplay extends ContainerObjectSelectionList<LayerTypesDisplay.Entry> {
 
     public static Component IN_EDITOR = Component.translatable("tfcgenviewer.rock_editor.layer_in_editor").withStyle(ChatFormatting.DARK_GRAY);
 
@@ -28,7 +29,7 @@ public class LayerDisplay extends ContainerObjectSelectionList<LayerDisplay.Entr
     private final Consumer<LayerType> sendToEditor;
     private final Supplier<LayerType> currentlyEditing;
 
-    public LayerDisplay(Minecraft pMinecraft, int pWidth, int pHeight, MutableRockLayerSettings mrls, Font font, Consumer<LayerType> changeLayerEdit, Supplier<LayerType> currentlyEditing) {
+    public LayerTypesDisplay(Minecraft pMinecraft, int pWidth, int pHeight, MutableRockLayerSettings mrls, Font font, Consumer<LayerType> changeLayerEdit, Supplier<LayerType> currentlyEditing) {
         super(pMinecraft, pWidth, pHeight, 24, pHeight + 24, 55); // 20 high button + 3 lines of text of height 9 with 2 spacing
         this.font = font;
         sendToEditor = changeLayerEdit;
@@ -75,12 +76,14 @@ public class LayerDisplay extends ContainerObjectSelectionList<LayerDisplay.Entr
                 sendToEditor.accept(this.type);
                 refresh();
             });
+            edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_tooltip", type.title)));
             valueDisplay = new Component[3];
             reload();
         }
 
         // Used to update the display values
         void reload() {
+            valueDisplay[0] = valueDisplay[1] = valueDisplay[2] = null;
             if (!values.isEmpty()) {
                 valueDisplay[0] = Component.literal(values.get(0));
                 if (values.size() > 1) {

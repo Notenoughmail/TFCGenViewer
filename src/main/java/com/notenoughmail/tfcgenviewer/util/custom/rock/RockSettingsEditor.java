@@ -23,14 +23,17 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class RockSettingsEditor extends ContainerObjectSelectionList<RockSettingsEditor.Entry> {
 
     public static final Component
-            NAME_HINT = Component.translatable("tfcgenviewer.rock_editor.edit_rock_settings_name_hint").withStyle(ChatFormatting.DARK_GRAY),
-            BLOCK_ID_HINT = Component.translatable("tfcgenviewer.rock_editor.block_id_hint").withStyle(ChatFormatting.DARK_GRAY),
-            BLOCK_ID_HINT_OPTIONAL = Component.translatable("tfcgenviewer.rock_editor.block_id_hint.optional").withStyle(ChatFormatting.DARK_GRAY),
+            NAME_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.edit_rock_settings_name").withStyle(ChatFormatting.DARK_GRAY),
+            BLOCK_ID_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.block_id").withStyle(ChatFormatting.DARK_GRAY),
+            BLOCK_ID_HINT_OPTIONAL = Component.translatable("tfcgenviewer.rock_editor.hint.block_id.optional").withStyle(ChatFormatting.DARK_GRAY),
             SAVE_CHANGE = Component.translatable("tfcgenviewer.rock_editor.save_new_block"),
             EMPTY_ROCK_NAME = Component.translatable("tfcgenviewer.rock_editor.error.empty_rock_name"),
             SPIKE_FILTER = Component.translatable("tfcgenviewer.rock_editor.error.spike_block_restriction"),
@@ -152,32 +155,14 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         }
 
         @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            return name.mouseClicked(pMouseX, pMouseY, pButton);
-        }
-
-        @Override
         public List<? extends NarratableEntry> narratables() {
             return ImmutableList.of(name);
-        }
-
-        @Override
-        public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-            return name.keyPressed(pKeyCode, pScanCode, pModifiers);
-        }
-
-        @Override
-        public void setFocused(boolean pFocused) {
-            name.setFocused(pFocused);
-        }
-
-        @Override
-        public boolean charTyped(char pCodePoint, int pModifiers) {
-            return name.charTyped(pCodePoint, pModifiers);
         }
     }
 
     private class BlockEntry extends Entry {
+
+        private static final int maxLength = ForgeRegistries.BLOCKS.getKeys().stream().mapToInt(rl -> rl.toString().length()).max().orElseThrow(); // Something seriously wrong needs to happen for there not to be a max
 
         private final ImageButton edit, confirm;
         private boolean editing;
@@ -192,8 +177,9 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
 
         BlockEntry(Consumer<@Nullable Block> setBlock, @Nullable Predicate<Block> filter, Supplier<@Nullable Block> getBlock, @Nullable Component filterFailMessage, @Nullable Component ifBlockIsNullMessage, Component rockType) {
             editing = false;
-            final var c = ifBlockIsNullMessage == null ? BLOCK_ID_HINT_OPTIONAL : BLOCK_ID_HINT;
+            final Component c = ifBlockIsNullMessage == null ? BLOCK_ID_HINT_OPTIONAL : BLOCK_ID_HINT;
             input = new EditBox(font, 0, 0, width, 18, c);
+            input.setMaxLength(maxLength);
             input.setHint(c);
             edit = new ImageButton(0, 0, 20, 20, 20 ,0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> {
                 editing = !editing;
@@ -202,7 +188,6 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
                 } else {
                     input.setValue("");
                 }
-                input.setFocused(editing);
             });
             edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.change_block", rockType)));
             confirm = new ImageButton(0, 0, 20, 20, 40, 0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> {
@@ -242,14 +227,18 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
             edit.setY(pTop);
             edit.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
             if (editing) {
+                confirm.active = true;
                 confirm.setX(pLeft + 24);
                 confirm.setY(pTop);
                 confirm.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+                input.active = true;
                 input.setX(pLeft + 46);
                 input.setY(pTop);
                 input.setWidth(pWidth - 48);
                 input.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
             } else {
+                confirm.active = false;
+                input.active = false;
                 @Nullable
                 final Block block = blockGetter.get();
                 if (block != null) {
@@ -283,41 +272,8 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         }
 
         @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            return (edit.mouseClicked(pMouseX, pMouseY, pButton) || editing) && (confirm.mouseClicked(pMouseX, pMouseY, pButton) || input.mouseClicked(pMouseX, pMouseY, pButton));
-        }
-
-        @Override
         public List<? extends NarratableEntry> narratables() {
             return editing ? ImmutableList.of(edit, confirm, input) : ImmutableList.of(edit);
-        }
-
-        @Override
-        public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-            return editing && input.keyPressed(pKeyCode, pScanCode, pModifiers);
-        }
-
-        @Override
-        public void setFocused(boolean pFocused) {
-            if (editing) {
-                input.setFocused(pFocused);
-                edit.setFocused(false);
-                confirm.setFocused(false);
-            } else {
-                edit.setFocused(pFocused);
-                input.setFocused(false);
-                confirm.setFocused(false);
-            }
-        }
-
-        @Override
-        public boolean isFocused() {
-            return input.isFocused() || edit.isFocused() || confirm.isFocused();
-        }
-
-        @Override
-        public boolean charTyped(char pCodePoint, int pModifiers) {
-            return editing && input.charTyped(pCodePoint, pModifiers);
         }
     }
 
@@ -349,23 +305,8 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         }
 
         @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            return saveButton.mouseClicked(pMouseX, pMouseY, pButton);
-        }
-
-        @Override
         public List<? extends NarratableEntry> narratables() {
             return ImmutableList.of(saveButton);
-        }
-
-        @Override
-        public void setFocused(boolean pFocused) {
-            saveButton.setFocused(pFocused);
-        }
-
-        @Override
-        public boolean isFocused() {
-            return saveButton.isFocused();
         }
     }
 }
