@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import com.notenoughmail.tfcgenviewer.mixin.RockLayerSettingsAccessor;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import com.notenoughmail.tfcgenviewer.util.custom.rock.*;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -23,8 +24,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
+// The amount of manual juggling of states of various sorts there is in this is honestly concerning, but needs must
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class EditRocksScreen extends Screen {
@@ -37,14 +40,15 @@ public class EditRocksScreen extends Screen {
             ROCK_SETTINGS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.rock_settings"),
             LAYER_TYPES_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layer_types"),
             LAYER_DEFINITIONS_TAB = Component.translatable("tfcgenviewer.rock_editor.tab.layer_definitions"),
-            ADD_LAYER_DEFINITION = Component.translatable("tfcgenviewer.rock_editor.add_layer_definition"),
+            ADD_LAYER_DEFINITION_MAPPING = Component.translatable("tfcgenviewer.rock_editor.add_layer_definition_mapping"),
             EMPTY_LAYER_DEFS = Component.translatable("tfcgenviewer.rock_editor.error.no_layer_definitions"),
             EMPTY_ROCK_SETTINGS = Component.translatable("tfcgenviewer.rock_editor.error.no_rock_settings"),
             EMPTY_BOTTOM_ROCKS = Component.translatable("tfcgenviewer.rock_editor.error.no_bottom_rocks"),
             EMPTY_OCEAN_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_ocean_layer_definitions"),
             EMPTY_VOLCANIC_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_volcanic_layer_definitions"),
             EMPTY_LAND_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_land_layer_definitions"),
-            EMPTY_UPLIFT_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_uplift_layer_definitions");
+            EMPTY_UPLIFT_LAYERS = Component.translatable("tfcgenviewer.rock_editor.error.no_uplift_layer_definitions"),
+            CREATE_LAYER_DEFINITION = Component.translatable("tfcgenviewer.rock_editor.create_layer_definition");
 
     private final TabManager tabManager = new SlightlyImprovedTabManager<>(this::addRenderableWidget, this::removeWidget, this::addRenderableWidget, this::removeWidget);
     @Nullable
@@ -262,6 +266,7 @@ public class EditRocksScreen extends Screen {
                 font,
                 EditRocksScreen.this::setMessage
         );
+        private final SuggestableEditBox input = new SuggestableEditBox(font, width / 2 + 24, height - 46, width / 2 - 30, 16, CommonComponents.EMPTY, Set.of(), minecraft);
         private final LayerTypesDisplay display = new LayerTypesDisplay(
                 minecraft,
                 width / 2,
@@ -270,13 +275,13 @@ public class EditRocksScreen extends Screen {
                 font,
                 lt -> {
                     currentlyEditing = lt;
+                    input.setSuggestions((currentlyEditing == LayerType.BOTTOM ? edit.rocks : edit.layerDefs).keySet());
                     editor.reload();
                     editTitle.setMessage(Component.translatable("tfcgenviewer.rock_editor.currently_editing_layer", lt.title));
                 },
                 () -> currentlyEditing
         );
-        private final EditBox input = new EditBox(font, width / 2 + 24, height - 46, width / 2 - 30, 16, CommonComponents.EMPTY);
-        private final ImageButton addButton = new ImageButton(width / 2 + 2, height - 48, 20, 20, 40 ,0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> {
+        private final ImageButton addButton = new ImageButton(width / 2 + 2, height - 48, 20, 20, 40 ,0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
             final String val = input.getValue();
             // TODO: Sanitize input values so they won't break the graphing site
             if (currentlyEditing != LayerType.NONE && !val.isEmpty() && editor.add(val)) {
@@ -336,7 +341,8 @@ public class EditRocksScreen extends Screen {
                 font,
                 this::add,
                 EditRocksScreen.this::setMessage,
-                edit
+                edit,
+                this::setButtonMessage
         );
         private final LayerDefinitionDisplay display = new LayerDefinitionDisplay(
                 minecraft,
@@ -347,10 +353,14 @@ public class EditRocksScreen extends Screen {
                 editor::accept,
                 EditRocksScreen.this::setMessage
         );
-        private final Button add = Button.builder(ADD_LAYER_DEFINITION, b -> editor.add()).build();
+        private final Button add = Button.builder(CREATE_LAYER_DEFINITION, b -> editor.add()).build();
 
         private boolean add(MutableRockLayerSettings.MutableLayerData mld) {
             return display.add(mld);
+        }
+
+        private void setButtonMessage(boolean editorIsEmpty) {
+            add.setMessage(editorIsEmpty ? CREATE_LAYER_DEFINITION : ADD_LAYER_DEFINITION_MAPPING);
         }
 
         @SuppressWarnings("unchecked")

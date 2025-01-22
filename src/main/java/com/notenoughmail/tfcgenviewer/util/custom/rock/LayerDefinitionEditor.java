@@ -2,6 +2,8 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -25,7 +27,7 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             LAYER_ID = Component.translatable("tfcgenviewer.rock_editor.layer_id").withStyle(ChatFormatting.DARK_GRAY),
             ROCK_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.layer_definition_rock").withStyle(ChatFormatting.DARK_GRAY),
             LAYER_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.layer_definition_layer").withStyle(ChatFormatting.DARK_GRAY),
-            EDITOR_OCCUPIED = Component.translatable("tfcgenviewer.rock_editor.error.layer_definition_editor_has_values"),
+            EDITOR_OCCUPIED = Component.translatable("tfcgenviewer.rock_editor.error.editor_is_occupied"),
             EMPTY_VALUES = Component.translatable("tfcgenviewer.rock_editor.error.cannot_map_empty_values"),
             EMPTY_ID = Component.translatable("tfcgenviewer.rock_editor.error.cannot_have_empty_layer_definition_id"),
             DELETE = Component.translatable("tfcgenviewer.rock_editor.delete_tooltip");
@@ -34,13 +36,15 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
     private final Predicate<MutableRockLayerSettings.MutableLayerData> toDisplay;
     private final Consumer<Component> sendError;
     private final MutableRockLayerSettings mrls;
+    private final BooleanConsumer childrenListener;
 
-    public LayerDefinitionEditor(Minecraft pMinecraft, int pWidth, int pHeight, Font font, Predicate<MutableRockLayerSettings.MutableLayerData> toDisplay, Consumer<Component> sendError, MutableRockLayerSettings mrls) {
+    public LayerDefinitionEditor(Minecraft pMinecraft, int pWidth, int pHeight, Font font, Predicate<MutableRockLayerSettings.MutableLayerData> toDisplay, Consumer<Component> sendError, MutableRockLayerSettings mrls, BooleanConsumer childrenListener) {
         super(pMinecraft, pWidth, pHeight, 24, pHeight - 24, 44);
         this.font = font;
         this.toDisplay = toDisplay;
         this.sendError = sendError;
         this.mrls = mrls;
+        this.childrenListener = childrenListener;
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
@@ -66,6 +70,7 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         clearEntries(); // Can be 'unoccupied' but have entries
         addEntry(new IdEntry(mld.id));
         mld.mapping.forEach((r, l) -> addEntry(new MapEntry(r, l)));
+        childrenListener.accept(false);
         return true;
     }
 
@@ -74,6 +79,7 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             addEntry(new IdEntry(""));
         }
         addEntry(new MapEntry("", ""));
+        childrenListener.accept(false);
     }
 
     public void tick() {
@@ -92,6 +98,12 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         }
     }
 
+    @Override
+    protected void clearEntries() {
+        super.clearEntries();
+        childrenListener.accept(true);
+    }
+
     private boolean isOccupied() {
         if (children().isEmpty()) {
             return false;
@@ -104,7 +116,6 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         return false;
     }
 
-    // TODO: When added with values, the text boxes of entries are 'scrolled' such that only the last two characters are visible | fix that
     static abstract class Entry extends ContainerObjectSelectionList.Entry<Entry> {
 
         abstract void tick();
@@ -122,10 +133,11 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         IdEntry(String id) {
             this.id.setValue(id);
             this.id.setHint(LAYER_ID);
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> clearEntries());
+            this.id.moveCursorToStart();
+            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> clearEntries());
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", id)));
             this.id.setResponder(s -> delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", s))));
-            confirm = new ImageButton(0, 0, 20, 20, 40, 0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> LayerDefinitionEditor.this.toDisplay());
+            confirm = new ImageButton(0, 0, 20, 20, 40, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> LayerDefinitionEditor.this.toDisplay());
             confirm.setTooltip(Tooltip.create(RockSettingsDisplay.CONFIRM));
         }
 
@@ -181,19 +193,21 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         private final ImageButton delete;
 
         MapEntry(String rock, String layer) {
-            this.rock = new EditBox(font, 0, 0, 20, 16, ROCK_HINT);
+            this.rock = new SuggestableEditBox(font, 0, 0, 20, 16, ROCK_HINT, mrls.rocks.keySet(), minecraft);
             this.rock.setHint(ROCK_HINT);
             this.rock.setValue(rock);
-            this.layer = new EditBox(font, 0, 0, 20, 16, LAYER_HINT);
+            this.rock.moveCursorToStart();
+            this.layer = new SuggestableEditBox(font, 0, 0, 20, 16, LAYER_HINT, mrls.layerDefs.keySet(), minecraft);
             this.layer.setHint(LAYER_HINT);
             this.layer.setValue(layer);
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> removeEntry(this));
+            this.layer.moveCursorToStart();
+            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> removeEntry(this));
             delete.setTooltip(Tooltip.create(DELETE));
         }
 
         @Override
         public List<? extends NarratableEntry> narratables() {
-            return ImmutableList.of(rock, layer, delete);
+            return ImmutableList.of(delete, rock, layer);
         }
 
         @Override
@@ -213,7 +227,7 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
 
         @Override
         public List<? extends GuiEventListener> children() {
-            return ImmutableList.of(rock, layer, delete);
+            return ImmutableList.of(delete, rock, layer);
         }
 
         @Override

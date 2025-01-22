@@ -111,7 +111,6 @@ public enum VisualizerType implements IExtensibleEnum {
         }
     }
 
-
     public static final VisualizerType[] VALUES = values();
     public static final Codec<VisualizerType> CODEC = Codec.intRange(0, VALUES.length - 1).xmap(b -> VALUES[b], Enum::ordinal);
 

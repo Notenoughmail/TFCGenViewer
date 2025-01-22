@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -72,7 +73,7 @@ public class LayerTypesDisplay extends ContainerObjectSelectionList<LayerTypesDi
         Entry(MutableRockLayerSettings mrls, LayerType type) {
             this.values = mrls.layers.get(type);
             this.type = type;
-            edit = new ImageButton(0, 0, 20, 20, 20 ,0, 20, RockSettingsDisplay.GUI_ELEMENTS, 64, 64, b -> {
+            edit = new ImageButton(0, 0, 20, 20, 20 ,0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
                 sendToEditor.accept(this.type);
                 refresh();
             });

@@ -1,8 +1,8 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,21 +14,13 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettingsDisplay.SettingsHolder> {
-
-    public static final ResourceLocation GUI_ELEMENTS = TFCGenViewer.identifier("textures/gui/common_gui_elements.png");
 
     public static Component
             NO_SPIKE = Component.translatable("tfcgenviewer.rock_editor.no_spike"),
@@ -38,9 +30,9 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
 
     private final Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings;
     private final Font font;
-    private final BiConsumer<String, MutableRockLayerSettings.MutableRockSettings> toEditor;
+    private final BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> toEditor;
 
-    public RockSettingsDisplay(Minecraft minecraft, int width, int height, Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings, Font font, BiConsumer<String, MutableRockLayerSettings.MutableRockSettings> toEditor) {
+    public RockSettingsDisplay(Minecraft minecraft, int width, int height, Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings, Font font, BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> toEditor) {
         super(minecraft, width, height, 24, height + 24, 188);
         this.rockSettings = rockSettings;
         this.font = font;
@@ -73,24 +65,6 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
         return isFocused() ? NarrationPriority.FOCUSED : NarrationPriority.NONE;
     }
 
-    @Nullable
-    public static ItemStack getBlockStack(Block block) {
-        if (block instanceof LiquidBlock liquid) {
-            final Item bucket = liquid.getFluid().getSource().getBucket();
-            if (bucket != null && bucket != Items.AIR) {
-                return bucket.getDefaultInstance();
-            }
-        }
-        try {
-            final Item item = block.asItem(); // The inserted forge call for extensions can throw an error, joy
-            if (item != null && item != Items.AIR) {
-                return item.getDefaultInstance();
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
     @Override
     protected int getScrollbarPosition() {
         return super.getScrollbarPosition() - 12;
@@ -105,17 +79,18 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
 
         public SettingsHolder(String rockName, MutableRockLayerSettings.MutableRockSettings mrs) {
             this.mrs = mrs;
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, GUI_ELEMENTS, 64, 64, b -> {
+            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
                 rockSettings.remove(rockName);
                 removeEntry(this);
                 setScrollAmount(getScrollAmount());
             });
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", rockName)));
-            edit = new ImageButton(0, 0, 20, 20, 20, 0, 20, GUI_ELEMENTS, 64, 64, b -> {
-                rockSettings.remove(rockName);
-                removeEntry(this);
-                toEditor.accept(rockName, mrs);
-                setScrollAmount(getScrollAmount());
+            edit = new ImageButton(0, 0, 20, 20, 20, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+                if (toEditor.test(rockName, mrs)) {
+                    rockSettings.remove(rockName);
+                    removeEntry(this);
+                    setScrollAmount(getScrollAmount());
+                }
             });
             edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_tooltip", rockName)));
             title = Component.literal(rockName);
@@ -139,45 +114,23 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
             edit.render(graphics, mouseX, mouseY, pPartialTick);
             final int
                     textX = x + 24,
-                    blockX = x + 2;
+                    blockX = x + 2,
+                    right = x + w - 2;
             text(title, textX + 24, y + 2, graphics);
             y += 21;
             for (Block block : simpleRenders) {
-                renderBlock(block, blockX, y, graphics);
+                WidgetUtils.renderBlock(block, blockX, y, graphics, font, right, null);
                 y += 18;
             }
-            if (mrs.spike == null) {
-                text(NO_SPIKE, textX, y + 2, graphics);
-            } else {
-                renderBlock(mrs.spike, blockX, y, graphics);
-            }
+            WidgetUtils.renderBlock(mrs.spike, blockX, y, graphics, font, right, NO_SPIKE);
             y += 18;
-            if (mrs.loose == null) {
-                text(NO_LOOSE, textX, y + 2, graphics);
-            } else {
-                renderBlock(mrs.loose, blockX, y, graphics);
-            }
+            WidgetUtils.renderBlock(mrs.loose, blockX, y, graphics, font, right, NO_LOOSE);
             y += 18;
-            if (mrs.mossyLoose == null) {
-                text(NO_MOSSY_LOOSE, textX, y + 2, graphics);
-            } else {
-                renderBlock(mrs.mossyLoose, blockX, y , graphics);
-            }
+            WidgetUtils.renderBlock(mrs.mossyLoose, blockX, y, graphics, font, right, NO_MOSSY_LOOSE);
         }
 
         private void text(Component text, int x, int y, GuiGraphics graphics) {
             graphics.drawString(font, text, x, y + 3, 0xFFFFFFFF);
-        }
-
-        private void renderBlock(Block block, int x, int y, GuiGraphics graphics) {
-            @Nullable
-            final ItemStack stack = getBlockStack(block);
-            if (stack != null) {
-                graphics.renderFakeItem(stack, x, y + 3);
-            } else {
-                graphics.blit(GUI_ELEMENTS, x ,y, 0, 0, 40, 20, 20, 64, 64);
-            }
-            text(block.getName(), x + 22, y + 4, graphics);
         }
 
         @Override

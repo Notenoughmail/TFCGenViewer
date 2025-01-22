@@ -156,7 +156,18 @@ public class OrderedMapImpl<K, V> implements OrderedMap<K, V> {
     @NotNull
     public Set<Entry<K, V>> entrySet() {
         final Set<Entry<K, V>> internal = map.entrySet();
-        final Set<Entry<K, V>> out = new LinkedHashSet<>(internal.size());
+        final Set<Entry<K, V>> out = new LinkedHashSet<>(internal.size()) {
+
+            @Override
+            public boolean remove(Object o) {
+                final boolean m = map.entrySet().remove(o);
+                if (m) {
+                    order.remove(((Entry<K,V>) o).getKey());
+                }
+                return m;
+            }
+        };
+        // Probably a better way to do this, but this is only here for the sake of having an implementation, not one that is appropriate to use
         for (K k : order) {
             internal.forEach(entry -> {
                 if (!out.contains(entry) && Objects.equals(k, entry.getKey())) {
