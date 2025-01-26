@@ -34,9 +34,10 @@
   "tfcgenviewer.preview_world.km": "%s km",
   "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
   "tfcgenviewer.preview_world.preview_pos": "(%s,%s)",
+  "tfcgenviewer.preview_world.no_tooltip_available": "No tooltip available",
 
   "tfcgenviewer.rock_editor.title": "Edit Rocks",
-  "tfcgenviewer.rock_editor.graph": "Graph",
+  "tfcgenviewer.rock_editor.graph": "Graph Online",
   "tfcgenviewer.rock_editor.validate": "Validate",
   "tfcgenviewer.rock_editor.validate.fail": "Failed to validate: %s",
   "tfcgenviewer.rock_editor.validate.success": "Validation Successful",
@@ -97,6 +98,9 @@
   "tfcgenviewer.rock_editor.error.no_volcanic_layer_definitions": "Must have at least one volcanic layer definition",
   "tfcgenviewer.rock_editor.error.no_land_layer_definitions": "Must have at least one land layer definition",
   "tfcgenviewer.rock_editor.error.no_uplift_layer_definitions": "Must have at least one uplift layer definition",
+  "tfcgenviewer.rock_editor.error.duplicate_raw_rock_blocks": "Multiple rocks cannot have the same raw block. The rocks [%s] use %s as their raw block",
+  "tfcgenviewer.rock_editor.error.rock_setting_already_has_raw_block": "The rock '%s' already uses %s as its raw block",
+  "tfcgenviewer.rock_editor.error.cannot_name_layer_definition_bottom": "Cannot name a layer definition 'bottom', it is a reserved value",
 
   "tfcgenviewer.rock_editor.no_spike": "No Spike Block",
   "tfcgenviewer.rock_editor.no_loose": "No Loose Block",

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.config.Config;
+import com.notenoughmail.tfcgenviewer.mixin.NativeImageAccessor;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
@@ -33,6 +34,8 @@ import static net.minecraft.util.FastColor.ABGR32.alpha;
 import static net.minecraft.util.FastColor.ABGR32.color;
 
 public class ImageBuilder {
+
+    private static final Component NO_TOOLTIP = Component.translatable("tfcgenviewer.preview_world.no_tooltip_available");
 
     private static final AtomicInteger POOL_THREAD_COUNTER = new AtomicInteger(0);
 
@@ -98,11 +101,11 @@ public class ImageBuilder {
             final Set<Region> visitedRegions = new HashSet<>();
             final Region[] cache = new Region[previewSizeGrids * previewSizeGrids];
             final Int2ObjectOpenHashMap<Component> colorDescriptors = new Int2ObjectOpenHashMap<>();
-            colorDescriptors.defaultReturnValue(Component.literal("No tooltip available"));
+            colorDescriptors.defaultReturnValue(NO_TOOLTIP);
 
-            for (int x = 0; x < previewSizeGrids; x++) {
+            for (int x = 0; x < previewSizeGrids ; x++) {
                 progressReturn.accept(102 * x / previewSizeGrids);
-                for (int y = 0; y < previewSizeGrids; y++) {
+                for (int y = 0; y < previewSizeGrids ; y++) {
                     // Shift the generation by the offsets and
                     // subtract half preview to center the image
                     // relative to 0,0
@@ -124,40 +127,44 @@ public class ImageBuilder {
                             }
                         }
                     }
-                    try {
-                        visualizer.draw(
-                                x, y,
-                                xPos,
-                                zPos,
-                                generator,
-                                cache[cachePos],
-                                cache[cachePos] != null ? cache[cachePos].requireAt(xPos, zPos) : ColorUtil.FAILURE_STATE,
-                                image,
-                                colorDescriptors
-                        );
-                    } catch (Throwable error) {
-                        if (error instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage())) {
-                            throw error; // This specific error is known and harmless (in this case) and can be ignored
-                        } else {
-                            final String errorMsg = GeneratorPreviewException.buildMessage(
-                                    seed,
-                                    visualizer,
-                                    scale.ordinal(),
-                                    xCenterGrids,
-                                    zCenterGrids,
-                                    generator,
+                    if (((NativeImageAccessor) (Object) image).tfcgenviewer$GetPixels() != 0L) {
+                        try {
+                            visualizer.draw(
+                                    x, y,
                                     xPos,
-                                    zPos
+                                    zPos,
+                                    generator,
+                                    cache[cachePos],
+                                    cache[cachePos] != null ? cache[cachePos].requireAt(xPos, zPos) : ColorUtil.FAILURE_STATE,
+                                    image,
+                                    colorDescriptors
                             );
-                            if (Config.cancelPreviewOnError.get()) {
-                                Helpers.throwAsUnchecked(new GeneratorPreviewException(
-                                        errorMsg,
-                                        error
-                                ));
+                        } catch (Throwable error) {
+                            if (error instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage())) {
+                                throw error; // This specific error is known and harmless (in this case) and can be ignored
                             } else {
-                                TFCGenViewer.LOGGER.warn("Encountered error while generating preview info pixel %d,%d:\n%s".formatted(x, y, errorMsg), error);
+                                final String errorMsg = GeneratorPreviewException.buildMessage(
+                                        seed,
+                                        visualizer,
+                                        scale.ordinal(),
+                                        xCenterGrids,
+                                        zCenterGrids,
+                                        generator,
+                                        xPos,
+                                        zPos
+                                );
+                                if (Config.cancelPreviewOnError.get()) {
+                                    Helpers.throwAsUnchecked(new GeneratorPreviewException(
+                                            errorMsg,
+                                            error
+                                    ));
+                                } else {
+                                    TFCGenViewer.LOGGER.warn("Encountered error while generating preview info pixel %d,%d:\n%s".formatted(x, y, errorMsg), error);
+                                }
                             }
                         }
+                    } else {
+                        return ProcessReturn.EMPTY;
                     }
                 }
             }
@@ -228,7 +235,8 @@ public class ImageBuilder {
                         colorDescriptors
                     ),
                     image,
-                    "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name())
+                    "%s_%dx%d_%d_%s.png".formatted(Util.getFilenameFormattedDateTime(), previewSizeGrids, previewSizeGrids, visitedRegions.size(), visualizer.name()),
+                    true
             );
         }, GENERATOR_THREAD_POOL).exceptionally(thr -> {
             if (!(thr instanceof CompletionException compExc && compExc.getCause() instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage()))) {
@@ -245,16 +253,22 @@ public class ImageBuilder {
                 imageName = pr.imageName();
                 scale.upload(currentImage);
                 infoReturn.accept(pr.previewInfo());
+                if (pr.ding() && Config.dingWhenGenerated.get()) {
+                    Minecraft
+                            .getInstance()
+                            .getSoundManager()
+                            .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
+                }
             } else {
                 currentImage = null;
                 infoReturn.accept(PreviewInfo.ERROR);
                 PreviewScale.clearPreviews(currentImage);
-            }
-            if (Config.dingWhenGenerated.get()) {
-                Minecraft
-                        .getInstance()
-                        .getSoundManager()
-                        .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
+                if (Config.dingWhenGenerated.get()) {
+                    Minecraft
+                            .getInstance()
+                            .getSoundManager()
+                            .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
+                }
             }
             builderProcess = null;
             progressReturn.accept(-1);
@@ -352,7 +366,10 @@ public class ImageBuilder {
         }
     }
 
-    private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName) {}
+    private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName, boolean ding) {
+
+        static ProcessReturn EMPTY = new ProcessReturn(PreviewInfo.EMPTY, null, null, false);
+    }
 
     public enum BuilderState {
         OFF,

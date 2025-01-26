@@ -11,9 +11,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class SuggestableEditBox extends EditBox {
 
@@ -21,14 +21,14 @@ public class SuggestableEditBox extends EditBox {
     private List<MutableComponent> suggestions;
     private final Minecraft mc;
 
-    public SuggestableEditBox(Font pFont, int pX, int pY, int pWidth, int pHeight, Component pMessage, Set<String> suggestions, Minecraft mc) {
+    public SuggestableEditBox(Font pFont, int pX, int pY, int pWidth, int pHeight, Component pMessage, Collection<String> suggestions, Minecraft mc) {
         super(pFont, pX, pY, pWidth, pHeight, pMessage);
         setHint(pMessage);
         this.suggestions = suggestions.stream().sorted().map(Component::literal).toList();
         this.mc = mc;
     }
 
-    public void setSuggestions(Set<String> suggestions) {
+    public void setSuggestions(Collection<String> suggestions) {
         this.suggestions = suggestions.stream().sorted().map(Component::literal).toList();
     }
 

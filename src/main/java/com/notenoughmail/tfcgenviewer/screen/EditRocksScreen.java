@@ -8,6 +8,7 @@ import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import com.notenoughmail.tfcgenviewer.util.custom.rock.*;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -17,14 +18,15 @@ import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 // The amount of manual juggling of states of various sorts there is in this is honestly concerning, but needs must
@@ -160,22 +162,112 @@ public class EditRocksScreen extends Screen {
             err(EMPTY_LAND_LAYERS);
         } else if (edit.layers.get(LayerType.UPLIFT).isEmpty()) {
             err(EMPTY_UPLIFT_LAYERS);
+        } else if (verifyUniqueRawBlocks()) {
+            final Map<Block, List<String>> rawToSetting = new IdentityHashMap<>();
+            for (Map.Entry<String, MutableRockLayerSettings.MutableRockSettings> entry : edit.rocks.entrySet()) {
+                rawToSetting.compute(entry.getValue().raw, (b, l) -> {
+                    if (l == null) l = new ArrayList<>();
+                    l.add(entry.getKey());
+                    return l;
+                });
+            }
+            rawToSetting
+                    .entrySet()
+                    .stream()
+                    .filter(e -> e.getValue().size() > 1)
+                    .findFirst()
+                    .ifPresent(e ->
+                            err(Component.translatable(
+                                    "tfcgenviewer.rock_editor.error.duplicate_raw_rock_blocks",
+                                    String.join(", ", e.getValue()),
+                                    e.getKey().getName()
+                            ))
+                    );
         } else {
             built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
         }
+    }
+
+    private boolean verifyUniqueRawBlocks() {
+        return edit.rocks.values().stream().map(mrs -> mrs.raw).distinct().count() < edit.rocks.size(); // There is a duplicate raw block, this will cause TFC to crash due to some internals expecting unique raw blocks
     }
 
     private void err(Component err) {
         built = Either.right(new DataResult.PartialResult<>(err::getString, Optional.empty()));
     }
 
-    // TODO: Implement
+    // TODO: In the future, is there any way this could be done in-game?
     private void graph() {
         if (validate()) {
+            StringBuilder url =
+                    new StringBuilder("https://notenoughmail.github.io/mc/tools/tfcgv_rock_graph/?version=1.20.1&")
+                            .append(joinToQuery("layers", edit.layerDefs.keySet()))
+                            .append("&")
+                            .append(joinToQuery("ocean_type", edit.layers.get(LayerType.OCEAN)))
+                            .append("&")
+                            .append(joinToQuery("uplift_type", edit.layers.get(LayerType.UPLIFT)))
+                            .append("&")
+                            .append(joinToQuery("volcanic_type", edit.layers.get(LayerType.VOLCANIC)))
+                            .append("&")
+                            .append(joinToQuery("bottom_type", edit.layers.get(LayerType.BOTTOM)))
+                            .append("&")
+                            .append(joinToQuery("land_type", edit.layers.get(LayerType.LAND)));
+            for (MutableRockLayerSettings.MutableLayerData mld : edit.layerDefs.values()) {
+                url.append("&").append(joinMapping(mld));
+            }
+            final String link = url.toString();
 
-        } else {
-
+            assert minecraft != null;
+            minecraft.setScreen(new ConfirmLinkScreen(b -> {
+                if (b) {
+                    Util.getPlatform().openUri(link);
+                }
+                minecraft.setScreen(this);
+            }, link, true));
         }
+    }
+
+    private String encode(String str) {
+        str = str.replaceAll("[^a-zA-Z0-9_]+", "_");
+        if (str.charAt(0) == '_') str = str.substring(1);
+        if (str.charAt(str.length() - 1) == '_') str = str.substring(0, str.length() - 1);
+        return isReservedName(str) ? str + "_" : str;
+    }
+
+    private String joinToQuery(String type, Collection<String> values) {
+        final StringBuilder builder = new StringBuilder(type);
+        builder.append("=[");
+        for (String str : values) {
+            builder.append(encode(str));
+            builder.append(';');
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append(']');
+        return builder.toString();
+    }
+
+    private String joinMapping(MutableRockLayerSettings.MutableLayerData layerData) {
+        final StringBuilder builder = new StringBuilder(encode(layerData.id) + "=[");
+        for (Map.Entry<String, String> mapping : layerData.mapping.entrySet()) {
+            builder.append(encode(mapping.getKey()));
+            builder.append('~');
+            builder.append(encode(mapping.getValue()));
+            builder.append(';');
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append(']');
+        return builder.toString();
+    }
+
+    private boolean isReservedName(String val) {
+        return
+                "layers".equals(val) ||
+                "ocean_type".equals(val) ||
+                "land_type".equals(val) ||
+                "volcanic_type".equals(val) ||
+                "uplift_type".equals(val) ||
+                "bottom_type".equals(val) ||
+                "version".equals(val);
     }
 
     private void back(boolean keepChanges) {
@@ -214,7 +306,8 @@ public class EditRocksScreen extends Screen {
                 height,
                 edit.rocks,
                 font,
-                editor::load
+                editor::load,
+                EditRocksScreen.this::setMessage
         );
 
         private boolean add(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
@@ -283,7 +376,6 @@ public class EditRocksScreen extends Screen {
         );
         private final ImageButton addButton = new ImageButton(width / 2 + 2, height - 48, 20, 20, 40 ,0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
             final String val = input.getValue();
-            // TODO: Sanitize input values so they won't break the graphing site
             if (currentlyEditing != LayerType.NONE && !val.isEmpty() && editor.add(val)) {
                 input.setValue("");
             }

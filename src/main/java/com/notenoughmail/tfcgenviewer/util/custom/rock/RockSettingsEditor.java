@@ -222,8 +222,6 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
             if (name.getValue().isEmpty()) {
                 errorMessage.accept(EMPTY_ROCK_NAME);
             } else if (save.test(name.getValue(), mrs)) {
-                errorMessage.accept(Component.translatable("tfcgenviewer.rock_editor.error.rock_already_exists", name.getValue()));
-            } else {
                 mrs = new MutableRockLayerSettings.MutableRockSettings();
                 name.setValue("");
             }

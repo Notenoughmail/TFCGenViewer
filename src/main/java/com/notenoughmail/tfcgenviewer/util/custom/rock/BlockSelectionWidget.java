@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 public class BlockSelectionWidget extends EditBox {
 
-    private static final Comparator<Block> COMPARE_BLOCKS = Comparator.comparing(b -> b.getName().toString());
+    private static final Comparator<Block> COMPARE_BLOCKS = Comparator.comparing(b -> b.getName().getString());
 
     private final Supplier<Block> getter;
     private final Consumer<Block> setter;
@@ -195,7 +195,6 @@ public class BlockSelectionWidget extends EditBox {
                         final Block block = searchResults.get(selectionIndex);
                         setter.accept(block == Blocks.VOID_AIR ? null : block);
                         setFocused(false);
-                        selectionIndex = -1;
                     }
                     yield true;
                 }

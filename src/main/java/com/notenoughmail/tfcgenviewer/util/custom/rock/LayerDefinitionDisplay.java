@@ -90,7 +90,7 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
             final var val = mrls.layerDefs.getValue(i);
             if (val != null && val.mapping.containsValue(mld.id)) {
                 requiredByIndex = Math.min(requiredByIndex, i);
-                if (requiredByIndex == requiresIndex) {
+                if (requiredByIndex == requiresIndex) { // TODO: This can faultily be called if the requiredByIndex is 0 and the requiresIndex is never updated | Figure that one out
                     sendTimedError.accept(Component.translatable("tfcgenviewer.rock_editor.error.circular_layer_definition_reference", mld.id, mrls.layerDefs.getKey(requiredByIndex)), 100);
                     break; // TODO: Should this, and below, just return false instead of breaking? Unless its circular or the topology is very weird, shuffling definitions around should suffice
                 }

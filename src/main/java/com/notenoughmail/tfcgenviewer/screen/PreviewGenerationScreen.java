@@ -33,6 +33,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+
+// TODO: At some point during dev, "Edit Rocks" was clicked before the first preview had finished generating, somehow the game crashed due to an unallocated image despite that being handled by the ImageBuilder | Are the actions related; Fix!!!!!!
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PreviewGenerationScreen extends Screen {

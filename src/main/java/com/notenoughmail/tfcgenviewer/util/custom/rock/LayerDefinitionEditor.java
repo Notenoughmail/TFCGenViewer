@@ -30,7 +30,8 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             EDITOR_OCCUPIED = Component.translatable("tfcgenviewer.rock_editor.error.editor_is_occupied"),
             EMPTY_VALUES = Component.translatable("tfcgenviewer.rock_editor.error.cannot_map_empty_values"),
             EMPTY_ID = Component.translatable("tfcgenviewer.rock_editor.error.cannot_have_empty_layer_definition_id"),
-            DELETE = Component.translatable("tfcgenviewer.rock_editor.delete_tooltip");
+            DELETE = Component.translatable("tfcgenviewer.rock_editor.delete_tooltip"),
+            BOTTOM_RESERVED = Component.translatable("tfcgenviewer.rock_editor.error.cannot_name_layer_definition_bottom");
 
     private final Font font;
     private final Predicate<MutableRockLayerSettings.MutableLayerData> toDisplay;
@@ -102,6 +103,15 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
     protected void clearEntries() {
         super.clearEntries();
         childrenListener.accept(true);
+    }
+
+    @Override
+    protected boolean removeEntry(Entry pEntry) {
+        final boolean b = super.removeEntry(pEntry);
+        if (b) {
+            childrenListener.accept(children().isEmpty());
+        }
+        return b;
     }
 
     private boolean isOccupied() {
@@ -176,6 +186,9 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             if (id.getValue().isEmpty()) {
                 sendError.accept(EMPTY_ID);
                 return true;
+            } else if ("bottom".equals(id.getValue())) {
+                sendError.accept(BOTTOM_RESERVED);
+                return true;
             }
             mld.id = id.getValue();
             return false;
@@ -197,7 +210,9 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             this.rock.setHint(ROCK_HINT);
             this.rock.setValue(rock);
             this.rock.moveCursorToStart();
-            this.layer = new SuggestableEditBox(font, 0, 0, 20, 16, LAYER_HINT, mrls.layerDefs.keySet(), minecraft);
+            var layers = mrls.layerDefs.keySet();
+            layers.add("bottom");
+            this.layer = new SuggestableEditBox(font, 0, 0, 20, 16, LAYER_HINT, layers, minecraft);
             this.layer.setHint(LAYER_HINT);
             this.layer.setValue(layer);
             this.layer.moveCursorToStart();

@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Block;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettingsDisplay.SettingsHolder> {
 
@@ -31,12 +32,14 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
     private final Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings;
     private final Font font;
     private final BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> toEditor;
+    private final Consumer<Component> errorMessage;
 
-    public RockSettingsDisplay(Minecraft minecraft, int width, int height, Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings, Font font, BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> toEditor) {
+    public RockSettingsDisplay(Minecraft minecraft, int width, int height, Map<String, MutableRockLayerSettings.MutableRockSettings> rockSettings, Font font, BiPredicate<String, MutableRockLayerSettings.MutableRockSettings> toEditor, Consumer<Component> errorMessage) {
         super(minecraft, width, height, 24, height + 24, 188);
         this.rockSettings = rockSettings;
         this.font = font;
         this.toEditor = toEditor;
+        this.errorMessage = errorMessage;
         rockSettings.forEach((n, mrs) -> addEntry(new SettingsHolder(n, mrs)));
         setRenderBackground(false);
         setRenderSelection(false);
@@ -45,12 +48,20 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
 
     public boolean add(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
         if (rockSettings.containsKey(name)) {
-            return true;
+            errorMessage.accept(Component.translatable("tfcgenviewer.rock_editor.error.rock_already_exists", name));
+            return false;
+        }
+
+        for (var entry : rockSettings.entrySet()) {
+            if (entry.getValue().raw == mrs.raw) {
+                errorMessage.accept(Component.translatable("tfcgenviewer.rock_editor.error.rock_setting_already_has_raw_block", entry.getKey(), mrs.raw.getName()));
+                return false;
+            }
         }
 
         rockSettings.put(name, mrs);
         addEntry(new SettingsHolder(name, mrs));
-        return false;
+        return true;
     }
 
     @Override
