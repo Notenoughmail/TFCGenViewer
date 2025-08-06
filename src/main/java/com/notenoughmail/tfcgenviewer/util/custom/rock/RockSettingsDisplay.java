@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
 import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.client.Minecraft;
@@ -8,7 +9,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
-import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -90,13 +90,13 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
 
         public SettingsHolder(String rockName, MutableRockLayerSettings.MutableRockSettings mrs) {
             this.mrs = mrs;
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+            delete = GuiElement.REMOVE.button(b -> {
                 rockSettings.remove(rockName);
                 removeEntry(this);
                 setScrollAmount(getScrollAmount());
             });
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", rockName)));
-            edit = new ImageButton(0, 0, 20, 20, 20, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+            edit = GuiElement.EDIT.button(b -> {
                 if (toEditor.test(rockName, mrs)) {
                     rockSettings.remove(rockName);
                     removeEntry(this);

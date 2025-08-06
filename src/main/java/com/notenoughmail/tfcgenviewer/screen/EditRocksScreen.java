@@ -1,10 +1,12 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import com.notenoughmail.tfcgenviewer.mixin.RockLayerSettingsAccessor;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import com.notenoughmail.tfcgenviewer.util.custom.rock.*;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -23,6 +25,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.fml.loading.toposort.CyclePresentException;
+import net.minecraftforge.fml.loading.toposort.TopologicalSort;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -30,6 +34,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 // The amount of manual juggling of states of various sorts there is in this is honestly concerning, but needs must
+// TODO: Prevent esc kicking back to the main menu
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class EditRocksScreen extends Screen {
@@ -163,13 +168,9 @@ public class EditRocksScreen extends Screen {
         } else if (edit.layers.get(LayerType.UPLIFT).isEmpty()) {
             err(EMPTY_UPLIFT_LAYERS);
         } else if (verifyUniqueRawBlocks()) {
-            final Map<Block, List<String>> rawToSetting = new IdentityHashMap<>();
+            final Map<Block, Set<String>> rawToSetting = new IdentityHashMap<>();
             for (Map.Entry<String, MutableRockLayerSettings.MutableRockSettings> entry : edit.rocks.entrySet()) {
-                rawToSetting.compute(entry.getValue().raw, (b, l) -> {
-                    if (l == null) l = new ArrayList<>();
-                    l.add(entry.getKey());
-                    return l;
-                });
+                rawToSetting.computeIfAbsent(entry.getValue().raw, b -> new HashSet<>()).add(entry.getKey());
             }
             rawToSetting
                     .entrySet()
@@ -184,7 +185,13 @@ public class EditRocksScreen extends Screen {
                             ))
                     );
         } else {
-            built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
+            @Nullable
+            final Component error = sortLayerDefinitions();
+            if (error != null) {
+                err(error);
+            } else {
+                built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
+            }
         }
     }
 
@@ -268,6 +275,47 @@ public class EditRocksScreen extends Screen {
                 "uplift_type".equals(val) ||
                 "bottom_type".equals(val) ||
                 "version".equals(val);
+    }
+
+    @SuppressWarnings({ "UnstableApiUsage", "unchecked" })
+    @Nullable
+    private Component sortLayerDefinitions() {
+        final MutableGraph<MutableRockLayerSettings.MutableLayerData> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
+        for (var mld : edit.layerDefs.values()) {
+            for (String layer : mld.mapping.values()) {
+                if (!layer.equals("bottom")) {
+                    final var req = edit.layerDefs.get(layer);
+                    if (req == null) {
+                        return Component.translatable("tfcgenviewer.rock_editor.error.unknown_layer_def", layer);
+                    }
+
+                    try {
+                        graph.putEdge(mld, req);
+                    } catch (IllegalArgumentException iae) {
+                        return Component.translatable("tfcgenviewer.rock_editor.error.self_referencing_definition.named", mld.id);
+                    }
+                }
+            }
+        }
+
+        List<MutableRockLayerSettings.MutableLayerData> defs;
+        try {
+            defs = TopologicalSort.topologicalSort(graph, null);
+        } catch (CyclePresentException e) {
+            final StringBuilder message = new StringBuilder();
+            e.getCycles().forEach(set -> {
+                message.append("\n");
+                message.append(String.join(" & ", (Iterable<? extends CharSequence>) set.iterator()));
+            });
+            return Component.translatable("tfcgenviewer.rock_editor.error.layer_definition_cycle", message.toString());
+        }
+
+        edit.layerDefs.clear();
+        for (var def : defs) {
+            edit.layerDefs.put(def.id, def);
+        }
+
+        return null;
     }
 
     private void back(boolean keepChanges) {
@@ -374,7 +422,7 @@ public class EditRocksScreen extends Screen {
                 },
                 () -> currentlyEditing
         );
-        private final ImageButton addButton = new ImageButton(width / 2 + 2, height - 48, 20, 20, 40 ,0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+        private final ImageButton addButton = GuiElement.CONFIRM.button(width / 2 + 2, height - 48, b -> {
             final String val = input.getValue();
             if (currentlyEditing != LayerType.NONE && !val.isEmpty() && editor.add(val)) {
                 input.setValue("");

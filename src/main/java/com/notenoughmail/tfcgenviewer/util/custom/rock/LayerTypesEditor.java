@@ -1,8 +1,8 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -101,7 +101,7 @@ public class LayerTypesEditor extends ContainerObjectSelectionList<LayerTypesEdi
 
         Entry(String ref) {
             display = Component.literal(ref);
-            delete = new ImageButton(0, 0, 20, 20, 0,0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+            delete = GuiElement.REMOVE.button(b -> {
                 removeEntry(this);
                 remove(ref);
             });

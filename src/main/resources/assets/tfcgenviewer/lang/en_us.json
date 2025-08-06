@@ -101,6 +101,8 @@
   "tfcgenviewer.rock_editor.error.duplicate_raw_rock_blocks": "Multiple rocks cannot have the same raw block. The rocks [%s] use %s as their raw block",
   "tfcgenviewer.rock_editor.error.rock_setting_already_has_raw_block": "The rock '%s' already uses %s as its raw block",
   "tfcgenviewer.rock_editor.error.cannot_name_layer_definition_bottom": "Cannot name a layer definition 'bottom', it is a reserved value",
+  "tfcgenviewer.rock_editor.error.self_referencing_definition.named": "'%s' cannot reference itself",
+  "tfcgenviewer.rock_editor.error.layer_definition_cycle": "Cycle encountered between layer definitions:\n%s",
 
   "tfcgenviewer.rock_editor.no_spike": "No Spike Block",
   "tfcgenviewer.rock_editor.no_loose": "No Loose Block",

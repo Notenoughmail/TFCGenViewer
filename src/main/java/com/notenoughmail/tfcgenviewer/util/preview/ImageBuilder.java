@@ -20,12 +20,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -52,6 +56,7 @@ public class ImageBuilder {
 
     private static final AtomicReference<BuilderState> BUILDER_STATE = new AtomicReference<>(BuilderState.OFF);
 
+    @Nullable
     private static NativeImage currentImage, transientImage;
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
@@ -239,12 +244,8 @@ public class ImageBuilder {
                     true
             );
         }, GENERATOR_THREAD_POOL).exceptionally(thr -> {
-            if (!(thr instanceof CompletionException compExc && compExc.getCause() instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage()))) {
-                // #cancelRunning() closes the transient image, this may happen before the builderProcess is fully finished
-                // Thus, this specific case the error can be ignored, as it is known and wanted, even if a bit ugly
-                TFCGenViewer.LOGGER.error("Error encountered during generation!", thr);
-            }
-            return null;
+            TFCGenViewer.LOGGER.error("Error encountered during generation!", thr);
+            return ProcessReturn.ERROR;
         }).thenAccept(pr -> {
             BUILDER_STATE.set(BuilderState.FINALIZE);
             transientImage = null;
@@ -369,6 +370,7 @@ public class ImageBuilder {
     private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName, boolean ding) {
 
         static ProcessReturn EMPTY = new ProcessReturn(PreviewInfo.EMPTY, null, null, false);
+        static ProcessReturn ERROR = new ProcessReturn(PreviewInfo.ERROR, null, null, true);
     }
 
     public enum BuilderState {

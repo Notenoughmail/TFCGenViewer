@@ -1,8 +1,8 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -144,10 +144,10 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             this.id.setValue(id);
             this.id.setHint(LAYER_ID);
             this.id.moveCursorToStart();
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> clearEntries());
+            delete = GuiElement.REMOVE.button(b -> clearEntries());
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", id)));
             this.id.setResponder(s -> delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", s))));
-            confirm = new ImageButton(0, 0, 20, 20, 40, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> LayerDefinitionEditor.this.toDisplay());
+            confirm = GuiElement.CONFIRM.button(b -> LayerDefinitionEditor.this.toDisplay());
             confirm.setTooltip(Tooltip.create(RockSettingsDisplay.CONFIRM));
         }
 
@@ -216,7 +216,7 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
             this.layer.setHint(LAYER_HINT);
             this.layer.setValue(layer);
             this.layer.moveCursorToStart();
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> removeEntry(this));
+            delete = GuiElement.REMOVE.button(b -> removeEntry(this));
             delete.setTooltip(Tooltip.create(DELETE));
         }
 

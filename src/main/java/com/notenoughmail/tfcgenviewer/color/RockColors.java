@@ -1,25 +1,30 @@
 package com.notenoughmail.tfcgenviewer.color;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.CacheableSupplier;
+import net.dries007.tfc.util.DataManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.Reader;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public class RockColors extends SimpleJsonResourceReloadListener {
+public class RockColors extends SimplePreparableReloadListener<RockColors.Processed> {
 
     public static final RockColors Rocks = new RockColors();
+    public static final String DIRECTORY = "tfcgenviewer/rocks";
 
     private Map<Block, ColorDefinition> colorDefinitions = new IdentityHashMap<>();
     private ColorDefinition unknown = new ColorDefinition(
@@ -35,7 +40,53 @@ public class RockColors extends SimpleJsonResourceReloadListener {
     });
 
     private RockColors() {
-        super(new Gson(), "tfcgenviewer/rocks");
+    }
+
+    @Override
+    protected Processed prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        final FileToIdConverter converter = FileToIdConverter.json(DIRECTORY);
+        final Map<Block, ColorDefinition> definitions = new IdentityHashMap<>();
+        @Nullable
+        ColorDefinition unknown = null;
+
+        for (Map.Entry<ResourceLocation, Resource> entry : converter.listMatchingResources(pResourceManager).entrySet()) {
+            final ResourceLocation loc = entry.getKey();
+            if (loc.equals(Colors.UNKNOWN)) {
+                try (Reader reader = entry.getValue().openAsReader()) {
+                    unknown = ColorDefinition.parse(parse(reader), "rock.tfcgenviewer.unknown");
+                } catch (Exception e) {
+                    TFCGenViewer.LOGGER.warn("TFCGenViewer Rock 'tfcgenviewer:unknown' failed to parse. {}: {}, keeping previous value", e.getClass().getSimpleName(), e.getMessage());
+                }
+            } else {
+                final Block raw = ForgeRegistries.BLOCKS.getValue(loc);
+                if (raw != null) {
+                    try (Reader reader = entry.getValue().openAsReader()) {
+                        final JsonObject json = parse(reader);
+                        if (json.has("disabled") && json.get("disabled").isJsonPrimitive() && json.get("disabled").getAsBoolean()) continue;
+                        var def = ColorDefinition.parse(json, raw.getDescriptionId());
+                        definitions.put(raw, def);
+                    } catch (Exception e) {
+                        TFCGenViewer.LOGGER.warn("TFCGenViewer Rock '{}', failed to parse. {}: {}", loc, e.getClass().getSimpleName(), e.getMessage());
+                    }
+                } else {
+                    TFCGenViewer.LOGGER.warn("Unknown block \"{}\", skipping", loc);
+                }
+            }
+        }
+        return new Processed(unknown, definitions);
+    }
+
+    private static JsonObject parse(Reader reader) {
+        return GsonHelper.fromJson(DataManager.GSON, reader, JsonObject.class);
+    }
+
+    @Override
+    protected void apply(Processed processed, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        colorDefinitions = processed.colors();
+        if (processed.unknown() != null) {
+            unknown = processed.unknown();
+        }
+        key.clearCache();
     }
 
     public CacheableSupplier<Component> key() {
@@ -46,39 +97,5 @@ public class RockColors extends SimpleJsonResourceReloadListener {
         return colorDefinitions.getOrDefault(raw, unknown);
     }
 
-    @Override
-    protected void apply(Map<ResourceLocation, JsonElement> colors, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
-        colorDefinitions = new IdentityHashMap<>(colors.size() - 1); // Account for unknown rock not being in map
-        colors.forEach((id, json) -> {
-            if (json.isJsonObject()) {
-                final JsonObject obj = json.getAsJsonObject();
-                if (id.equals(Colors.UNKNOWN)) {
-                    final ColorDefinition def;
-                    try {
-                        def = ColorDefinition.parse(obj, "rock.tfcgenviewer.unknown");
-                        unknown = def;
-                    } catch (Exception e) {
-                        TFCGenViewer.LOGGER.warn("TFCGenViewer Rock 'tfcgenviewer:unknown' failed to parse. {}: {}, keeping previous value", e.getClass().getSimpleName(), e.getMessage());
-                    }
-                } else {
-                    if (obj.has("disabled") && obj.get("disabled").isJsonPrimitive() && obj.getAsJsonPrimitive("disabled").getAsBoolean()) return;
-                    final Block raw = ForgeRegistries.BLOCKS.getValue(id);
-                    if (raw != null) {
-                        final ColorDefinition def;
-                        try {
-                            def = ColorDefinition.parse(obj, raw.getDescriptionId());
-                            colorDefinitions.put(raw, def);
-                        } catch (Exception e) {
-                            TFCGenViewer.LOGGER.warn("TFCGenViewer Rock '{}', failed to parse. {}: {}", id, e.getClass().getSimpleName(), e.getMessage());
-                        }
-                    } else {
-                        TFCGenViewer.LOGGER.warn("Unknown block \"{}\", skipping", id);
-                    }
-                }
-            } else {
-                TFCGenViewer.LOGGER.warn("Rock color \"{}\" was not a json object, skipping", id);
-            }
-        });
-        key.clearCache();
-    }
+    protected record Processed(@Nullable ColorDefinition unknown, Map<Block, ColorDefinition> colors) {}
 }

@@ -36,11 +36,11 @@ public class TFCGVCommands {
                                                     final String val = StringArgumentType.getString(ctx, "value");
                                                     final Enum<?> value;
                                                     try {
-                                                        value = Enum.valueOf(cast(target.clazz.get()), val);
+                                                        value = Enum.valueOf(TFCGenViewer.cast(target.clazz.get()), val);
                                                     } catch (IllegalArgumentException ignored) {
                                                         throw new SimpleCommandExceptionType(Component.translatable("tfcgenviewer.commands.set.fail", val, target.name())).create();
                                                     }
-                                                    target.config.get().set(cast(value));
+                                                    target.config.get().set(TFCGenViewer.cast(value));
                                                     ctx.getSource().sendSuccess(() -> Component.translatable("tfcgenviewer.commands.set.success", target.name(), value.name()), true);
                                                     return 1;
                                                 }))
@@ -129,16 +129,12 @@ public class TFCGVCommands {
         private final Supplier<ForgeConfigSpec.EnumValue<?>> config;
 
         <T extends Enum<T>> TypeTarget(Supplier<Class<T>> clazz, Supplier<ForgeConfigSpec.EnumValue<T>> config) {
-            this.clazz = cast(clazz);
-            this.config = cast(config);
+            this.clazz = TFCGenViewer.cast(clazz);
+            this.config = TFCGenViewer.cast(config);
         }
 
         TypeTarget(Permissions.Category category) {
             this(() -> Permissions.Type.class, () -> ServerConfig.permissionsByType.get(category));
         }
-    }
-
-    private static <T> T cast(Object o) {
-        return (T) o;
     }
 }

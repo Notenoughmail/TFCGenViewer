@@ -1,8 +1,8 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -85,6 +85,7 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
         // Not technically critical, until it comes to actually validating the RockLayerSettings
         if (!unknownLayers.isEmpty()) sendError.accept(Component.translatable("tfcgenviewer.rock_editor.error.unknown_layer_definitions", String.join(", ", unknownLayers)));
 
+        // TODO: Fix this horrible mess
         int requiredByIndex = mrls.layerDefs.size() - 1; // Must be before this
         for (int i = 0 ; i < mrls.layerDefs.size() ; i++) {
             final var val = mrls.layerDefs.getValue(i);
@@ -121,13 +122,13 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
         Entry(String id, MutableRockLayerSettings.MutableLayerData mld) {
             name = Component.literal(id);
             Map<String, String> values = mld.mapping;
-            delete = new ImageButton(0, 0, 20, 20, 0, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+            delete = GuiElement.REMOVE.button(b -> {
                 mrls.layerDefs.remove(id);
                 removeEntry(this);
                 setScrollAmount(getScrollAmount());
             });
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", id)));
-            edit = new ImageButton(0, 0, 20, 20, 20, 0, 20, WidgetUtils.GUI_ELEMENTS, 64, 64, b -> {
+            edit = GuiElement.EDIT.button(b -> {
                 if (toEditor.test(mld)) {
                     mrls.layerDefs.remove(id);
                     removeEntry(this);

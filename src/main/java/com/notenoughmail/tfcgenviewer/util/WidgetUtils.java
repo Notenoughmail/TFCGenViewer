@@ -103,7 +103,7 @@ public class WidgetUtils {
             if (stack != null) {
                 graphics.renderFakeItem(stack, x, y + 2);
             } else {
-                graphics.blit(GUI_ELEMENTS, x - 2, y, 0, 0, 40, 20, 20, 64, 64);
+                GuiElement.UNKNOWN.render(graphics, x - 2, y);
             }
 
             AbstractWidget.renderScrollingString(graphics, font, block.getName(), x + 22, y + 5, right, y + 17, 0xFFFFFFFF);

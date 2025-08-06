@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -214,7 +215,7 @@ public class BlockSelectionWidget extends EditBox {
             if (rendered != null) {
                 graphics.renderFakeItem(rendered, x, y + 2);
             } else if (!fullWidthText) {
-                graphics.blit(WidgetUtils.GUI_ELEMENTS, x - 2, y, 0, 0, 40, 20, 20, 64, 64);
+                GuiElement.UNKNOWN.render(graphics, x - 2, y);
             }
 
             renderScrollingString(graphics, font, text, x + (fullWidthText ? 2 : 22), y + 5, maxX, y + 17, 0xFFFFFFFF);
