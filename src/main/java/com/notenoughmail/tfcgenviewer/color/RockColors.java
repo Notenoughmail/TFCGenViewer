@@ -25,6 +25,7 @@ public class RockColors extends SimplePreparableReloadListener<RockColors.Proces
 
     public static final RockColors Rocks = new RockColors();
     public static final String DIRECTORY = "tfcgenviewer/rocks";
+    public static final int DIRECTORY_LENGTH = DIRECTORY.length() + 1;
 
     private Map<Block, ColorDefinition> colorDefinitions = new IdentityHashMap<>();
     private ColorDefinition unknown = new ColorDefinition(
@@ -50,7 +51,7 @@ public class RockColors extends SimplePreparableReloadListener<RockColors.Proces
         ColorDefinition unknown = null;
 
         for (Map.Entry<ResourceLocation, Resource> entry : converter.listMatchingResources(pResourceManager).entrySet()) {
-            final ResourceLocation loc = entry.getKey();
+            final ResourceLocation loc = entry.getKey().withPath(s -> s.substring(DIRECTORY_LENGTH, s.length() - 5));
             if (loc.equals(Colors.UNKNOWN)) {
                 try (Reader reader = entry.getValue().openAsReader()) {
                     unknown = ColorDefinition.parse(parse(reader), "rock.tfcgenviewer.unknown");

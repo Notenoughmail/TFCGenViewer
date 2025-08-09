@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LayerTypesDisplay extends ContainerObjectSelectionList<LayerTypesDisplay.Entry> {
+public class LayerTypesDisplay extends SelectionList<LayerTypesDisplay.Entry> {
 
     public static Component IN_EDITOR = Component.translatable("tfcgenviewer.rock_editor.layer_in_editor").withStyle(ChatFormatting.DARK_GRAY);
 
@@ -43,6 +44,7 @@ public class LayerTypesDisplay extends ContainerObjectSelectionList<LayerTypesDi
         addEntry(new Entry(mrls, LayerType.VOLCANIC));
         addEntry(new Entry(mrls, LayerType.LAND));
         addEntry(new Entry(mrls, LayerType.UPLIFT));
+        setScrollBarOffset(-8);
     }
 
     private void refresh() {
@@ -56,11 +58,6 @@ public class LayerTypesDisplay extends ContainerObjectSelectionList<LayerTypesDi
         pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
         pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
         pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
-    protected int getScrollbarPosition() {
-        return super.getScrollbarPosition() - 12;
     }
 
     class Entry extends ContainerObjectSelectionList.Entry<Entry> {
@@ -106,17 +103,17 @@ public class LayerTypesDisplay extends ContainerObjectSelectionList<LayerTypesDi
         @Override
         public void render(GuiGraphics graphics, int pIndex, int y, int x, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
             if (type == currentlyEditing.get()) {
-                text(type.title, x + 2, y + 5, graphics);
+                text(type.title, x + 12, y + 5, graphics);
                 text(IN_EDITOR, x + (pWidth - font.width(IN_EDITOR)) / 2, y + 32, graphics);
             } else {
-                edit.setX(x);
+                edit.setX(x + 10);
                 edit.setY(y);
                 edit.render(graphics, pMouseX, pMouseY, pPartialTick);
-                text(type.title, x + 24, y + 5, graphics);
+                text(type.title, x + 34, y + 5, graphics);
                 y += 21;
                 for (Component c : valueDisplay) {
                     if (c == null) break;
-                    text(c, x + 10, y, graphics);
+                    text(c, x + 12, y, graphics);
                     y += 11;
                 }
             }

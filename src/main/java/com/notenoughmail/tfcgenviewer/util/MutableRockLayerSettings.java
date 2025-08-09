@@ -30,12 +30,18 @@ public class MutableRockLayerSettings {
         return new RockLayerSettings.Data(
                 Util.make(new HashMap<>(), m -> rocks.forEach((n, mrs) -> m.put(n, mrs.build()))),
                 layers.get(LayerType.BOTTOM),
-                layerDefs.values().stream().map(MutableLayerData::build).toList(), // TODO: This crashes if layerDefs is empty, maybe fix that (in addition to side-stepping it)
+                buildLayerDefs(),
                 layers.get(LayerType.OCEAN),
                 layers.get(LayerType.LAND),
                 layers.get(LayerType.VOLCANIC),
                 layers.get(LayerType.UPLIFT)
         );
+    }
+
+    private List<RockLayerSettings.LayerData> buildLayerDefs() {
+        final List<RockLayerSettings.LayerData> layers = new ArrayList<>();
+        layerDefs.forEach((id, layer) -> layers.add(layer.build()));
+        return layers;
     }
 
     public final Map<String, MutableRockSettings> rocks = new HashMap<>();
@@ -92,6 +98,11 @@ public class MutableRockLayerSettings {
                     Optional.ofNullable(mossyLoose)
             );
         }
+
+        public void clear() {
+            raw = hardened = gravel = cobble = sand = sandstone = Blocks.STONE;
+            spike = loose = mossyLoose = null;
+        }
     }
 
     public static class MutableLayerData {
@@ -112,6 +123,10 @@ public class MutableRockLayerSettings {
 
         private RockLayerSettings.LayerData build() {
             return new RockLayerSettings.LayerData(id, mapping);
+        }
+
+        public boolean mapsTo(String layer) {
+            return mapping.containsValue(layer);
         }
     }
 }

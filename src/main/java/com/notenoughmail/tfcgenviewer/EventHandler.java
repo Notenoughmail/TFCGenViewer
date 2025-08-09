@@ -35,6 +35,7 @@ public class EventHandler {
         bus.addListener(EventHandler::onKeyInput);
     }
 
+    // TODO: High contrast versions of custom buttons, automatically add them to high contrast resource pack
     private static void addPackFinders(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES) {
             final IModFileInfo info = ModList.get().getModFileById(TFCGenViewer.ID);

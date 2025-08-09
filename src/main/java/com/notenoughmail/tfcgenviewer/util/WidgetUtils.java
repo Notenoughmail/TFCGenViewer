@@ -106,7 +106,7 @@ public class WidgetUtils {
                 GuiElement.UNKNOWN.render(graphics, x - 2, y);
             }
 
-            AbstractWidget.renderScrollingString(graphics, font, block.getName(), x + 22, y + 5, right, y + 17, 0xFFFFFFFF);
+            AbstractWidget.renderScrollingString(graphics, font, block.getName(), x + 2, y + 5, right, y + 17, 0xFFFFFFFF);
         } else {
             AbstractWidget.renderScrollingString(graphics, font, textIfBlockIsNull, x + 2, y + 5, right - 2, y + 17, 0xFFFFFFFF);
         }

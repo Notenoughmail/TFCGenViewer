@@ -3,6 +3,9 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.OrderedMap;
+import com.notenoughmail.tfcgenviewer.util.OrderedMapImpl;
+import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,9 +27,56 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDefinitionDisplay.Entry> {
+public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay.Entry> {
 
-    public static final Component SELF_REFERENCE = Component.translatable("tfcgenviewer.rock_editor.error.self_referencing_definition");
+    public static final Component
+            SELF_REFERENCE = Component.translatable("tfcgenviewer.rock_editor.error.self_referencing_definition"),
+            COMPLEX_DEF_ORDER = Component.translatable("tfcgenviewer.rock_editor.error.layer_definition_mapping_too_complex");
+
+    public static void sortLayerDefs(OrderedMap<String, MutableRockLayerSettings.MutableLayerData> map, Consumer<Component> onError) {
+        sortLayerDefs(map, onError, 0);
+    }
+
+    // TODO: Properly test this
+    private static void sortLayerDefs(OrderedMap<String, MutableRockLayerSettings.MutableLayerData> map, Consumer<Component> onError, int depth) {
+        boolean goAgain = false;
+        final MutableRockLayerSettings.MutableLayerData[] datas = map.values().toArray(MutableRockLayerSettings.MutableLayerData[]::new);
+        final OrderedMap<String, MutableRockLayerSettings.MutableLayerData> workingSpace = new OrderedMapImpl<>();
+        for (int i = 0 ; i < datas.length ; i++) {
+            final MutableRockLayerSettings.MutableLayerData data = datas[i];
+            if (i == 0) {
+                workingSpace.put(data.id, data);
+            } else {
+                int maxI = 0, minI = workingSpace.size();
+                final MutableRockLayerSettings.MutableLayerData[] transientDatas = workingSpace.values().toArray(MutableRockLayerSettings.MutableLayerData[]::new);
+                for (final MutableRockLayerSettings.MutableLayerData mD : transientDatas) {
+                    final boolean m2d = mD.mapsTo(data.id), d2m = data.mapsTo(mD.id);
+                    final int mI = workingSpace.indexOf(mD.id);
+                    if (m2d && d2m) {
+                        onError.accept(Component.translatable("tfcgenviewer.rock_editor.error.circular_layer_definition_reference", data.id, mD.id));
+                        return;
+                    } else if (d2m) {
+                        maxI = Math.max(maxI, mI);
+                    } else if (m2d) {
+                        minI = Math.min(minI, mI + 1);
+                    }
+                }
+                if (maxI > minI) {
+                    goAgain = true;
+                }
+                workingSpace.put(Math.max(minI, maxI), data.id, data);
+            }
+        }
+        map.clear();
+        map.putAll(workingSpace);
+        if (goAgain) {
+            if (depth > 5) {
+                onError.accept(COMPLEX_DEF_ORDER);
+                return;
+            }
+            sortLayerDefs(map, onError, depth + 1);
+        }
+    }
 
     private final Font font;
     private final MutableRockLayerSettings mrls;
@@ -38,13 +88,14 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
         super(pMinecraft, pWidth, pHeight, 24, pHeight - 24, 55);
         this.font = font;
         this.mrls = mrls;
-        refreshOrder();
+        refreshEntries();
         this.toEditor = toEditor;
         this.sendTimedError = sendError;
         this.sendError = c -> sendError.accept(c, 60);
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
+        setScrollBarOffset(-8);
     }
 
     @Override
@@ -52,11 +103,6 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
         pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
         pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
         pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
-    protected int getScrollbarPosition() {
-        return super.getScrollbarPosition() - 12;
     }
 
     public boolean add(MutableRockLayerSettings.MutableLayerData mld) {
@@ -85,34 +131,19 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
         // Not technically critical, until it comes to actually validating the RockLayerSettings
         if (!unknownLayers.isEmpty()) sendError.accept(Component.translatable("tfcgenviewer.rock_editor.error.unknown_layer_definitions", String.join(", ", unknownLayers)));
 
-        // TODO: Fix this horrible mess
-        int requiredByIndex = mrls.layerDefs.size() - 1; // Must be before this
-        for (int i = 0 ; i < mrls.layerDefs.size() ; i++) {
-            final var val = mrls.layerDefs.getValue(i);
-            if (val != null && val.mapping.containsValue(mld.id)) {
-                requiredByIndex = Math.min(requiredByIndex, i);
-                if (requiredByIndex == requiresIndex) { // TODO: This can faultily be called if the requiredByIndex is 0 and the requiresIndex is never updated | Figure that one out
-                    sendTimedError.accept(Component.translatable("tfcgenviewer.rock_editor.error.circular_layer_definition_reference", mld.id, mrls.layerDefs.getKey(requiredByIndex)), 100);
-                    break; // TODO: Should this, and below, just return false instead of breaking? Unless its circular or the topology is very weird, shuffling definitions around should suffice
-                }
-                if (requiredByIndex < requiresIndex) {
-                    sendTimedError.accept(Component.translatable("tfcgenviewer.rock_editor.error.layer_definition_order_issue", mld.id, mrls.layerDefs.getKey(requiredByIndex)), 100);
-                    break;
-                }
-            }
-        }
+        mrls.layerDefs.put(mld.id, mld);
 
-        mrls.layerDefs.put(requiresIndex + 1, mld.id, mld);
-        refreshOrder();
+        sortLayerDefs(mrls.layerDefs, c -> sendTimedError.accept(c, 100));
+
+        refreshEntries();
         return true;
     }
 
-    private void refreshOrder() {
+    public void refreshEntries() {
         clearEntries();
         mrls.layerDefs.forEach((id, mld) -> addEntry(new Entry(id, mld)));
     }
 
-    // TODO: Either a send to top button or a button that reorders things based on requirement indexes
     class Entry extends ContainerObjectSelectionList.Entry<Entry> {
 
         private final ImageButton delete, edit;
@@ -158,17 +189,17 @@ public class LayerDefinitionDisplay extends ContainerObjectSelectionList<LayerDe
 
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int y, int x, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
-            delete.setX(x);
+            delete.setX(x + 10);
             delete.setY(y);
             delete.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-            edit.setX(x + 24);
+            edit.setX(x + 34);
             edit.setY(y);
             edit.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-            text(name, x + 48, y + 5, pGuiGraphics);
+            text(name, x + 58, y + 5, pGuiGraphics);
             y += 21;
             for (Component c : valueDisplay) {
                 if (c == null) break;
-                text(c, x + 10, y, pGuiGraphics);
+                text(c, x + 12, y, pGuiGraphics);
                 y += 11;
             }
         }

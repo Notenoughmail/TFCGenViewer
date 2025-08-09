@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LayerTypesEditor extends ContainerObjectSelectionList<LayerTypesEditor.Entry> {
+public class LayerTypesEditor extends SelectionList<LayerTypesEditor.Entry> {
 
     private final MutableRockLayerSettings mrls;
     private final Font font;
@@ -35,6 +36,7 @@ public class LayerTypesEditor extends ContainerObjectSelectionList<LayerTypesEdi
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
+        setScrollBarOffset(-8);
     }
 
     @Override
@@ -42,11 +44,6 @@ public class LayerTypesEditor extends ContainerObjectSelectionList<LayerTypesEdi
         pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
         pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
         pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
-    protected int getScrollbarPosition() {
-        return x0 + super.getScrollbarPosition() - 8;
     }
 
     public boolean add(String ref) {

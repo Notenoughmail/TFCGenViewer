@@ -16,7 +16,7 @@ public record PreviewInfo(
         @Nullable Int2ObjectFunction<Component> tooltip
 ) {
 
-    public PreviewInfo(Component rightInfo, ResourceLocation image, int previewSizeGrids, int x0, int y0, Mode mode) {
+    private PreviewInfo(Component rightInfo, ResourceLocation image, int previewSizeGrids, int x0, int y0, Mode mode) {
         this(rightInfo, image, previewSizeGrids, x0, y0, mode, null);
     }
 

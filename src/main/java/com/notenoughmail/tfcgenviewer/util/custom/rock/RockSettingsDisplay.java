@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
 import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
+import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +22,7 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettingsDisplay.SettingsHolder> {
+public class RockSettingsDisplay extends SelectionList<RockSettingsDisplay.SettingsHolder> {
 
     public static Component
             NO_SPIKE = Component.translatable("tfcgenviewer.rock_editor.no_spike"),
@@ -44,6 +45,7 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
+        setScrollBarOffset(-8);
     }
 
     public boolean add(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
@@ -74,11 +76,6 @@ public class RockSettingsDisplay extends ContainerObjectSelectionList<RockSettin
     @Override
     public NarratableEntry.NarrationPriority narrationPriority() {
         return isFocused() ? NarrationPriority.FOCUSED : NarrationPriority.NONE;
-    }
-
-    @Override
-    protected int getScrollbarPosition() {
-        return super.getScrollbarPosition() - 12;
     }
 
     class SettingsHolder extends ContainerObjectSelectionList.Entry<SettingsHolder> {

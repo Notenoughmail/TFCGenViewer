@@ -132,7 +132,7 @@ public class ImageBuilder {
                             }
                         }
                     }
-                    if (((NativeImageAccessor) (Object) image).tfcgenviewer$GetPixels() != 0L) {
+                    if (isAllocated(image)) {
                         try {
                             visualizer.draw(
                                     x, y,
@@ -145,9 +145,10 @@ public class ImageBuilder {
                                     colorDescriptors
                             );
                         } catch (Throwable error) {
-                            if (error instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage())) {
-                                throw error; // This specific error is known and harmless (in this case) and can be ignored
-                            } else {
+                            // This specific error is known and harmless (in this case) and can be ignored
+                            // It is more-or-less unavoidable due to writing to and de-allocating potentially happening on different threads
+                            // Though attempts are made to prevent writing to the image before modify it
+                            if (!(error instanceof IllegalStateException ise && "Image is not allocated.".equals(ise.getMessage()))) {
                                 final String errorMsg = GeneratorPreviewException.buildMessage(
                                         seed,
                                         visualizer,
@@ -317,13 +318,15 @@ public class ImageBuilder {
     }
 
     public static void setPixel(NativeImage image, int x, int y, int color) {
-        final int alpha = alpha(color);
-        if (alpha != 0) {
-            if (!image.isOutsideBounds(x, y)) {
-                if (alpha == 255) {
-                    image.setPixelRGBA(x, y, color);
-                } else {
-                    image.blendPixel(x, y, color);
+        if (isAllocated(image)) {
+            final int alpha = alpha(color);
+            if (alpha != 0) {
+                if (!image.isOutsideBounds(x, y)) {
+                    if (alpha == 255) {
+                        image.setPixelRGBA(x, y, color);
+                    } else {
+                        image.blendPixel(x, y, color);
+                    }
                 }
             }
         }
@@ -365,6 +368,10 @@ public class ImageBuilder {
                 TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(imageName), exception);
             }
         }
+    }
+
+    public static boolean isAllocated(NativeImage image) {
+        return ((NativeImageAccessor) (Object) image).tfcgenviewer$GetPixels() != 0L;
     }
 
     private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName, boolean ding) {

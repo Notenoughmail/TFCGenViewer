@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDefinitionEditor.Entry> {
+public class LayerDefinitionEditor extends SelectionList<LayerDefinitionEditor.Entry> {
 
     public static final Component
             LAYER_ID = Component.translatable("tfcgenviewer.rock_editor.layer_id").withStyle(ChatFormatting.DARK_GRAY),
@@ -49,6 +50,7 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
+        setScrollBarOffset(-8);
     }
 
     @Override
@@ -56,11 +58,6 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
         pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
         pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
-    protected int getScrollbarPosition() {
-        return x0 + super.getScrollbarPosition() - 8;
     }
 
     public boolean accept(MutableRockLayerSettings.MutableLayerData mld) {
@@ -159,15 +156,15 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int y, int x, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
             y += 10;
-            delete.setX(x);
+            delete.setX(x + 10);
             delete.setY(y);
             delete.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-            confirm.setX(x + 22);
+            confirm.setX(x + 32);
             confirm.setY(y);
             confirm.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-            id.setX(x + 44);
+            id.setX(x + 54);
             id.setY(y + 2);
-            id.setWidth(pWidth - 48);
+            id.setWidth(pWidth - 58 - getScrollBarScrunchFactor());
             id.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 
@@ -227,16 +224,16 @@ public class LayerDefinitionEditor extends ContainerObjectSelectionList<LayerDef
 
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int y, int x, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
-            delete.setX(x);
+            delete.setX(x + 10);
             delete.setY(y);
             delete.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-            rock.setX(x + 24);
+            rock.setX(x + 34);
             rock.setY(y + 2);
-            rock.setWidth(pWidth - 28);
+            rock.setWidth(pWidth - 38 - getScrollBarScrunchFactor());
             rock.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-            layer.setX(x + 2);
+            layer.setX(x + 12);
             layer.setY(y + 24);
-            layer.setWidth(pWidth - 6);
+            layer.setWidth(pWidth - 16 - getScrollBarScrunchFactor());
             layer.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 

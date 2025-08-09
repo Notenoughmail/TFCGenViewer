@@ -7,6 +7,7 @@
   "button.tfcgenviewer.current_seed": "Current seed: %s",
   "button.tfcgenviewer.current_seed.tooltip": "Click to copy",
   "button.tfcgenviewer.edit_rocks": "Edit Rocks",
+  "button.tfcgenviewer.clear_rock_settings": "Clear Settings",
 
   "tfcgenviewer.preview_world.title": "Preview World",
   "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
@@ -103,6 +104,7 @@
   "tfcgenviewer.rock_editor.error.cannot_name_layer_definition_bottom": "Cannot name a layer definition 'bottom', it is a reserved value",
   "tfcgenviewer.rock_editor.error.self_referencing_definition.named": "'%s' cannot reference itself",
   "tfcgenviewer.rock_editor.error.layer_definition_cycle": "Cycle encountered between layer definitions:\n%s",
+  "tfcgenviewer.rock_editor.error.layer_definition_mapping_too_complex": "Layer definitions could not be sorted, this may be due to a cycle between multiple definitions",
 
   "tfcgenviewer.rock_editor.no_spike": "No Spike Block",
   "tfcgenviewer.rock_editor.no_loose": "No Loose Block",

@@ -16,10 +16,11 @@ import java.util.List;
  * <p>
  * It just works™
  */
-public class SingleColumnOptionsList extends ContainerObjectSelectionList<SingleColumnOptionsList.Entry> {
+public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsList.Entry> {
 
     public SingleColumnOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
         super(pMinecraft, pWidth, pHeight, pY0, pY1, pItemHeight);
+        setScrollBarOffset(-4);
     }
 
     public void add(OptionInstance<?>... options) {
@@ -28,23 +29,22 @@ public class SingleColumnOptionsList extends ContainerObjectSelectionList<Single
         }
     }
 
-    @Override
-    protected int getScrollbarPosition() {
-        return width - 4;
-    }
-
-    public static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+    public class Entry extends ContainerObjectSelectionList.Entry<Entry> {
 
         private final List<AbstractWidget> widget;
 
         public Entry(OptionInstance<?> option, int width, Options options) {
-            this.widget = List.of(option.createButton(options, 2, 0, width - 8));
+            final AbstractWidget instance = option.createButton(options, 2, 0, width - 8);
+            instance.setHeight(getHeight() - 4);
+            this.widget = List.of(instance);
         }
 
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
             final AbstractWidget instance = widget.get(0);
+            instance.setX(pLeft + 2);
             instance.setY(pTop);
+            instance.setWidth(pWidth - 4 - getScrollBarScrunchFactor());
             instance.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 

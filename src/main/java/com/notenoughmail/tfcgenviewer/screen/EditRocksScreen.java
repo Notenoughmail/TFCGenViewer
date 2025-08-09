@@ -31,7 +31,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 // The amount of manual juggling of states of various sorts there is in this is honestly concerning, but needs must
 // TODO: Prevent esc kicking back to the main menu
@@ -113,9 +115,8 @@ public class EditRocksScreen extends Screen {
         }).build());
         rowHelper.addChild(Button.builder(GRAPH, b -> graph()).build());
         rowHelper.addChild(Button.builder(CommonComponents.GUI_CANCEL, b -> back(false)).build());
-        final int buttonWidth = Math.min(150, Math.max(50, (width - 20) / 4));
         bottomButtons.visitWidgets(w -> {
-            w.setWidth(buttonWidth);
+            w.setWidth(Math.min((width - 20) / 4, 150));
             w.setTabOrderGroup(1);
             addRenderableWidget(w);
         });
@@ -186,7 +187,7 @@ public class EditRocksScreen extends Screen {
                     );
         } else {
             @Nullable
-            final Component error = sortLayerDefinitions();
+            final Component error = verifyNoCycles();
             if (error != null) {
                 err(error);
             } else {
@@ -277,9 +278,9 @@ public class EditRocksScreen extends Screen {
                 "version".equals(val);
     }
 
-    @SuppressWarnings({ "UnstableApiUsage", "unchecked" })
+    @SuppressWarnings("UnstableApiUsage")
     @Nullable
-    private Component sortLayerDefinitions() {
+    private Component verifyNoCycles() {
         final MutableGraph<MutableRockLayerSettings.MutableLayerData> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
         for (var mld : edit.layerDefs.values()) {
             for (String layer : mld.mapping.values()) {
@@ -298,24 +299,20 @@ public class EditRocksScreen extends Screen {
             }
         }
 
-        List<MutableRockLayerSettings.MutableLayerData> defs;
         try {
-            defs = TopologicalSort.topologicalSort(graph, null);
+            TopologicalSort.topologicalSort(graph, null);
         } catch (CyclePresentException e) {
             final StringBuilder message = new StringBuilder();
             e.getCycles().forEach(set -> {
                 message.append("\n");
-                message.append(String.join(" & ", (Iterable<? extends CharSequence>) set.iterator()));
+                message.append(set.stream().map(o -> ((MutableRockLayerSettings.MutableLayerData) o).id).collect(Collectors.joining(" & ")));
             });
             return Component.translatable("tfcgenviewer.rock_editor.error.layer_definition_cycle", message.toString());
         }
 
-        edit.layerDefs.clear();
-        for (var def : defs) {
-            edit.layerDefs.put(def.id, def);
-        }
-
-        return null;
+        final AtomicReference<Component> ret = new AtomicReference<>();
+        LayerDefinitionDisplay.sortLayerDefs(edit.layerDefs, ret::set);
+        return ret.get();
     }
 
     private void back(boolean keepChanges) {

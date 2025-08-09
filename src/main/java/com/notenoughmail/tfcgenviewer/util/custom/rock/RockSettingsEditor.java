@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.screen.PreviewGenerationScreen;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.blocks.rock.LooseRockBlock;
 import net.dries007.tfc.common.blocks.rock.RockSpikeBlock;
@@ -28,7 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class RockSettingsEditor extends ContainerObjectSelectionList<RockSettingsEditor.Entry> {
+public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> {
 
     public static final Component
             NAME_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.edit_rock_settings_name").withStyle(ChatFormatting.DARK_GRAY),
@@ -41,7 +42,8 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
             SANDSTONE_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.sandstone_selection").withStyle(ChatFormatting.DARK_GRAY),
             SPIKE_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.spike_selection").withStyle(ChatFormatting.DARK_GRAY),
             LOOSE_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.loose_selection").withStyle(ChatFormatting.DARK_GRAY),
-            MOSSY_LOOSE_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.mossy_loose_selection").withStyle(ChatFormatting.DARK_GRAY);
+            MOSSY_LOOSE_HINT = Component.translatable("tfcgenviewer.rock_editor.hint.mossy_loose_selection").withStyle(ChatFormatting.DARK_GRAY),
+            CLEAR_SETTINGS = Component.translatable("button.tfcgenviewer.clear_rock_settings");
 
     private MutableRockLayerSettings.MutableRockSettings mrs;
     private final EditBox name;
@@ -61,37 +63,42 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         setRenderSelection(false);
         setRenderTopAndBottom(false);
         addEntry(new NameEntry());
-        addEntry(new BlockEntry(b -> mrs.raw = b, () -> mrs.raw).setHint(RAW_HINT));
-        addEntry(new BlockEntry(b -> mrs.hardened = b, () -> mrs.hardened).setHint(HARDENED_HINT));
-        addEntry(new BlockEntry(b -> mrs.gravel = b, () -> mrs.gravel).setHint(GRAVEL_HINT));
-        addEntry(new BlockEntry(b -> mrs.cobble = b, () -> mrs.cobble).setHint(COBBLE_HINT));
-        addEntry(new BlockEntry(b -> mrs.sand = b, () -> mrs.sand).setHint(SAND_HINT));
-        addEntry(new BlockEntry(b -> mrs.sandstone = b, () -> mrs.sandstone).setHint(SANDSTONE_HINT));
+        addEntry(new BlockEntry(b -> mrs.raw = b, () -> mrs.raw, RAW_HINT));
+        addEntry(new BlockEntry(b -> mrs.hardened = b, () -> mrs.hardened, HARDENED_HINT));
+        addEntry(new BlockEntry(b -> mrs.gravel = b, () -> mrs.gravel, GRAVEL_HINT));
+        addEntry(new BlockEntry(b -> mrs.cobble = b, () -> mrs.cobble, COBBLE_HINT));
+        addEntry(new BlockEntry(b -> mrs.sand = b, () -> mrs.sand, SAND_HINT));
+        addEntry(new BlockEntry(b -> mrs.sandstone = b, () -> mrs.sandstone, SANDSTONE_HINT));
         addEntry(new BlockEntry(
                 b -> mrs.spike = b,
                 b ->
                         b instanceof RockSpikeBlock ||
                         b.getStateDefinition().getProperties().contains(TFCBlockStateProperties.ROCK_SPIKE_PART),
                 () -> mrs.spike,
-                RockSettingsDisplay.NO_SPIKE
-        ).setHint(SPIKE_HINT));
+                RockSettingsDisplay.NO_SPIKE,
+                SPIKE_HINT
+        ));
         addEntry(new BlockEntry(
                 b -> mrs.loose = b,
                 b ->
                         b instanceof LooseRockBlock ||
                         b.getStateDefinition().getProperties().contains(TFCBlockStateProperties.COUNT_1_3),
                 () -> mrs.loose,
-                RockSettingsDisplay.NO_LOOSE
-        ).setHint(LOOSE_HINT));
+                RockSettingsDisplay.NO_LOOSE,
+                LOOSE_HINT
+        ));
         addEntry(new BlockEntry(
                 b -> mrs.mossyLoose = b,
                 b ->
                         b instanceof LooseRockBlock ||
                         b.getStateDefinition().getProperties().contains(TFCBlockStateProperties.COUNT_1_3),
                 () -> mrs.mossyLoose,
-                RockSettingsDisplay.NO_MOSSY_LOOSE
-        ).setHint(MOSSY_LOOSE_HINT));
+                RockSettingsDisplay.NO_MOSSY_LOOSE,
+                MOSSY_LOOSE_HINT
+        ));
         addEntry(new SaveEntry());
+        addEntry(new ClearEntry());
+        setScrollBarOffset(-8);
     }
 
     @Override
@@ -99,11 +106,6 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         pGuiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
         pGuiGraphics.blit(Screen.BACKGROUND_LOCATION, x0 + 5, y0, x1 - 5, y1, x1 - x0 - 10, y1 - y0, 32, 32);
         pGuiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
-    protected int getScrollbarPosition() {
-        return x0 + super.getScrollbarPosition() - 12;
     }
 
     public boolean load(String name, MutableRockLayerSettings.MutableRockSettings mrs) {
@@ -129,23 +131,31 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         return false;
     }
 
+    private void clear() {
+        for (Entry e : children()) {
+            e.clear();
+        }
+        mrs.clear();
+    }
+
     protected static abstract class Entry extends ContainerObjectSelectionList.Entry<Entry> {
 
         void tick() {}
+
+        void clear() {}
 
         boolean isOccupied() {
             return false;
         }
     }
 
-    // TODO: Delete button that empties the name and clears the mrs
     private class NameEntry extends Entry {
 
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
-            name.setX(pLeft + 2);
+            name.setX(pLeft + 4);
             name.setY(pTop);
-            name.setWidth(pWidth - 4);
+            name.setWidth(pWidth - 8 - getScrollBarScrunchFactor());
             name.setHeight(pHeight);
             name.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
@@ -153,6 +163,11 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         @Override
         void tick() {
             name.tick();
+        }
+
+        @Override
+        void clear() {
+            name.setValue("");
         }
 
         @Override
@@ -178,25 +193,21 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
 
         private final BlockSelectionWidget input;
 
-        BlockEntry(Consumer<Block> setBlock, Supplier<Block> getBlock) {
-            this(setBlock, null, getBlock, null);
+        BlockEntry(Consumer<Block> setBlock, Supplier<Block> getBlock, Component hint) {
+            this(setBlock, null, getBlock, null, hint);
         }
 
-        BlockEntry(Consumer<@Nullable Block> setBlock, @Nullable Predicate<Block> filter, Supplier<@Nullable Block> getBlock, @Nullable Component ifBlockIsNullMessage) {
+        BlockEntry(Consumer<@Nullable Block> setBlock, @Nullable Predicate<Block> filter, Supplier<@Nullable Block> getBlock, @Nullable Component ifBlockIsNullMessage, Component hint) {
             input = new BlockSelectionWidget(font, 0, 0, width, 20, getBlock, setBlock, minecraft, filter == null ? b -> b != Blocks.VOID_AIR : filter, ifBlockIsNullMessage);
             input.setMaxLength(maxLength);
-        }
-
-        BlockEntry setHint(Component hint) {
             input.setHint(hint);
-            return this;
         }
 
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
-            input.setX(pLeft);
+            input.setX(pLeft + 2);
             input.setY(pTop);
-            input.setWidth(pWidth);
+            input.setWidth(pWidth - 4 - getScrollBarScrunchFactor());
             input.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 
@@ -229,10 +240,10 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
 
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
-            saveButton.setX(pLeft);
+            saveButton.setX(pLeft + 2);
             saveButton.setY(pTop);
             saveButton.setHeight(pHeight);
-            saveButton.setWidth(pWidth);
+            saveButton.setWidth(pWidth - 4 - getScrollBarScrunchFactor());
             saveButton.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 
@@ -244,6 +255,30 @@ public class RockSettingsEditor extends ContainerObjectSelectionList<RockSetting
         @Override
         public List<? extends NarratableEntry> narratables() {
             return ImmutableList.of(saveButton);
+        }
+    }
+
+    private class ClearEntry extends Entry {
+
+        private final Button clearButton = Button.builder(CLEAR_SETTINGS, b -> RockSettingsEditor.this.clear()).build();
+
+        @Override
+        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            clearButton.setX(left + 2);
+            clearButton.setY(top);
+            clearButton.setHeight(height);
+            clearButton.setWidth(width - 4 - getScrollBarScrunchFactor());
+            clearButton.render(guiGraphics, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        public List<? extends GuiEventListener> children() {
+            return ImmutableList.of(clearButton);
+        }
+
+        @Override
+        public List<? extends NarratableEntry> narratables() {
+            return ImmutableList.of(clearButton);
         }
     }
 }
