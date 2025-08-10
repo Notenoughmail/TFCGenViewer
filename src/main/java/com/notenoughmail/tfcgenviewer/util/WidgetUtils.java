@@ -1,11 +1,9 @@
 package com.notenoughmail.tfcgenviewer.util;
 
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,8 +16,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class WidgetUtils {
-
-    public static final ResourceLocation GUI_ELEMENTS = TFCGenViewer.identifier("textures/gui/common_gui_elements.png");
 
     // Disgusting, but works the whole two times its needed
     public static <O, I> List<O> wrapList(List<I> list, BiFunction<I, Boolean, O> mapper, int index) {

@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 // The amount of manual juggling of states of various sorts there is in this is honestly concerning, but needs must
 // TODO: Prevent esc kicking back to the main menu
+// TODO: Figure out why openning this screen takes so long
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class EditRocksScreen extends Screen {
@@ -116,6 +117,7 @@ public class EditRocksScreen extends Screen {
         rowHelper.addChild(Button.builder(GRAPH, b -> graph()).build());
         rowHelper.addChild(Button.builder(CommonComponents.GUI_CANCEL, b -> back(false)).build());
         bottomButtons.visitWidgets(w -> {
+            // TODO: The width does not update when changing window sizes
             w.setWidth(Math.min((width - 20) / 4, 150));
             w.setTabOrderGroup(1);
             addRenderableWidget(w);

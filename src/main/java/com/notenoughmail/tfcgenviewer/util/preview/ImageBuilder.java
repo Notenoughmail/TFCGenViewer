@@ -370,6 +370,7 @@ public class ImageBuilder {
         }
     }
 
+    // TODO: This is not enough, a lock will be needed on #setPixel and #close
     public static boolean isAllocated(NativeImage image) {
         return ((NativeImageAccessor) (Object) image).tfcgenviewer$GetPixels() != 0L;
     }

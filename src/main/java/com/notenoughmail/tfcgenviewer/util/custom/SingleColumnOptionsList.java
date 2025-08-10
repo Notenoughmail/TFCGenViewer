@@ -35,10 +35,11 @@ public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsLi
 
         public Entry(OptionInstance<?> option, int width, Options options) {
             final AbstractWidget instance = option.createButton(options, 2, 0, width - 8);
-            instance.setHeight(getHeight() - 4);
+            instance.setHeight(itemHeight - 2);
             this.widget = List.of(instance);
         }
 
+        // TODO: This is excessively wide with thin windows
         @Override
         public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
             final AbstractWidget instance = widget.get(0);

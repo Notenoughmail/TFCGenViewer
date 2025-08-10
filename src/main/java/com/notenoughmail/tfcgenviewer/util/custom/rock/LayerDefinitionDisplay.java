@@ -56,9 +56,9 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
                         onError.accept(Component.translatable("tfcgenviewer.rock_editor.error.circular_layer_definition_reference", data.id, mD.id));
                         return;
                     } else if (d2m) {
-                        maxI = Math.max(maxI, mI);
+                        maxI = Math.max(maxI, mI + 1);
                     } else if (m2d) {
-                        minI = Math.min(minI, mI + 1);
+                        minI = Math.min(minI, mI);
                     }
                 }
                 if (maxI > minI) {

@@ -23,7 +23,17 @@ public record SeedValueSet(Font font, Consumer<String> seedSetter, Supplier<Stri
     @Override
     public Function<OptionInstance<String>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<String> pTooltipSupplier, Options pOptions, int pX, int pY, int pWidth, Consumer<String> pOnValueChanged) {
         return instance -> {
-            final EditBox editor = new EditBox(font, pX, pY, pWidth, 20, SEED_LABEL);
+            final EditBox editor = new EditBox(font, pX, pY, pWidth, 20, SEED_LABEL) {
+                @Override
+                public void setWidth(int width) {
+                    super.setWidth(width - 4);
+                }
+
+                @Override
+                public void setX(int x) {
+                    super.setX(x + 2);
+                }
+            };
             editor.setResponder(seedSetter);
             editor.setValue(defaultValue().get());
             editor.setHint(SEED_HINT);

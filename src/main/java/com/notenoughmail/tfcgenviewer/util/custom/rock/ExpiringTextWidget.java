@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,10 +38,10 @@ public class ExpiringTextWidget extends MultiLineTextWidget {
         graphics.setColor(1.0F, 1.0F, 1.0F, alpha);
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
-        graphics.blitNineSlicedSized(WidgetUtils.GUI_ELEMENTS, getX() - (3 + text.getWidth() / 2), top, text.getWidth() + 6, text.getLineCount() * 9 + 6, 3, 3, 3, 3, 40, 15, 20, 40, 64, 64);
+        graphics.blitNineSlicedSized(GuiElement.getId(), getX() - (3 + text.getWidth() / 2), top, text.getWidth() + 6, text.getLineCount() * 9 + 6, 3, 3, 3, 3, 40, 15, 20, 40, 64, 64);
         graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        text.renderCentered(graphics, getX(), top + 3, 9, getColor());
+        text.renderCentered(graphics, getX(), top + 4, 9, getColor());
 
         graphics.pose().popPose();
     }
