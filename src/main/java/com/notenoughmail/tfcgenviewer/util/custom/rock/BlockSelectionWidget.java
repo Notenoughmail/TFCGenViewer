@@ -17,20 +17,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public class BlockSelectionWidget extends EditBox {
-
-    private static final Comparator<Block> COMPARE_BLOCKS = Comparator.comparing(b -> b.getName().getString());
 
     private final Supplier<Block> getter;
     private final Consumer<Block> setter;
@@ -42,20 +36,13 @@ public class BlockSelectionWidget extends EditBox {
     private List<BlockRender> searchPreview;
     private int selectionIndex = -1;
 
-    public BlockSelectionWidget(Font font, int pX, int pY, int pWidth, int pHeight, Supplier<Block> getter, Consumer<Block> setter, Minecraft mc, Predicate<Block> filter, @Nullable Component ifBlockIsNullMessage) {
+    // TODO: It'd be really nice if the mouse could be used to select from the search preview
+    public BlockSelectionWidget(Font font, int pX, int pY, int pWidth, int pHeight, Supplier<Block> getter, Consumer<Block> setter, Minecraft mc, FullTextSearchTree<Block> searchTree, @Nullable Component ifBlockIsNullMessage) {
         super(font, pX, pY, pWidth, pHeight, CommonComponents.EMPTY);
         this.getter = getter;
         this.setter = setter;
         this.mc = mc;
-        searchTree = new FullTextSearchTree<>(
-                b -> Stream.of(b.getName().getString()),
-                b -> Stream.of(ForgeRegistries.BLOCKS.getKey(b)),
-                ForgeRegistries.BLOCKS.getValues().stream()
-                        .filter(filter)
-                        .sorted(COMPARE_BLOCKS)
-                        .toList()
-        );
-        searchTree.refresh();
+        this.searchTree = searchTree;
         this.ifBlockIsNullMessage = ifBlockIsNullMessage;
         setResponder(null);
         setValue("");
@@ -79,10 +66,7 @@ public class BlockSelectionWidget extends EditBox {
                 }
                 updateSuggestionRendering();
             } catch (Exception e) {
-                TFCGenViewer.LOGGER.error(e.getMessage());
-                for (var t : e.getStackTrace()) {
-                    TFCGenViewer.LOGGER.warn(t.toString());
-                }
+                TFCGenViewer.LOGGER.error("Error encountered during value change", e);
             }
         };
         if (pResponder != null) {
@@ -126,6 +110,9 @@ public class BlockSelectionWidget extends EditBox {
         for (int i = 0 ; i < searchPreview.size() ; i++) {
             final BlockRender render = searchPreview.get(i);
             final int j = top + 1 + (i * 20);
+            if (i % 2 == 0) {
+                graphics.fill(left + 1, j, right - 1, j + 20, 0xFF1F1F1F);
+            }
             render.render(graphics, left + 3, j, font, right - 3);
         }
     }

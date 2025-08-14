@@ -63,6 +63,7 @@ public class RockSettingsDisplay extends SelectionList<RockSettingsDisplay.Setti
 
         rockSettings.put(name, mrs);
         addEntry(new SettingsHolder(name, mrs));
+        WidgetUtils.resetScroll(this);
         return true;
     }
 
@@ -90,14 +91,14 @@ public class RockSettingsDisplay extends SelectionList<RockSettingsDisplay.Setti
             delete = GuiElement.REMOVE.button(b -> {
                 rockSettings.remove(rockName);
                 removeEntry(this);
-                setScrollAmount(getScrollAmount());
+                WidgetUtils.resetScroll(RockSettingsDisplay.this);
             });
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", rockName)));
             edit = GuiElement.EDIT.button(b -> {
                 if (toEditor.test(rockName, mrs)) {
                     rockSettings.remove(rockName);
                     removeEntry(this);
-                    setScrollAmount(getScrollAmount());
+                    WidgetUtils.resetScroll(RockSettingsDisplay.this);
                 }
             });
             edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_tooltip", rockName)));

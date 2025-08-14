@@ -1,6 +1,5 @@
 package com.notenoughmail.tfcgenviewer.util.preview;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
@@ -89,21 +88,22 @@ public enum PreviewScale {
         );
     }
 
-    public static void clearPreviews(NativeImage currentImage) {
+    public static void clearPreviews(Image currentImage) {
         for (PreviewScale scale : VALUES) {
-            // If someone is really "lucky" the game will attempt to render an image which has been close via this
+            // If someone is really "lucky" the game will attempt to render an image which has been closed via this
             // If they decide to change this config mid-generation and it explodes, that's on them tbh
-            if (!Config.useThrobber.get() && scale.texture.get().getPixels() == currentImage) continue;
+            if (!Config.useThrobber.get() && scale.texture.get().getPixels() == Image.getNative(currentImage)) continue;
             // Free the previously used images from memory
             scale.texture.get().setPixels(null);
         }
     }
 
-    public void upload(@Nullable NativeImage image) {
+    public void upload(@Nullable Image image) {
         Objects.requireNonNull(texture.get(), "Tried to upload image to null texture, meaning it failed to initialize earlier");
         clearPreviews(null);
-        if (image != null && ImageBuilder.isAllocated(image)) {
-            texture.get().setPixels(image);
+        if (image != null && image.isAllocated()) {
+            //noinspection DataFlowIssue
+            texture.get().setPixels(Image.getNative(image));
             texture.get().upload();
         }
     }

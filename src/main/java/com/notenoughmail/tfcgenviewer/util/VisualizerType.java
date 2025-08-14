@@ -1,9 +1,9 @@
 package com.notenoughmail.tfcgenviewer.util;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.color.ColorGradientDefinition;
 import com.notenoughmail.tfcgenviewer.color.Colors;
+import com.notenoughmail.tfcgenviewer.util.preview.Image;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
@@ -25,10 +25,9 @@ import static com.notenoughmail.tfcgenviewer.color.BiomeColors.Biomes;
 import static com.notenoughmail.tfcgenviewer.color.Colors.*;
 import static com.notenoughmail.tfcgenviewer.color.RockColors.Rocks;
 import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
-import static com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder.setPixel;
 
 public enum VisualizerType implements IExtensibleEnum {
-    BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, Biomes.color(point.biome, colorDescriptors)), Biomes.key()),
+    BIOMES(0b00100000, "biomes", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> image.setPixel(x, y, Biomes.color(point.biome, colorDescriptors)), Biomes.key()),
     RAINFALL(0b10000000, "rainfall", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
             final int color = Colors.RAINFALL.get().getColor(
@@ -40,7 +39,7 @@ public enum VisualizerType implements IExtensibleEnum {
                             1F
                     ), colorDescriptors
             );
-            setPixel(image, x, y, color);
+            image.setPixel(x, y, color);
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
         }
@@ -57,19 +56,19 @@ public enum VisualizerType implements IExtensibleEnum {
                     ),
                     colorDescriptors
             );
-            setPixel(image, x, y, color);
+            image.setPixel(x, y, color);
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
         }
     }, TempKey),
     BIOME_ALTITUDE(0b00010000, "biome_altitude", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
-            setPixel(image, x, y, biomeAltitude(point.discreteBiomeAltitude(), colorDescriptors));
+            image.setPixel(x, y, biomeAltitude(point.discreteBiomeAltitude(), colorDescriptors));
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
         }
     }, BiomeAltKey),
-    INLAND_HEIGHT(0b00100000, "inland_height", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, inlandHeight(point, colorDescriptors)), InlandHeightKey),
+    INLAND_HEIGHT(0b00100000, "inland_height", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> image.setPixel(x, y, inlandHeight(point, colorDescriptors)), InlandHeightKey),
     RIVERS(0b00010000, "rivers_and_mountains", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         if (point.land()) {
             final int color;
@@ -80,11 +79,11 @@ public enum VisualizerType implements IExtensibleEnum {
             } else {
                 color = biomeAltitude(point.discreteBiomeAltitude(), colorDescriptors);
             }
-            setPixel(image, x, y, color);
+            image.setPixel(x, y, color);
             for (RiverEdge edge : generator.regionGenerator().getOrCreatePartitionPoint(xPos, zPos).rivers()) {
                 final MidpointFractal fractal = edge.fractal();
                 if (fractal.maybeIntersect(xPos, zPos, 0.1F) && fractal.intersect(xPos, zPos, 0.35F)) {
-                    setPixel(image, x, y, RM_RIVER.get().color(colorDescriptors));
+                    image.setPixel(x, y, RM_RIVER.get().color(colorDescriptors));
                     return; // Stop looking for rivers, we already found one
                 }
             }
@@ -92,10 +91,10 @@ public enum VisualizerType implements IExtensibleEnum {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
         }
     }, RiverKey),
-    ROCK_TYPES(0b01000000, "rock_types", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> setPixel(image, x, y, rockType(point.rock, colorDescriptors)), RockTypeKey),
+    ROCK_TYPES(0b01000000, "rock_types", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> image.setPixel(x, y, rockType(point.rock, colorDescriptors)), RockTypeKey),
     ROCKS(0b01000000, "rocks", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         final Block raw = generator.generateRock(xPos * 128 - 64, 90, zPos * 128 - 64, 100, null).raw();
-        setPixel(image, x, y, Rocks.color(raw).color(colorDescriptors));
+        image.setPixel(x, y, Rocks.color(raw).color(colorDescriptors));
     }, Rocks.key());
 
     static {
@@ -158,7 +157,7 @@ public enum VisualizerType implements IExtensibleEnum {
         return colorKey.get();
     }
 
-    public void draw(int x, int y, int xPos, int zPos, RegionChunkDataGenerator generator, Region region, Region.Point point, NativeImage image, Int2ObjectOpenHashMap<Component> colorDescriptors) {
+    public void draw(int x, int y, int xPos, int zPos, RegionChunkDataGenerator generator, Region region, Region.Point point, Image image, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         drawer.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors);
     }
 
@@ -176,7 +175,7 @@ public enum VisualizerType implements IExtensibleEnum {
                 RegionChunkDataGenerator generator,
                 Region region,
                 Region.Point point,
-                NativeImage image,
+                Image image,
                 Int2ObjectOpenHashMap<Component> colorDescriptors
         );
     }

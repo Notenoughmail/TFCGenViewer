@@ -12,6 +12,11 @@ public class SelectionList<E extends ContainerObjectSelectionList.Entry<E>> exte
         scrollBarOffset = 4;
     }
 
+    @Override
+    public int getRowWidth() {
+        return width;
+    }
+
     protected void setScrollBarOffset(int offset) {
         scrollBarOffset = offset;
     }

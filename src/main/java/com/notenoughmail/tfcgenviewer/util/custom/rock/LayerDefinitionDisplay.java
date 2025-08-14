@@ -1,10 +1,7 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.google.common.collect.ImmutableList;
-import com.notenoughmail.tfcgenviewer.util.GuiElement;
-import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.OrderedMap;
-import com.notenoughmail.tfcgenviewer.util.OrderedMapImpl;
+import com.notenoughmail.tfcgenviewer.util.*;
 import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -156,14 +153,14 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
             delete = GuiElement.REMOVE.button(b -> {
                 mrls.layerDefs.remove(id);
                 removeEntry(this);
-                setScrollAmount(getScrollAmount());
+                WidgetUtils.resetScroll(LayerDefinitionDisplay.this);
             });
             delete.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.delete_tooltip.named", id)));
             edit = GuiElement.EDIT.button(b -> {
                 if (toEditor.test(mld)) {
                     mrls.layerDefs.remove(id);
                     removeEntry(this);
-                    setScrollAmount(getScrollAmount());
+                    WidgetUtils.resetScroll(LayerDefinitionDisplay.this);
                 }
             });
             edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_tooltip", id)));

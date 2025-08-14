@@ -70,7 +70,7 @@
   "tfcgenviewer.rock_editor.hint.sandstone_selection": "The sandstone block to use",
   "tfcgenviewer.rock_editor.hint.spike_selection": "The spike block to use, may be empty",
   "tfcgenviewer.rock_editor.hint.loose_selection": "The loose block to use, may be empty",
-  "tfcgenviewer.rock_editor.hint.mossy_loose_selection": "The mossy loose bloc kto use, may be empty",
+  "tfcgenviewer.rock_editor.hint.mossy_loose_selection": "The mossy loose block to use, may be empty",
 
   "tfcgenviewer.rock_editor.tab.rock_settings": "Rock Settings",
   "tfcgenviewer.rock_editor.tab.layer_types": "Layer Types",

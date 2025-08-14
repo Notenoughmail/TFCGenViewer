@@ -13,7 +13,6 @@ import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
 
 import static com.notenoughmail.tfcgenviewer.color.Colors.*;
-import static com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder.setPixel;
 import static net.minecraft.util.FastColor.ABGR32.*;
 
 public class ColorUtil {
@@ -112,8 +111,8 @@ public class ColorUtil {
 
     // Drawers
     static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors) ->
-            setPixel(
-                    image, x, y,
+            image.setPixel(
+                    x, y,
                     FILL_OCEAN.get().getColor(
                             region != null ?
                                     region.noise() / 2 :
@@ -124,7 +123,7 @@ public class ColorUtil {
     static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         final int color = ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1));
         colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(Objects.hashCode(region))));
-        setPixel(image, x, y, color);
+        image.setPixel(x, y, color);
     };
     static final CacheableSupplier<DoubleToIntFunction> experimentalGradient = CacheableSupplier.of(() -> {
         final int[] colors = {
@@ -145,9 +144,9 @@ public class ColorUtil {
             color = experimentalGradient.get().applyAsInt(Mth.clampedMap(point.temperature, -23F, 33F, 0F, 0.99999F));
         }
         colorDescriptors.putIfAbsent(color, Component.literal("%s".formatted(point.temperature)));
-        setPixel(image, x, y, color);
+        image.setPixel(x, y, color);
         if (!point.land()) {
-            setPixel(image, x, y, 0xA0A0A0A0);
+            image.setPixel(x, y, 0xA0A0A0A0);
         }
     };
 
@@ -173,19 +172,19 @@ public class ColorUtil {
 
     static int biomeAltitude(int discreteAlt, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         return (switch (discreteAlt) {
-            default -> BA_LOW;
-            case 1 -> BA_MEDIUM;
-            case 2 -> BA_HIGH;
             case 3 -> BA_MOUNTAIN;
+            case 2 -> BA_HIGH;
+            case 1 -> BA_MEDIUM;
+            default -> BA_LOW;
         }).get().color(colorDescriptors);
     }
 
     static int rockType(int rock, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         return (switch (rock & 0b11) {
-            default -> RT_OCEANIC;
-            case 1 -> RT_VOLCANIC;
-            case 2 -> RT_LAND;
             case 3 -> RT_UPLIFT;
+            case 2 -> RT_LAND;
+            case 1 -> RT_VOLCANIC;
+            default -> RT_OCEANIC;
         }).get().getColor(nextWithSeed(rock >> 2), colorDescriptors);
     }
 

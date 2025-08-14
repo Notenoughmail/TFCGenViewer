@@ -13,5 +13,5 @@ public interface RockLayerSettingsAccessor {
     RockLayerSettings.Data tfcgenviewer$GetData();
 
     @Invoker(value = "processData", remap = false)
-    DataResult<RockLayerSettings> tfcgenviewer$processData(RockLayerSettings.Data data);
+    DataResult<RockLayerSettings> tfcgenviewer$ProcessData(RockLayerSettings.Data data);
 }

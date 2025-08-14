@@ -1,11 +1,9 @@
 package com.notenoughmail.tfcgenviewer.util.preview;
 
 import com.google.common.base.Stopwatch;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.config.Config;
-import com.notenoughmail.tfcgenviewer.mixin.NativeImageAccessor;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
@@ -19,11 +17,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import static net.minecraft.util.FastColor.ABGR32.alpha;
 import static net.minecraft.util.FastColor.ABGR32.color;
 
 public class ImageBuilder {
@@ -57,7 +51,7 @@ public class ImageBuilder {
     private static final AtomicReference<BuilderState> BUILDER_STATE = new AtomicReference<>(BuilderState.OFF);
 
     @Nullable
-    private static NativeImage currentImage, transientImage;
+    private static Image currentImage, transientImage;
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
 
@@ -97,7 +91,7 @@ public class ImageBuilder {
             final Stopwatch timer = Stopwatch.createStarted();
             final int previewSizeGrids = scale.previewSize;
 
-            final NativeImage image = new NativeImage(previewSizeGrids, previewSizeGrids, false);
+            final Image image = new Image(previewSizeGrids);
             transientImage = image;
             final int halfPreviewGrids = previewSizeGrids >> 1;
             final int xDrawOffsetGrids = xCenterGrids - halfPreviewGrids;
@@ -132,7 +126,7 @@ public class ImageBuilder {
                             }
                         }
                     }
-                    if (isAllocated(image)) {
+                    if (image.isAllocated()) {
                         try {
                             visualizer.draw(
                                     x, y,
@@ -182,16 +176,16 @@ public class ImageBuilder {
 
                 int color = Colors.SPAWN_BORDER.get().color(colorDescriptors);
 
-                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, scale.lineWidth, color);
-                hLine(image, xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, scale.lineWidth, color);
-                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids + radiusGrids, scale.lineWidth, color);
-                vLine(image, zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, scale.lineWidth, color);
+                image.hLine(xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids + radiusGrids, scale.lineWidth, color);
+                image.hLine(xSpawnCenterGrids - radiusGrids, xSpawnCenterGrids + radiusGrids, zSpawnCenterGrids - radiusGrids, scale.lineWidth, color);
+                image.vLine(zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids + radiusGrids, scale.lineWidth, color);
+                image.vLine(zSpawnCenterGrids - radiusGrids, zSpawnCenterGrids + radiusGrids, xSpawnCenterGrids - radiusGrids, scale.lineWidth, color);
 
                 color = Colors.SPAWN_RETICULE.get().color(colorDescriptors);
 
                 final int length = Math.min(radiusGrids / 4, previewSizeGrids / 12);
-                hLine(image, xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, scale.lineWidth, color);
-                vLine(image, zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, scale.lineWidth, color);
+                image.hLine(xSpawnCenterGrids - length, xSpawnCenterGrids + length, zSpawnCenterGrids, scale.lineWidth, color);
+                image.vLine(zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, scale.lineWidth, color);
             }
 
             if (!FMLEnvironment.production && visualizer.name().equals("BORDER")) {
@@ -199,11 +193,11 @@ public class ImageBuilder {
                     final int color = color(255, region.hashCode());
                     colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
 
-                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
-                    hLine(image, region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                    image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                    image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
 
-                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
-                    vLine(image, region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
+                    image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
+                    image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
                 }
             }
 
@@ -317,65 +311,13 @@ public class ImageBuilder {
         cancelRunning();
     }
 
-    public static void setPixel(NativeImage image, int x, int y, int color) {
-        if (isAllocated(image)) {
-            final int alpha = alpha(color);
-            if (alpha != 0) {
-                if (!image.isOutsideBounds(x, y)) {
-                    if (alpha == 255) {
-                        image.setPixelRGBA(x, y, color);
-                    } else {
-                        image.blendPixel(x, y, color);
-                    }
-                }
-            }
-        }
-    }
-
-    static void hLine(NativeImage image, int x0, int x1, int y, int width, int color) {
-        final int min = Math.min(x0, x1);
-        final int max = Math.max(x0, x1);
-        for (int x = min ; x < max ; x++) {
-            if (width <= 0) {
-                setPixel(image, x, y, color);
-            } else {
-                for (int i = y - width ; i < y + width ; i++) {
-                    setPixel(image, x, i, color);
-                }
-            }
-        }
-    }
-
-    static void vLine(NativeImage image, int y0, int y1, int x, int width, int color) {
-        final int min = Math.min(y0, y1);
-        final int max = Math.max(y0, y1);
-        for (int y = min ; y < max ; y++) {
-            if (width <= 0) {
-                setPixel(image, x, y, color);
-            } else {
-                for (int i = x - width ; i < x + width ; i++) {
-                    setPixel(image, i, y, color);
-                }
-            }
-        }
-    }
-
     public static void exportImage() {
         if (currentImage != null) {
-            try {
-                currentImage.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), imageName));
-            } catch (Exception exception) {
-                TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(imageName), exception);
-            }
+            currentImage.export(imageName);
         }
     }
 
-    // TODO: This is not enough, a lock will be needed on #setPixel and #close
-    public static boolean isAllocated(NativeImage image) {
-        return ((NativeImageAccessor) (Object) image).tfcgenviewer$GetPixels() != 0L;
-    }
-
-    private record ProcessReturn(PreviewInfo previewInfo, NativeImage currentImage, String imageName, boolean ding) {
+    private record ProcessReturn(PreviewInfo previewInfo, Image currentImage, String imageName, boolean ding) {
 
         static ProcessReturn EMPTY = new ProcessReturn(PreviewInfo.EMPTY, null, null, false);
         static ProcessReturn ERROR = new ProcessReturn(PreviewInfo.ERROR, null, null, true);

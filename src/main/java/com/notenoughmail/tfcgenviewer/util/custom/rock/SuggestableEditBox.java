@@ -79,6 +79,9 @@ public class SuggestableEditBox extends EditBox {
         for (int i = 0 ; i < suggestions.size() ; i++) {
             final Component text = suggestions.get(i);
             final int j = top + 1 + (i * 9);
+            if (i % 2 == 0) {
+                graphics.fill(left + 1, j, right - 1, j + 9, 0xFF1F1F1F);
+            }
             renderScrollingString(graphics, font, text, left + 2, j, right - 2, j + 9, 0xFFFFFFFF);
         }
     }

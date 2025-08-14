@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -106,5 +107,9 @@ public class WidgetUtils {
         } else {
             AbstractWidget.renderScrollingString(graphics, font, textIfBlockIsNull, x + 2, y + 5, right - 2, y + 17, 0xFFFFFFFF);
         }
+    }
+
+    public static void resetScroll(AbstractSelectionList<?> list) {
+        list.setScrollAmount(list.getScrollAmount());
     }
 }

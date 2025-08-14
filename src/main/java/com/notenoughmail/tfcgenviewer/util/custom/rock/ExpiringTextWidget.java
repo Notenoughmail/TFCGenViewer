@@ -2,7 +2,6 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
-import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;

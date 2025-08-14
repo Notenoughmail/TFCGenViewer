@@ -8,27 +8,34 @@ import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.blocks.rock.LooseRockBlock;
 import net.dries007.tfc.common.blocks.rock.RockSpikeBlock;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.searchtree.FullTextSearchTree;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+// TODO: This is *very* expensive to initialize, likely due to the 9 search trees being created
 public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> {
 
     public static final Component
@@ -62,6 +69,7 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
         setRenderBackground(false);
         setRenderSelection(false);
         setRenderTopAndBottom(false);
+        addEntry(new SaveEntry());
         addEntry(new NameEntry());
         addEntry(new BlockEntry(b -> mrs.raw = b, () -> mrs.raw, RAW_HINT));
         addEntry(new BlockEntry(b -> mrs.hardened = b, () -> mrs.hardened, HARDENED_HINT));
@@ -96,7 +104,6 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
                 RockSettingsDisplay.NO_MOSSY_LOOSE,
                 MOSSY_LOOSE_HINT
         ));
-        addEntry(new SaveEntry());
         addEntry(new ClearEntry());
         setScrollBarOffset(-8);
     }
@@ -189,6 +196,22 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
     // TODO: How can we tell if this is occupied?
     private class BlockEntry extends Entry {
 
+        private static final Comparator<Block> COMPARE_BLOCKS = Comparator.comparing(b -> b.getName().getString());
+
+        // TODO: This takes ~0.4 seconds to create, which creates a noticeable delay when opening the rock editor screen the first time
+        private static final FullTextSearchTree<Block> ALL_BLOCK_SEARCH = Util.make(() -> {
+            final var t = new FullTextSearchTree<>(
+                    b -> Stream.of(b.getName().getString()),
+                    b -> Stream.of(ForgeRegistries.BLOCKS.getKey(b)),
+                    ForgeRegistries.BLOCKS.getValues().stream()
+                            .filter(b -> b != Blocks.VOID_AIR)
+                            .sorted(COMPARE_BLOCKS)
+                            .toList()
+            );
+            t.refresh();
+            return t;
+        });
+
         private static final int maxLength = ForgeRegistries.BLOCKS.getKeys().stream().mapToInt(rl -> rl.toString().length()).max().orElseThrow(); // Something seriously wrong needs to happen for there not to be a max
 
         private final BlockSelectionWidget input;
@@ -198,9 +221,27 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
         }
 
         BlockEntry(Consumer<@Nullable Block> setBlock, @Nullable Predicate<Block> filter, Supplier<@Nullable Block> getBlock, @Nullable Component ifBlockIsNullMessage, Component hint) {
-            input = new BlockSelectionWidget(font, 0, 0, width, 20, getBlock, setBlock, minecraft, filter == null ? b -> b != Blocks.VOID_AIR : filter, ifBlockIsNullMessage);
+            input = new BlockSelectionWidget(
+                    font, 0, 0, width, 20, getBlock, setBlock, minecraft,
+                    filter == null ?
+                            ALL_BLOCK_SEARCH :
+                            Util.make(() -> {
+                                final var t = new FullTextSearchTree<>(
+                                        b -> Stream.of(b.getName().getString()),
+                                        b -> Stream.of(ForgeRegistries.BLOCKS.getKey(b)),
+                                        ForgeRegistries.BLOCKS.getValues().stream()
+                                                .filter(filter)
+                                                .sorted(COMPARE_BLOCKS)
+                                                .toList()
+                                );
+                                t.refresh();
+                                return t;
+                            }),
+                    ifBlockIsNullMessage
+            );
             input.setMaxLength(maxLength);
-            input.setHint(hint);
+            // TODO: After scrolling, the tooltip is stuck rendering in the bottom left of the widget  if the mouse isn't hovering over it
+            input.setTooltip(Tooltip.create(hint instanceof MutableComponent mut ? mut.withStyle(ChatFormatting.WHITE) : hint));
         }
 
         @Override

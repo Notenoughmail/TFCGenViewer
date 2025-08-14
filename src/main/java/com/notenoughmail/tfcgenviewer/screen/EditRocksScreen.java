@@ -7,6 +7,7 @@ import com.mojang.serialization.DataResult;
 import com.notenoughmail.tfcgenviewer.mixin.RockLayerSettingsAccessor;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
+import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import com.notenoughmail.tfcgenviewer.util.custom.rock.*;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -117,7 +118,6 @@ public class EditRocksScreen extends Screen {
         rowHelper.addChild(Button.builder(GRAPH, b -> graph()).build());
         rowHelper.addChild(Button.builder(CommonComponents.GUI_CANCEL, b -> back(false)).build());
         bottomButtons.visitWidgets(w -> {
-            // TODO: The width does not update when changing window sizes
             w.setWidth(Math.min((width - 20) / 4, 150));
             w.setTabOrderGroup(1);
             addRenderableWidget(w);
@@ -131,6 +131,7 @@ public class EditRocksScreen extends Screen {
         if (tabNavigationBar != null && bottomButtons != null) {
             tabNavigationBar.setWidth(width);
             tabNavigationBar.arrangeElements();
+            bottomButtons.visitWidgets(w -> w.setWidth(Math.min((width - 20) / 4, 150)));
             bottomButtons.arrangeElements();
             FrameLayout.centerInRectangle(bottomButtons, 0, height - 30, width, 30);
             final int i = tabNavigationBar.getRectangle().bottom();
@@ -193,7 +194,7 @@ public class EditRocksScreen extends Screen {
             if (error != null) {
                 err(error);
             } else {
-                built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$processData(edit.build()).get();
+                built = ((RockLayerSettingsAccessor) (Object) before).tfcgenviewer$ProcessData(edit.build()).get();
             }
         }
     }
@@ -378,6 +379,8 @@ public class EditRocksScreen extends Screen {
             display.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
             editor.updateSize(halfScreenWidth, pRectangle.height(), y0, y1);
             editor.setLeftPos(halfScreenWidth);
+            WidgetUtils.resetScroll(display);
+            WidgetUtils.resetScroll(editor);
         }
 
         @SuppressWarnings("unchecked")
@@ -457,6 +460,8 @@ public class EditRocksScreen extends Screen {
             editTitle.setX(halfScreenWidth + 2);
             editTitle.setY(y0);
             editTitle.setWidth(halfScreenWidth - 10);
+            WidgetUtils.resetScroll(display);
+            WidgetUtils.resetScroll(editor);
         }
 
         @SuppressWarnings("unchecked")
@@ -531,6 +536,8 @@ public class EditRocksScreen extends Screen {
             add.setX(halfScreenWidth + 2);
             add.setY(y1 - 20);
             add.setWidth(halfScreenWidth - 8);
+            WidgetUtils.resetScroll(display);
+            WidgetUtils.resetScroll(editor);
         }
 
         @Override
