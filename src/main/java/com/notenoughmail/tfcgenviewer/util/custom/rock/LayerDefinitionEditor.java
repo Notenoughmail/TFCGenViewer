@@ -263,7 +263,6 @@ public class LayerDefinitionEditor extends SelectionList<LayerDefinitionEditor.E
             }
             if (!mrls.rocks.containsKey(r)) {
                 sendError.accept(Component.translatable("tfcgenviewer.rock_editor.error.unknown_rock_setting", r));
-                return true;
             }
             if (!"bottom".equals(l) && !mrls.layerDefs.containsKey(l)) {
                 sendError.accept(Component.translatable("tfcgenviewer.rock_editor.error.unknown_layer_def", l));

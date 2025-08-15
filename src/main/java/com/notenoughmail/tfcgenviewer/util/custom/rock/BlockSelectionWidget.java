@@ -10,6 +10,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.searchtree.FullTextSearchTree;
 import net.minecraft.client.searchtree.RefreshableSearchTree;
 import net.minecraft.network.chat.CommonComponents;
@@ -18,6 +20,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
+import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -33,10 +37,9 @@ public class BlockSelectionWidget extends EditBox {
     @Nullable
     private final Component ifBlockIsNullMessage;
     private List<Block> searchResults;
-    private List<BlockRender> searchPreview;
+    private BlockRender[] renderCache = new BlockRender[0];
     private int selectionIndex = -1;
 
-    // TODO: It'd be really nice if the mouse could be used to select from the search preview
     public BlockSelectionWidget(Font font, int pX, int pY, int pWidth, int pHeight, Supplier<Block> getter, Consumer<Block> setter, Minecraft mc, FullTextSearchTree<Block> searchTree, @Nullable Component ifBlockIsNullMessage) {
         super(font, pX, pY, pWidth, pHeight, CommonComponents.EMPTY);
         this.getter = getter;
@@ -75,19 +78,32 @@ public class BlockSelectionWidget extends EditBox {
         super.setResponder(res);
     }
 
+    // This used only for drawing the background and the inner width, everything else uses field access
+    @Override
+    protected boolean isBordered() {
+        return false;
+    }
+
+    @Override
+    public int getInnerWidth() {
+        return width - 8;
+    }
+
     @Override
     public void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         if (isFocused()) {
+            graphics.fill(getX(), getY(), getX() + width, getY() + height, 0xFFFFFFFF);
+            graphics.fill(getX() + 1, getY() + 1, getX() + width - 1, getY() + height - 1, 0xFF000000);
             super.renderWidget(graphics, pMouseX, pMouseY, pPartialTick);
-            if (!searchPreview.isEmpty()) {
+            if (renderCache.length != 0) {
                 graphics.pose().pushPose();
                 graphics.pose().translate(0.0F, 0.0F, 200F);
-                final int suggestionHeight = searchPreview.size() * 20 + 2;
+                final int suggestionHeight = renderCache.length * 20 + 2;
                 if (suggestionsPosition()) {
-                    final int top = getY() - suggestionHeight;
+                    final int top = getY() - suggestionHeight + 1;
                     renderSuggestions(getX(), getX() + width, top - 1, top + suggestionHeight, graphics);
                 } else {
-                    final int top = getY() + height;
+                    final int top = getY() + height - 1;
                     renderSuggestions(getX(), getX() + width, top, top + suggestionHeight + 1, graphics);
                 }
                 graphics.pose().popPose();
@@ -107,8 +123,8 @@ public class BlockSelectionWidget extends EditBox {
     private void renderSuggestions(int left, int right, int top, int bottom, GuiGraphics graphics) {
         graphics.fill(left, top, right, bottom,  0xFFFFFFFF);
         graphics.fill(left + 1, top + 1, right - 1, bottom - 1, 0xFF000000);
-        for (int i = 0 ; i < searchPreview.size() ; i++) {
-            final BlockRender render = searchPreview.get(i);
+        for (int i = 0 ; i < renderCache.length ; i++) {
+            final BlockRender render = renderCache[i];
             final int j = top + 1 + (i * 20);
             if (i % 2 == 0) {
                 graphics.fill(left + 1, j, right - 1, j + 20, 0xFF1F1F1F);
@@ -117,23 +133,20 @@ public class BlockSelectionWidget extends EditBox {
         }
     }
 
+    // True -> above
     private boolean suggestionsPosition() {
         assert mc.screen != null;
         return mc.screen.height - (getY() + getHeight()) < getY();
     }
 
-    private List<BlockRender> suggestionsAroundIndex() {
-        return WidgetUtils.wrapList(searchResults, (block, selected) -> {
+    private void updateSuggestionRendering() {
+        renderCache = WidgetUtils.wrapList(searchResults, (block, selected) -> {
             if (block != Blocks.VOID_AIR) {
                 return new BlockRender(block, selected);
             }
             assert ifBlockIsNullMessage != null;
             return new BlockRender(null, selected ? ifBlockIsNullMessage.plainCopy().withStyle(ChatFormatting.GOLD) : ifBlockIsNullMessage, true);
-        }, selectionIndex);
-    }
-
-    private void updateSuggestionRendering() {
-        searchPreview = suggestionsAroundIndex();
+        }, selectionIndex, BlockRender[]::new);
     }
 
     private void nextBlock(boolean up) {
@@ -186,10 +199,19 @@ public class BlockSelectionWidget extends EditBox {
                     }
                     yield true;
                 }
+                case GLFW.GLFW_KEY_ESCAPE -> {
+                    setFocused(false);
+                    yield true;
+                }
                 default -> super.keyPressed(pKeyCode, pScanCode, pModifiers);
             };
         }
         return false;
+    }
+
+    @Override
+    protected ClientTooltipPositioner createTooltipPositioner() {
+        return new TooltipPositioner(super.createTooltipPositioner());
     }
 
     private record BlockRender(@Nullable ItemStack rendered, Component text, boolean fullWidthText) {
@@ -206,6 +228,31 @@ public class BlockSelectionWidget extends EditBox {
             }
 
             renderScrollingString(graphics, font, text, x + (fullWidthText ? 2 : 22), y + 5, maxX, y + 17, 0xFFFFFFFF);
+        }
+    }
+
+    private class TooltipPositioner implements ClientTooltipPositioner {
+
+        private final ClientTooltipPositioner c;
+        private final boolean modPos;
+
+        TooltipPositioner(ClientTooltipPositioner c) {
+            this.c = c;
+            modPos = c instanceof BelowOrAboveWidgetTooltipPositioner;
+        }
+
+        // Force the tooltip to be on the opposite side of the suggestions
+        @Override
+        public Vector2ic positionTooltip(int screenWidth, int screenHeight, int mouseX, int mouseY, int tooltipWidth, int tooltipHeight) {
+            final Vector2ic v = c.positionTooltip(screenWidth, screenHeight, mouseX, mouseY, tooltipWidth, tooltipHeight);
+            if (modPos && v instanceof Vector2i mut) {
+                if (suggestionsPosition()) {
+                    mut.y = getY() + height;
+                } else {
+                    mut.y = getY() - tooltipHeight;
+                }
+            }
+            return v;
         }
     }
 }

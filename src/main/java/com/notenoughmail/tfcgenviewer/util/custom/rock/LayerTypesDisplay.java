@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 
 public class LayerTypesDisplay extends SelectionList<LayerTypesDisplay.Entry> {
 
-    public static Component IN_EDITOR = Component.translatable("tfcgenviewer.rock_editor.layer_in_editor").withStyle(ChatFormatting.DARK_GRAY);
+    public static Component IN_EDITOR = Component.translatable("tfcgenviewer.rock_editor.layer_in_editor").withStyle(ChatFormatting.GRAY);
 
     private final Font font;
     private final Consumer<LayerType> sendToEditor;
@@ -82,16 +82,21 @@ public class LayerTypesDisplay extends SelectionList<LayerTypesDisplay.Entry> {
         // Used to update the display values
         void reload() {
             valueDisplay[0] = valueDisplay[1] = valueDisplay[2] = null;
-            if (!values.isEmpty()) {
-                valueDisplay[0] = Component.literal(values.get(0));
-                if (values.size() > 1) {
-                    valueDisplay[1] = Component.literal(values.get(1));
-                }
-                if (values.size() == 3) {
+            switch (values.size()) {
+                case 0:
+                    break;
+                case 3:
                     valueDisplay[2] = Component.literal(values.get(2));
-                } else if (values.size() > 3) {
+                case 2:
+                    valueDisplay[1] = Component.literal(values.get(1));
+                case 1:
+                    valueDisplay[0] = Component.literal(values.get(0));
+                    break;
+                default:
+                    valueDisplay[0] = Component.literal(values.get(0));
+                    valueDisplay[1] = Component.literal(values.get(1));
                     valueDisplay[2] = CommonComponents.ELLIPSIS;
-                }
+                    break;
             }
         }
 
@@ -110,12 +115,15 @@ public class LayerTypesDisplay extends SelectionList<LayerTypesDisplay.Entry> {
                 edit.setY(y);
                 edit.render(graphics, pMouseX, pMouseY, pPartialTick);
                 text(type.title, x + 34, y + 5, graphics);
+                if (valueDisplay[0] == null) return;
                 y += 21;
-                for (Component c : valueDisplay) {
-                    if (c == null) break;
-                    text(c, x + 12, y, graphics);
-                    y += 11;
-                }
+                text(valueDisplay[0], x + 12, y, graphics);
+                if (valueDisplay[1] == null) return;
+                y += 11;
+                text(valueDisplay[1], x+ 12, y, graphics);
+                if (valueDisplay[2] == null) return;
+                y += 11;
+                text(valueDisplay[2], x + 12, y, graphics);
             }
         }
 

@@ -34,7 +34,7 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
         sortLayerDefs(map, onError, 0);
     }
 
-    // TODO: Properly test this
+    // TODO: 1.5.0 | Properly test this
     private static void sortLayerDefs(OrderedMap<String, MutableRockLayerSettings.MutableLayerData> map, Consumer<Component> onError, int depth) {
         boolean goAgain = false;
         final MutableRockLayerSettings.MutableLayerData[] datas = map.values().toArray(MutableRockLayerSettings.MutableLayerData[]::new);
@@ -113,16 +113,10 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
             return false;
         }
 
-        int requiresIndex = 0; // Must be after this
         final List<String> unknownLayers = new ArrayList<>();
         for (String layer : mld.mapping.values()) {
-            if (!"bottom".equals(layer)) {
-                final int index = mrls.layerDefs.indexOf(layer);
-                if (index == -1) {
-                    unknownLayers.add(layer);
-                } else {
-                    requiresIndex = Math.max(requiresIndex, index);
-                }
+            if (!"bottom".equals(layer) && mrls.layerDefs.indexOf(layer) == -1) {
+                unknownLayers.add(layer);
             }
         }
         // Not technically critical, until it comes to actually validating the RockLayerSettings
@@ -149,7 +143,6 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
 
         Entry(String id, MutableRockLayerSettings.MutableLayerData mld) {
             name = Component.literal(id);
-            Map<String, String> values = mld.mapping;
             delete = GuiElement.REMOVE.button(b -> {
                 mrls.layerDefs.remove(id);
                 removeEntry(this);
@@ -166,17 +159,27 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
             edit.setTooltip(Tooltip.create(Component.translatable("tfcgenviewer.rock_editor.edit_tooltip", id)));
             valueDisplay = new Component[3];
             valueDisplay[0] = valueDisplay[1] = valueDisplay[2] = null;
-            if (!values.isEmpty()) {
-                int i = 0;
-                for (Map.Entry<String, String> val : values.entrySet()) {
-                    if (i > 2) break;
-                    valueDisplay[i] = Component.translatable("tfcgenviewer.rock_editor.layer_definition_mapping", val.getKey(), val.getValue());
-                    i++;
-                }
-                if (values.size() > 3) {
+            final List<Map.Entry<String, String>> values = List.copyOf(mld.mapping.entrySet());
+            switch (values.size()) {
+                case 0:
+                    break;
+                case 3:
+                    valueDisplay[2] = mapping(values.get(2));
+                case 2:
+                    valueDisplay[1] = mapping(values.get(1));
+                case 1:
+                    valueDisplay[0] = mapping(values.get(0));
+                    break;
+                default:
+                    valueDisplay[0] = mapping(values.get(0));
+                    valueDisplay[1] = mapping(values.get(1));
                     valueDisplay[2] = CommonComponents.ELLIPSIS;
-                }
+                    break;
             }
+        }
+
+        private static Component mapping(Map.Entry<String, String> entry) {
+            return Component.translatable("tfcgenviewer.rock_editor.layer_definition_mapping", entry.getKey(), entry.getValue());
         }
 
         @Override
@@ -193,12 +196,15 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
             edit.setY(y);
             edit.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
             text(name, x + 58, y + 5, pGuiGraphics);
+            if (valueDisplay[0] == null) return;
             y += 21;
-            for (Component c : valueDisplay) {
-                if (c == null) break;
-                text(c, x + 12, y, pGuiGraphics);
-                y += 11;
-            }
+            text(valueDisplay[0], x + 12, y, pGuiGraphics);
+            if (valueDisplay[1] == null) return;
+            y += 11;
+            text(valueDisplay[1], x + 12, y, pGuiGraphics);
+            if (valueDisplay[2] == null) return;
+            y += 11;
+            text(valueDisplay[2], x + 12, y, pGuiGraphics);
         }
 
         private void text(Component text, int x, int y, GuiGraphics graphics) {

@@ -8,6 +8,7 @@ import com.notenoughmail.tfcgenviewer.util.preview.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
+import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.RockLayerSettings;
@@ -104,13 +105,14 @@ public class PreviewGenerationScreen extends Screen {
     @Nullable
     private RockLayerSettings rocks;
 
+    // TODO: [Future] Rework to support registering other subclasses of CGEs
     public PreviewGenerationScreen(CreateWorldScreen parent) {
         super(TITLE);
         this.parent = parent;
         final WorldCreationUiState uiState = parent.getUiState();
         editorSeed = localSeed = uiState.getSeed();
         final WorldCreationContext settings = uiState.getSettings();
-        generator = settings.selectedDimensions().overworld() instanceof ChunkGeneratorExtension ext ? ext : null;
+        generator = settings.selectedDimensions().overworld() instanceof TFCChunkGenerator ext ? ext : null;
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
         rocks = worldSettings == null ? null : worldSettings.rockLayerSettings();
@@ -161,6 +163,11 @@ public class PreviewGenerationScreen extends Screen {
     @Override
     public void removed() {
         ImageBuilder.cancelAndClearPreviews();
+    }
+
+    @Override
+    public boolean shouldCloseOnEsc() {
+        return false;
     }
 
     @Override

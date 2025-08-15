@@ -12,63 +12,55 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.IntFunction;
 
 public class WidgetUtils {
 
     // Disgusting, but works the whole two times its needed
-    public static <O, I> List<O> wrapList(List<I> list, BiFunction<I, Boolean, O> mapper, int index) {
-        if (index == -1) {
-            return List.of();
-        } else if (list.size() < 6) {
-            final List<O> out = new ArrayList<>(list.size());
-            for (int i = 0 ; i < list.size() ; i++) {
-                O o = mapper.apply(list.get(i), i == index);
-                out.add(o);
-            }
-            return out;
-        } else if (index == 0) {
-            return List.of(
-                    mapper.apply(list.get(list.size() - 2), false),
-                    mapper.apply(list.get(list.size() - 1), false),
-                    mapper.apply(list.get(0), true),
-                    mapper.apply(list.get(1), false),
-                    mapper.apply(list.get(2), false)
-            );
-        } else if (index == 1) {
-            return List.of(
-                    mapper.apply(list.get(list.size() - 1), false),
-                    mapper.apply(list.get(0), false),
-                    mapper.apply(list.get(1), true),
-                    mapper.apply(list.get(2), false),
-                    mapper.apply(list.get(3), false)
-            );
-        } else if (index == list.size() - 1) {
-            return List.of(
-                    mapper.apply(list.get(index - 2), false),
-                    mapper.apply(list.get(index - 1), false),
-                    mapper.apply(list.get(index), true),
-                    mapper.apply(list.get(0), false),
-                    mapper.apply(list.get(1), false)
-            );
-        } else if (index == list.size() - 2) {
-            return List.of(
-                    mapper.apply(list.get(index - 2), false),
-                    mapper.apply(list.get(index - 1), false),
-                    mapper.apply(list.get(index), true),
-                    mapper.apply(list.get(index + 1), false),
-                    mapper.apply(list.get(0), false)
-            );
+    public static <O, I> O[] wrapList(List<I> list, BiFunction<I, Boolean, O> mapper, int index, IntFunction<O[]> arrayMaker) {
+        if (index == -1 || list.isEmpty()) {
+            return arrayMaker.apply(0);
         } else {
-            return List.of(
-                    mapper.apply(list.get(index - 2), false),
-                    mapper.apply(list.get(index - 1), false),
-                    mapper.apply(list.get(index), true),
-                    mapper.apply(list.get(index + 1), false),
-                    mapper.apply(list.get(index + 2), false)
-            );
+            final int listSize = list.size();
+            final O[] a = arrayMaker.apply(Math.min(5, listSize));
+            if (listSize < 6) {
+                for (int i = 0 ; i < a.length ; i++) {
+                    a[i] = mapper.apply(list.get(i), i == index);
+                }
+            } else if (index == 0) {
+                a[0] = mapper.apply(list.get(listSize - 2), false);
+                a[1] = mapper.apply(list.get(listSize - 1), false);
+                a[2] = mapper.apply(list.get(0), true);
+                a[3] = mapper.apply(list.get(1), false);
+                a[4] = mapper.apply(list.get(2), false);
+            } else if (index == 1) {
+                a[0] = mapper.apply(list.get(listSize - 1), false);
+                a[1] = mapper.apply(list.get(0), false);
+                a[2] = mapper.apply(list.get(1), true);
+                a[3] = mapper.apply(list.get(2), false);
+                a[4] = mapper.apply(list.get(3), false);
+            } else if (index == listSize - 1) {
+                a[0] = mapper.apply(list.get(index - 2), false);
+                a[1] = mapper.apply(list.get(index - 1), false);
+                a[2] = mapper.apply(list.get(index), true);
+                a[3] = mapper.apply(list.get(0), false);
+                a[4] = mapper.apply(list.get(1), false);
+            } else if (index == listSize - 2) {
+                a[0] = mapper.apply(list.get(index - 2), false);
+                a[1] = mapper.apply(list.get(index - 1), false);
+                a[2] = mapper.apply(list.get(index), true);
+                a[3] = mapper.apply(list.get(index + 1), false);
+                a[4] = mapper.apply(list.get(0), false);
+            } else {
+                a[0] = mapper.apply(list.get(index - 2), false);
+                a[1] = mapper.apply(list.get(index - 1), false);
+                a[2] = mapper.apply(list.get(index), true);
+                a[3] = mapper.apply(list.get(index + 1), false);
+                a[4] = mapper.apply(list.get(index + 2), false);
+            }
+            return a;
         }
     }
 

@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.searchtree.FullTextSearchTree;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -35,7 +36,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-// TODO: This is *very* expensive to initialize, likely due to the 9 search trees being created
 public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> {
 
     public static final Component
@@ -193,12 +193,20 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
         }
     }
 
-    // TODO: How can we tell if this is occupied?
     private class BlockEntry extends Entry {
 
-        private static final Comparator<Block> COMPARE_BLOCKS = Comparator.comparing(b -> b.getName().getString());
+        // Sorting is a big time spend when making the search trees, so sort by namespace first as those are likely to be clustered together
+        private static final Comparator<Block> COMPARE_BLOCKS = (b1, b2) -> {
+            final ResourceLocation r1 = ForgeRegistries.BLOCKS.getKey(b1), r2 = ForgeRegistries.BLOCKS.getKey(b2);
+            assert r1 != null && r2 != null;
+            final int i = r1.getNamespace().compareTo(r2.getNamespace());
+            if (i == 0) {
+                return r1.getPath().compareTo(r2.getPath());
+            }
+            return i;
+        };
 
-        // TODO: This takes ~0.4 seconds to create, which creates a noticeable delay when opening the rock editor screen the first time
+        // TODO: 1.5.0 / Future | This takes 0.2-0.4 seconds to create, which creates a noticeable delay when opening the rock editor screen the first time
         private static final FullTextSearchTree<Block> ALL_BLOCK_SEARCH = Util.make(() -> {
             final var t = new FullTextSearchTree<>(
                     b -> Stream.of(b.getName().getString()),
@@ -240,7 +248,6 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
                     ifBlockIsNullMessage
             );
             input.setMaxLength(maxLength);
-            // TODO: After scrolling, the tooltip is stuck rendering in the bottom left of the widget  if the mouse isn't hovering over it
             input.setTooltip(Tooltip.create(hint instanceof MutableComponent mut ? mut.withStyle(ChatFormatting.WHITE) : hint));
         }
 

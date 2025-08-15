@@ -37,8 +37,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 // The amount of manual juggling of states of various sorts there is in this is honestly concerning, but needs must
-// TODO: Prevent esc kicking back to the main menu
-// TODO: Figure out why openning this screen takes so long
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class EditRocksScreen extends Screen {
@@ -207,7 +205,7 @@ public class EditRocksScreen extends Screen {
         built = Either.right(new DataResult.PartialResult<>(err::getString, Optional.empty()));
     }
 
-    // TODO: In the future, is there any way this could be done in-game?
+    // TODO: [Future] Is there any way this could be done in-game?
     private void graph() {
         if (validate()) {
             StringBuilder url =
@@ -338,6 +336,11 @@ public class EditRocksScreen extends Screen {
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
     }
 
+    @Override
+    public boolean shouldCloseOnEsc() {
+        return false;
+    }
+
     class SettingsTab implements Tab, IAmATabWithNonWidgetChildren {
 
         private final RockSettingsEditor editor = new RockSettingsEditor(
@@ -418,7 +421,7 @@ public class EditRocksScreen extends Screen {
                 font,
                 lt -> {
                     currentlyEditing = lt;
-                    input.setSuggestions((currentlyEditing == LayerType.BOTTOM ? edit.rocks : edit.layerDefs).keySet());
+                    input.setSuggestions(getSuggestions());
                     editor.reload();
                     editTitle.setMessage(Component.translatable("tfcgenviewer.rock_editor.currently_editing_layer", lt.title));
                 },
@@ -428,8 +431,15 @@ public class EditRocksScreen extends Screen {
             final String val = input.getValue();
             if (currentlyEditing != LayerType.NONE && !val.isEmpty() && editor.add(val)) {
                 input.setValue("");
+                input.setSuggestions(getSuggestions());
             }
         });
+
+        private Collection<String> getSuggestions() {
+            final Collection<String> c = new HashSet<>((currentlyEditing == LayerType.BOTTOM ? edit.rocks : edit.layerDefs).keySet());
+            c.removeAll(edit.layers.get(currentlyEditing));
+            return c;
+        }
 
         @Override
         public Component getTabTitle() {
@@ -438,8 +448,8 @@ public class EditRocksScreen extends Screen {
 
         @Override
         public void visitChildren(Consumer<AbstractWidget> pConsumer) {
-            pConsumer.accept(input);
             pConsumer.accept(addButton);
+            pConsumer.accept(input);
             pConsumer.accept(editTitle);
         }
 

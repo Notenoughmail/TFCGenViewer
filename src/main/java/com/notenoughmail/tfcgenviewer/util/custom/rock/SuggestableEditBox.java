@@ -19,6 +19,7 @@ public class SuggestableEditBox extends EditBox {
 
     private int selectedIndex = -1;
     private List<MutableComponent> suggestions;
+    private Component[] renderCache = new Component[0];
     private final Minecraft mc;
 
     public SuggestableEditBox(Font pFont, int pX, int pY, int pWidth, int pHeight, Component pMessage, Collection<String> suggestions, Minecraft mc) {
@@ -44,6 +45,7 @@ public class SuggestableEditBox extends EditBox {
             } else if (selectedIndex >= suggestions.size()) {
                 selectedIndex = 0;
             }
+            updateRenderCache();
         }
     }
 
@@ -56,28 +58,27 @@ public class SuggestableEditBox extends EditBox {
     public void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         super.renderWidget(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         if (isFocused()) {
-            final List<Component> suggestionsToRender = suggestionsAroundIndex();
-            if (!suggestionsToRender.isEmpty()) {
+            if (renderCache.length != 0) {
                 pGuiGraphics.pose().pushPose();
                 pGuiGraphics.pose().translate(0.0F, 0.0F, 200F);
-                final int suggestionHeight = suggestionsToRender.size() * 9 + 2;
+                final int suggestionHeight = renderCache.length * 9 + 2;
                 if (suggestionsPosition()) {
                     final int top = getY() - suggestionHeight;
-                    renderSuggestions(getX(), getX() + width, top - 1, top + suggestionHeight, suggestionsToRender, pGuiGraphics);
+                    renderSuggestions(getX(), getX() + width, top - 1, top + suggestionHeight, pGuiGraphics);
                 } else {
                     final int top = getY() + height;
-                    renderSuggestions(getX(), getX() + width, top, top + suggestionHeight + 1, suggestionsToRender, pGuiGraphics);
+                    renderSuggestions(getX(), getX() + width, top, top + suggestionHeight + 1, pGuiGraphics);
                 }
                 pGuiGraphics.pose().popPose();
             }
         }
     }
 
-    private void renderSuggestions(int left, int right, int top, int bottom, List<Component> suggestions, GuiGraphics graphics) {
+    private void renderSuggestions(int left, int right, int top, int bottom, GuiGraphics graphics) {
         graphics.fill(left, top, right, bottom, 0xFFFFFFFF);
         graphics.fill(left + 1, top + 1 , right - 1 , bottom - 1, 0xFF000000);
-        for (int i = 0 ; i < suggestions.size() ; i++) {
-            final Component text = suggestions.get(i);
+        for (int i = 0 ; i < renderCache.length ; i++) {
+            final Component text = renderCache[i];
             final int j = top + 1 + (i * 9);
             if (i % 2 == 0) {
                 graphics.fill(left + 1, j, right - 1, j + 9, 0xFF1F1F1F);
@@ -86,8 +87,8 @@ public class SuggestableEditBox extends EditBox {
         }
     }
 
-    private List<Component> suggestionsAroundIndex() {
-        return WidgetUtils.wrapList(suggestions, (m, selected) -> selected ? m.plainCopy().withStyle(ChatFormatting.GOLD) : m, selectedIndex);
+    private void updateRenderCache() {
+        renderCache = WidgetUtils.wrapList(suggestions, (m, selected) -> selected ? m.plainCopy().withStyle(ChatFormatting.GOLD) : m, selectedIndex, Component[]::new);
     }
 
     @Override
@@ -109,6 +110,7 @@ public class SuggestableEditBox extends EditBox {
                     .findFirst()
                     .ifPresentOrElse(m -> selectedIndex = suggestions.indexOf(m), () -> selectedIndex = 0);
         }
+        updateRenderCache();
     }
 
     @Override
