@@ -101,10 +101,8 @@ public enum PreviewScale {
     public void upload(@Nullable Image image) {
         Objects.requireNonNull(texture.get(), "Tried to upload image to null texture, meaning it failed to initialize earlier");
         clearPreviews(null);
-        if (image != null && image.isAllocated()) {
-            //noinspection DataFlowIssue
-            texture.get().setPixels(Image.getNative(image));
-            texture.get().upload();
+        if (image != null) {
+            image.upload(texture.get());
         }
     }
 }

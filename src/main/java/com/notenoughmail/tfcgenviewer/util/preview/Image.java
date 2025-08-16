@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.preview;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.mixin.NativeImageAccessor;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +14,7 @@ import java.nio.file.Path;
 /**
  * A shallow wrapper around {@link NativeImage} that attempts to ensure thread safety between drawing to the image and closing it
  * <p>
- * Provides a number of helpful utils for safely writing to the image
+ * Also provides a number of helpful utils for safely writing to the image
  */
 public class Image {
 
@@ -37,7 +38,7 @@ public class Image {
         return z >= 0 && z <= maxPixel;
     }
 
-    private synchronized void set(int x, int y, int abgrColor) {
+    private void set(int x, int y, int abgrColor) {
         synchronized (image) {
             if (isAllocated()) {
                 image.setPixelRGBA(x, y, abgrColor);
@@ -149,6 +150,15 @@ public class Image {
             image.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), name));
         } catch (Exception e) {
             TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(name), e);
+        }
+    }
+
+    public void upload(DynamicTexture tex) {
+        synchronized (image) {
+            if (isAllocated()) {
+                tex.setPixels(image);
+                tex.upload();
+            }
         }
     }
 }

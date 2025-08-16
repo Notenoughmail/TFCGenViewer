@@ -34,7 +34,6 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
         sortLayerDefs(map, onError, 0);
     }
 
-    // TODO: 1.5.0 | Properly test this
     private static void sortLayerDefs(OrderedMap<String, MutableRockLayerSettings.MutableLayerData> map, Consumer<Component> onError, int depth) {
         boolean goAgain = false;
         final MutableRockLayerSettings.MutableLayerData[] datas = map.values().toArray(MutableRockLayerSettings.MutableLayerData[]::new);

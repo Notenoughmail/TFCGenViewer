@@ -18,7 +18,9 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -207,7 +209,7 @@ public class LayerDefinitionEditor extends SelectionList<LayerDefinitionEditor.E
             this.rock.setHint(ROCK_HINT);
             this.rock.setValue(rock);
             this.rock.moveCursorToStart();
-            var layers = mrls.layerDefs.keySet();
+            final Set<String> layers = new HashSet<>(mrls.layerDefs.keySet());
             layers.add("bottom");
             this.layer = new SuggestableEditBox(font, 0, 0, 20, 16, LAYER_HINT, layers, minecraft);
             this.layer.setHint(LAYER_HINT);

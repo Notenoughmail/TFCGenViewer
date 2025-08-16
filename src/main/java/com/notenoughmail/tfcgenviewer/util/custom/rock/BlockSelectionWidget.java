@@ -60,12 +60,16 @@ public class BlockSelectionWidget extends EditBox {
                 if (ifBlockIsNullMessage != null) {
                     searchResults.add(Blocks.VOID_AIR);
                 }
-                int index = searchResults.indexOf(prevSearch);
-                if (index != -1) {
-                    selectionIndex = index;
+                if (!searchResults.isEmpty()) {
+                    int index = searchResults.indexOf(prevSearch);
+                    if (index != -1) {
+                        selectionIndex = index;
+                    } else {
+                        index = searchResults.indexOf(getter.get());
+                        selectionIndex = index == -1 ? 0 : index;
+                    }
                 } else {
-                    index = searchResults.indexOf(getter.get());
-                    selectionIndex = index == -1 ? 0 : index;
+                    selectionIndex = -1;
                 }
                 updateSuggestionRendering();
             } catch (Exception e) {
@@ -78,7 +82,7 @@ public class BlockSelectionWidget extends EditBox {
         super.setResponder(res);
     }
 
-    // This used only for drawing the background and the inner width, everything else uses field access
+    // This is only used for drawing the background and the inner width, everything else uses field access
     @Override
     protected boolean isBordered() {
         return false;
@@ -211,7 +215,16 @@ public class BlockSelectionWidget extends EditBox {
 
     @Override
     protected ClientTooltipPositioner createTooltipPositioner() {
-        return new TooltipPositioner(super.createTooltipPositioner());
+        final ClientTooltipPositioner c = super.createTooltipPositioner();
+        final boolean mod = c instanceof BelowOrAboveWidgetTooltipPositioner;
+        // Force the tooltip to be on the opposite side of the suggestions
+        return (screenWidth, screenHeight, mouseX, mouseY, tooltipWidth, tooltipHeight) -> {
+            final Vector2ic v = c.positionTooltip(screenWidth, screenHeight, mouseX, mouseY, tooltipWidth, tooltipHeight);
+            if (mod && v instanceof Vector2i mut) {
+                mut.y = getY() + (suggestionsPosition() ? height - 2 : -tooltipHeight + 1);
+            }
+            return v;
+        };
     }
 
     private record BlockRender(@Nullable ItemStack rendered, Component text, boolean fullWidthText) {
@@ -228,31 +241,6 @@ public class BlockSelectionWidget extends EditBox {
             }
 
             renderScrollingString(graphics, font, text, x + (fullWidthText ? 2 : 22), y + 5, maxX, y + 17, 0xFFFFFFFF);
-        }
-    }
-
-    private class TooltipPositioner implements ClientTooltipPositioner {
-
-        private final ClientTooltipPositioner c;
-        private final boolean modPos;
-
-        TooltipPositioner(ClientTooltipPositioner c) {
-            this.c = c;
-            modPos = c instanceof BelowOrAboveWidgetTooltipPositioner;
-        }
-
-        // Force the tooltip to be on the opposite side of the suggestions
-        @Override
-        public Vector2ic positionTooltip(int screenWidth, int screenHeight, int mouseX, int mouseY, int tooltipWidth, int tooltipHeight) {
-            final Vector2ic v = c.positionTooltip(screenWidth, screenHeight, mouseX, mouseY, tooltipWidth, tooltipHeight);
-            if (modPos && v instanceof Vector2i mut) {
-                if (suggestionsPosition()) {
-                    mut.y = getY() + height;
-                } else {
-                    mut.y = getY() - tooltipHeight;
-                }
-            }
-            return v;
         }
     }
 }

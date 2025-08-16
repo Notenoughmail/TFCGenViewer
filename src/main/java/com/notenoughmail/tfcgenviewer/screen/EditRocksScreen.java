@@ -237,7 +237,7 @@ public class EditRocksScreen extends Screen {
     }
 
     private String encode(String str) {
-        str = str.replaceAll("[^a-zA-Z0-9_]+", "_");
+        str = str.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_]+", "_");
         if (str.charAt(0) == '_') str = str.substring(1);
         if (str.charAt(str.length() - 1) == '_') str = str.substring(0, str.length() - 1);
         return isReservedName(str) ? str + "_" : str;
@@ -246,24 +246,30 @@ public class EditRocksScreen extends Screen {
     private String joinToQuery(String type, Collection<String> values) {
         final StringBuilder builder = new StringBuilder(type);
         builder.append("=[");
-        for (String str : values) {
-            builder.append(encode(str));
-            builder.append(';');
+        final Iterator<String> vals = values.iterator();
+        while (vals.hasNext()) {
+            builder.append(encode(vals.next()));
+            if (vals.hasNext()) {
+                builder.append(';');
+            }
         }
-        builder.deleteCharAt(builder.length() - 1);
         builder.append(']');
         return builder.toString();
     }
 
     private String joinMapping(MutableRockLayerSettings.MutableLayerData layerData) {
-        final StringBuilder builder = new StringBuilder(encode(layerData.id) + "=[");
-        for (Map.Entry<String, String> mapping : layerData.mapping.entrySet()) {
-            builder.append(encode(mapping.getKey()));
+        final StringBuilder builder = new StringBuilder(encode(layerData.id));
+        builder.append("=[");
+        final Iterator<Map.Entry<String, String>> mappings = layerData.mapping.entrySet().iterator();
+        while (mappings.hasNext()) {
+            final Map.Entry<String, String> entry = mappings.next();
+            builder.append(encode(entry.getKey()));
             builder.append('~');
-            builder.append(encode(mapping.getValue()));
-            builder.append(';');
+            builder.append(encode(entry.getValue()));
+            if (mappings.hasNext()) {
+                builder.append(';');
+            }
         }
-        builder.deleteCharAt(builder.length() - 1);
         builder.append(']');
         return builder.toString();
     }
