@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollWidget;
+import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,6 +13,8 @@ import java.util.List;
 
 // For all intents and purposes, a holder for a scrollable view of a wrapped text component
 public class InfoPane extends AbstractScrollWidget {
+
+    public static final Component NARRATION_TITLE = Component.translatable("tfcgenviewer.narration.info_pane.title");
 
     private final ResourceLocation pictureTex;
     private final int pictureSize, textWidth;
@@ -72,5 +75,7 @@ public class InfoPane extends AbstractScrollWidget {
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {}
+    protected void updateWidgetNarration(NarrationElementOutput out) {
+        out.add(NarratedElementType.TITLE, NARRATION_TITLE);
+    }
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
@@ -14,6 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class PreviewPane extends AbstractWidget {
+
+    public static final Component NARRATION_TTILE = Component.translatable("tfcgenviewer.narration.preview_pane.title");
 
     public static final ResourceLocation PROGRESS_BAR = TFCGenViewer.identifier("textures/gui/progress_bar.png");
 
@@ -115,7 +118,9 @@ public class PreviewPane extends AbstractWidget {
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {}
+    protected void updateWidgetNarration(NarrationElementOutput out) {
+        out.add(NarratedElementType.TITLE, NARRATION_TTILE);
+    }
 
     public void tick() {
         tick++;

@@ -9,28 +9,43 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
+// TODO: 1.5.0 | Currently, the suggestion index can be outside of
 public class SuggestableEditBox extends EditBox {
 
     private int selectedIndex = -1;
-    private List<MutableComponent> suggestions;
+    private List<MutableComponent> allSuggestions;
+    private List<MutableComponent> search;
     private Component[] renderCache = new Component[0];
     private final Minecraft mc;
 
     public SuggestableEditBox(Font pFont, int pX, int pY, int pWidth, int pHeight, Component pMessage, Collection<String> suggestions, Minecraft mc) {
         super(pFont, pX, pY, pWidth, pHeight, pMessage);
         setHint(pMessage);
-        this.suggestions = suggestions.stream().sorted().map(Component::literal).toList();
+        allSuggestions = suggestions.stream().sorted().map(Component::literal).toList();
+        search = List.copyOf(allSuggestions);
         this.mc = mc;
+        setResponder(null);
     }
 
-    public void setSuggestions(Collection<String> suggestions) {
-        this.suggestions = suggestions.stream().sorted().map(Component::literal).toList();
+    @Override
+    public void setResponder(@Nullable Consumer<String> responder) {
+        Consumer<String> res = s -> updateSuggestionIndex();
+        if (responder != null) {
+            res = res.andThen(responder);
+        }
+        super.setResponder(res);
+    }
+
+    public void setSuggestions(Collection<String> allSuggestions) {
+        this.allSuggestions = allSuggestions.stream().sorted().map(Component::literal).toList();
     }
 
     private void nudgeIndex(boolean adding) {
@@ -41,8 +56,8 @@ public class SuggestableEditBox extends EditBox {
                 selectedIndex--;
             }
             if (selectedIndex < 0) {
-                selectedIndex = suggestions.size() - 1;
-            } else if (selectedIndex >= suggestions.size()) {
+                selectedIndex = search.size() - 1;
+            } else if (selectedIndex >= search.size()) {
                 selectedIndex = 0;
             }
             updateRenderCache();
@@ -57,20 +72,18 @@ public class SuggestableEditBox extends EditBox {
     @Override
     public void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         super.renderWidget(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
-        if (isFocused()) {
-            if (renderCache.length != 0) {
-                pGuiGraphics.pose().pushPose();
-                pGuiGraphics.pose().translate(0.0F, 0.0F, 200F);
-                final int suggestionHeight = renderCache.length * 9 + 2;
-                if (suggestionsPosition()) {
-                    final int top = getY() - suggestionHeight;
-                    renderSuggestions(getX(), getX() + width, top - 1, top + suggestionHeight, pGuiGraphics);
-                } else {
-                    final int top = getY() + height;
-                    renderSuggestions(getX(), getX() + width, top, top + suggestionHeight + 1, pGuiGraphics);
-                }
-                pGuiGraphics.pose().popPose();
+        if (isFocused() && renderCache.length != 0) {
+            pGuiGraphics.pose().pushPose();
+            pGuiGraphics.pose().translate(0.0F, 0.0F, 200F);
+            final int suggestionHeight = renderCache.length * 9 + 2;
+            if (suggestionsPosition()) {
+                final int top = getY() - suggestionHeight;
+                renderSuggestions(getX(), getX() + width, top - 1, top + suggestionHeight, pGuiGraphics);
+            } else {
+                final int top = getY() + height;
+                renderSuggestions(getX(), getX() + width, top, top + suggestionHeight + 1, pGuiGraphics);
             }
+            pGuiGraphics.pose().popPose();
         }
     }
 
@@ -88,7 +101,12 @@ public class SuggestableEditBox extends EditBox {
     }
 
     private void updateRenderCache() {
-        renderCache = WidgetUtils.wrapList(suggestions, (m, selected) -> selected ? m.plainCopy().withStyle(ChatFormatting.GOLD) : m, selectedIndex, Component[]::new);
+        renderCache = WidgetUtils.wrapList(
+                search,
+                (m, selected) -> selected ? m.plainCopy().withStyle(ChatFormatting.GOLD) : m,
+                selectedIndex,
+                Component[]::new
+        );
     }
 
     @Override
@@ -102,13 +120,15 @@ public class SuggestableEditBox extends EditBox {
     }
 
     private void updateSuggestionIndex() {
+        search = allSuggestions.stream()
+                .filter(c -> c.getString().toLowerCase(Locale.ROOT).startsWith(getValue().toLowerCase(Locale.ROOT)))
+                .toList();
         if (getValue().isEmpty()) {
             selectedIndex = 0;
         } else {
-            suggestions.stream()
-                    .filter(c -> c.getString().toLowerCase(Locale.ROOT).startsWith(getValue().toLowerCase(Locale.ROOT)))
+            search.stream()
                     .findFirst()
-                    .ifPresentOrElse(m -> selectedIndex = suggestions.indexOf(m), () -> selectedIndex = 0);
+                    .ifPresentOrElse(m -> selectedIndex = search.indexOf(m), () -> selectedIndex = -1);
         }
         updateRenderCache();
     }
@@ -130,22 +150,19 @@ public class SuggestableEditBox extends EditBox {
                 }
                 case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> {
                     if (selectedIndex != -1) {
-                        setValue(suggestions.get(selectedIndex).getString());
-                        setFocused(false);
+                        setValue(search.get(selectedIndex).getString());
                         selectedIndex = -1;
                     }
+                    setFocused(false);
+                    yield true;
+                }
+                case GLFW.GLFW_KEY_ESCAPE -> {
+                    setFocused(false);
                     yield true;
                 }
                 default -> super.keyPressed(pKeyCode, pScanCode, pModifiers);
             };
         }
         return false;
-    }
-
-    @Override
-    public boolean charTyped(char pCodePoint, int pModifiers) {
-        final boolean t = super.charTyped(pCodePoint, pModifiers);
-        if (t) updateSuggestionIndex();
-        return t;
     }
 }

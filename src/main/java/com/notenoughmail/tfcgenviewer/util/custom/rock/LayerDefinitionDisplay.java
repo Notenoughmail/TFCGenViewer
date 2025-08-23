@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -36,15 +37,16 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
 
     private static void sortLayerDefs(OrderedMap<String, MutableRockLayerSettings.MutableLayerData> map, Consumer<Component> onError, int depth) {
         boolean goAgain = false;
-        final MutableRockLayerSettings.MutableLayerData[] datas = map.values().toArray(MutableRockLayerSettings.MutableLayerData[]::new);
+        final Collection<MutableRockLayerSettings.MutableLayerData> datas = map.values();
         final OrderedMap<String, MutableRockLayerSettings.MutableLayerData> workingSpace = new OrderedMapImpl<>();
-        for (int i = 0 ; i < datas.length ; i++) {
-            final MutableRockLayerSettings.MutableLayerData data = datas[i];
-            if (i == 0) {
+        boolean initial = true;
+        for (final MutableRockLayerSettings.MutableLayerData data : datas) {
+            if (initial) {
                 workingSpace.put(data.id, data);
+                initial = false;
             } else {
                 int maxI = 0, minI = workingSpace.size();
-                final MutableRockLayerSettings.MutableLayerData[] transientDatas = workingSpace.values().toArray(MutableRockLayerSettings.MutableLayerData[]::new);
+                final Collection<MutableRockLayerSettings.MutableLayerData> transientDatas = workingSpace.values();
                 for (final MutableRockLayerSettings.MutableLayerData mD : transientDatas) {
                     final boolean m2d = mD.mapsTo(data.id), d2m = data.mapsTo(mD.id);
                     final int mI = workingSpace.indexOf(mD.id);
@@ -63,8 +65,10 @@ public class LayerDefinitionDisplay extends SelectionList<LayerDefinitionDisplay
                 workingSpace.put(Math.max(minI, maxI), data.id, data);
             }
         }
+
         map.clear();
         map.putAll(workingSpace);
+
         if (goAgain) {
             if (depth > 5) {
                 onError.accept(COMPLEX_DEF_ORDER);

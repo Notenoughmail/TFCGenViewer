@@ -199,8 +199,8 @@ public class BlockSelectionWidget extends EditBox {
                     if (selectionIndex != -1) {
                         final Block block = searchResults.get(selectionIndex);
                         setter.accept(block == Blocks.VOID_AIR ? null : block);
-                        setFocused(false);
                     }
+                    setFocused(false);
                     yield true;
                 }
                 case GLFW.GLFW_KEY_ESCAPE -> {

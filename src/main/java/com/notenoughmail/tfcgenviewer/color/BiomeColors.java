@@ -71,8 +71,12 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> colors, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        pProfiler.push(TFCGenViewer.ID);
+        pProfiler.push("biome-colors");
         super.apply(colors, pResourceManager, pProfiler);
         unknown = unknownGetter.get();
         key.clearCache();
+        pProfiler.pop();
+        pProfiler.pop();
     }
 }
