@@ -12,25 +12,55 @@ import java.util.Random;
 import java.util.function.DoubleToIntFunction;
 import java.util.stream.IntStream;
 
-import static com.notenoughmail.tfcgenviewer.config.color.Colors.*;
-import static com.notenoughmail.tfcgenviewer.util.ImageBuilder.setPixel;
+import static com.notenoughmail.tfcgenviewer.color.Colors.*;
 import static net.minecraft.util.FastColor.ABGR32.*;
 
 public class ColorUtil {
 
-    private static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
+    public static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
 
     // A blank region for use when the region generator produces nonsense, which happens on occasion with 262km
     // Attempting to travel to a location represented by the failure state will result in a JVM crash
     public static final Region.Point FAILURE_STATE = new Region.Point();
 
     // Actual utils
-    public static DoubleToIntFunction linearGradient(int from, int to) {
+    /**
+     * Converts an 8-bit RGB channel into its equivalent linear sRGB value using an approximate gamma value of {@code 2.2}
+     * @param channel The RGB component, in the range [{@code 0x00}, {@code 0xFF}]
+     * @return The linear sRGB value, in the range [{@code 0}, {@code 1}]
+     */
+    public static double linearize(int channel) {
+        return Math.pow((double) (channel & 0xFF) / 0xFF, 2.2D);
+    }
+
+    /**
+     * Converts a linear sRGB value into its equivalent 8-bit RGB value using an approximate gamma value of {@code 2.2}
+     * @param channel The RGB component, in the range [{@code 0}, {@code 1}]
+     * @return The 8-bit RGB value, in the range [{@code 0x00}, {@code 0xFF}]
+     */
+    public static int delinearize(double channel) {
+        return 0xFF & (int) (0xFF * Math.pow(channel, 1D / 2.2));
+    }
+
+    /**
+     * Creates an interpolation between the given colors in the linear sRGB color space, returned colors are in ABGR form and always have an alpha value of {@code 0xFF}
+     * @param bgr0 The first BGR color, the start of the lerp
+     * @param bgr1 The second BGR color, the end of the lerp
+     * @return A {@link DoubleToIntFunction} that lerps between the two colors
+     */
+    public static DoubleToIntFunction linearGradient(int bgr0, int bgr1) {
+        final double
+                r0 = linearize(red(bgr0)),
+                r1 = linearize(red(bgr1)),
+                g0 = linearize(green(bgr0)),
+                g1 = linearize(green(bgr1)),
+                b0 = linearize(blue(bgr0)),
+                b1 = linearize(blue(bgr1));
         return value -> color(
-                Mth.lerpInt((float) value, alpha(from), alpha(to)),
-                Mth.lerpInt((float) value, blue(from), blue(to)),
-                Mth.lerpInt((float) value, green(from), green(to)),
-                Mth.lerpInt((float) value, red(from), red(to))
+                255,
+                delinearize(Mth.lerp(value, b0, b1)),
+                delinearize(Mth.lerp(value, g0, g1)),
+                delinearize(Mth.lerp(value, r0, r1))
         );
     }
 
@@ -48,7 +78,7 @@ public class ColorUtil {
         return value -> parts[Mth.floor(value * parts.length)].applyAsInt((value * parts.length) % 1);
     }
 
-    public static int rgbToBgr(int rgb) {
+    public static int rgb2bgr(int rgb) {
         return color(
                 255,
                 FastColor.ARGB32.blue(rgb),
@@ -57,7 +87,7 @@ public class ColorUtil {
         );
     }
 
-    public static int bgrToRgb(int bgr) {
+    public static int bgr2rgb(int bgr) {
         return FastColor.ARGB32.color(
                 255,
                 red(bgr),
@@ -81,8 +111,8 @@ public class ColorUtil {
 
     // Drawers
     static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors) ->
-            setPixel(
-                    image, x, y,
+            image.setPixel(
+                    x, y,
                     FILL_OCEAN.get().getColor(
                             region != null ?
                                     region.noise() / 2 :
@@ -93,7 +123,31 @@ public class ColorUtil {
     static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
         final int color = ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1));
         colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(Objects.hashCode(region))));
-        setPixel(image, x, y, color);
+        image.setPixel(x, y, color);
+    };
+    static final CacheableSupplier<DoubleToIntFunction> experimentalGradient = CacheableSupplier.of(() -> {
+        final int[] colors = {
+                0xFFFF1D00,
+                0xFFFFBB00,
+                0xFF94FF63,
+                0xFF13FFE4,
+                0xFF0079FF,
+                0xFF0000D1
+        };
+        return multiLinearGradient(colors);
+    });
+    static final VisualizerType.DrawFunction gradientTest = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
+        final int color;
+        if (point.distanceToOcean == 0) {
+            color = 0xFF000000;
+        } else {
+            color = experimentalGradient.get().applyAsInt(Mth.clampedMap(point.temperature, -23F, 33F, 0F, 0.99999F));
+        }
+        colorDescriptors.putIfAbsent(color, Component.literal("%s".formatted(point.temperature)));
+        image.setPixel(x, y, color);
+        if (!point.land()) {
+            image.setPixel(x, y, 0xA0A0A0A0);
+        }
     };
 
     // Color getters that are not complex but also not easily (or cleanly) made single line
@@ -118,56 +172,83 @@ public class ColorUtil {
 
     static int biomeAltitude(int discreteAlt, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         return (switch (discreteAlt) {
-            default -> BA_LOW;
-            case 1 -> BA_MEDIUM;
-            case 2 -> BA_HIGH;
             case 3 -> BA_MOUNTAIN;
+            case 2 -> BA_HIGH;
+            case 1 -> BA_MEDIUM;
+            default -> BA_LOW;
         }).get().color(colorDescriptors);
     }
 
     static int rockType(int rock, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         return (switch (rock & 0b11) {
-            default -> RT_OCEANIC;
-            case 1 -> RT_VOLCANIC;
-            case 2 -> RT_LAND;
             case 3 -> RT_UPLIFT;
+            case 2 -> RT_LAND;
+            case 1 -> RT_VOLCANIC;
+            default -> RT_OCEANIC;
         }).get().getColor(nextWithSeed(rock >> 2), colorDescriptors);
     }
 
     // Default/reference gradients
-    public static final DoubleToIntFunction blue = linearGradient(color(255, 150, 50, 50), color(255, 255, 140, 100));
-    public static final DoubleToIntFunction green = linearGradient(color(255, 0, 100, 0), color(255, 80, 200, 80));
-    public static final DoubleToIntFunction volcanic = value -> color(255, 100, (int) (100 * value), 200);
-    public static final DoubleToIntFunction uplift = value -> color(255, 200, (int) (180 * value), 180);
-    public static final DoubleToIntFunction climate = multiLinearGradient(
-            color(255, 240, 20, 180),
-            color(255, 240, 180, 0),
-            color(255, 220, 180, 180),
-            color(255, 0, 210, 210),
-            color(255, 60, 120, 200),
-            color(255, 40, 40, 200)
+    public static final DoubleToIntFunction blue = linearGradient(0xFF963232, 0xFFFF8C64);
+    public static final DoubleToIntFunction green = linearGradient(0xFF006400, 0xFF50C850);
+    public static final DoubleToIntFunction volcanic = value -> color(
+            0xFF,
+            0x64,
+            delinearize(value * 0.1264363868D), // 0x64 linearized
+            0xC8
     );
-    public static final DoubleToIntFunction grayscale = linearGradient(color(255, 255, 255, 255), color(255, 0, 0, 0));
+    public static final DoubleToIntFunction uplift = value -> color(
+            0xFF,
+            0xC8,
+            delinearize(value * 0.4607566240D), // 0xB4 linearized
+            0xB4
+    );
+    public static final DoubleToIntFunction legacy_climate = multiLinearGradient(
+            0xFFF014B4,
+            0xFFF0B400,
+            0xFFDCB4B4,
+            0xFF00D2D2,
+            0xFF3C78C8,
+            0xFF2828C8
+    );
+    public static final DoubleToIntFunction rainfall = multiLinearGradient(
+            0xFF000287,
+            0xFF0032FF,
+            0xFF00A0FF,
+            0xFF78E8FF,
+            0xFF0FA00F,
+            0xFFD26414,
+            0xFFFAB978
+    );
+    public static final DoubleToIntFunction temperature = multiLinearGradient(
+            0xFFFF1D00,
+            0xFFFFBB00,
+            0xFF94FF63,
+            0xFF13FFE4,
+            0xFF0079FF,
+            0xFF0000D1
+    );
+    public static final DoubleToIntFunction grayscale = linearGradient(0xFFFFFFFF, 0xFF000000);
 
     // Color keys
-    public static final CacheableSupplier<Component> RainKey = new CacheableSupplier<>(() -> {
+    public static final CacheableSupplier<Component> RainKey = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         RAINFALL.get().appendTo(key);
         FILL_OCEAN.get().appendTo(key, true);
         return key;
     });
-    public static final CacheableSupplier<Component> TempKey = new CacheableSupplier<>(() -> {
+    public static final CacheableSupplier<Component> TempKey = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         TEMPERATURE.get().appendTo(key);
         FILL_OCEAN.get().appendTo(key, true);
         return key;
     });
-    public static final CacheableSupplier<Component> BiomeAltKey = new CacheableSupplier<>(() -> {
+    public static final CacheableSupplier<Component> BiomeAltKey = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         baKey(key);
         return key;
     });
-    public static final CacheableSupplier<Component> InlandHeightKey = new CacheableSupplier<>(() -> {
+    public static final CacheableSupplier<Component> InlandHeightKey = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         IH_LAND.get().appendTo(key);
         IH_SHALLOW.get().appendTo(key);
@@ -175,7 +256,7 @@ public class ColorUtil {
         IH_VERY_DEEP.get().appendTo(key, true);
         return key;
     });
-    public static final CacheableSupplier<Component> RiverKey = new CacheableSupplier<>(() -> {
+    public static final CacheableSupplier<Component> RiverKey = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         RM_RIVER.get().appendTo(key);
         RM_OCEANIC_VOLCANIC_MOUNTAINS.get().appendTo(key);
@@ -184,7 +265,7 @@ public class ColorUtil {
         baKey(key);
         return key;
     });
-    public static final CacheableSupplier<Component> RockTypeKey = new CacheableSupplier<>(() -> {
+    public static final CacheableSupplier<Component> RockTypeKey = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         RT_LAND.get().appendTo(key);
         RT_OCEANIC.get().appendTo(key);

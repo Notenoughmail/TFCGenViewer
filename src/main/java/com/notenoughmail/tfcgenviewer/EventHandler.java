@@ -1,9 +1,9 @@
 package com.notenoughmail.tfcgenviewer;
 
+import com.notenoughmail.tfcgenviewer.color.BiomeColors;
+import com.notenoughmail.tfcgenviewer.color.Colors;
+import com.notenoughmail.tfcgenviewer.color.RockColors;
 import com.notenoughmail.tfcgenviewer.config.KeyMappings;
-import com.notenoughmail.tfcgenviewer.config.color.BiomeColors;
-import com.notenoughmail.tfcgenviewer.config.color.Colors;
-import com.notenoughmail.tfcgenviewer.config.color.RockColors;
 import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
 import com.notenoughmail.tfcgenviewer.network.packets.ViewerRequestPacket;
 import net.minecraft.network.chat.Component;

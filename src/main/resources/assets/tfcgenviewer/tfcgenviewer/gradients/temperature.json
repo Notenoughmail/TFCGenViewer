@@ -1,5 +1,5 @@
 {
-  "reference": "climate",
+  "reference": "temperature",
   "key": "tfcgenviewer.climate.temperature",
   "tooltip_keys": [
     "tfcgenviewer.temperature.0",

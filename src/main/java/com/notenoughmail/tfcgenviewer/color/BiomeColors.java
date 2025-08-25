@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.config.color;
+package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.JsonElement;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
@@ -27,7 +27,7 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
             Component.translatable("biome.tfcgenviewer.unknown"),
             100
     );
-    private final CacheableSupplier<Component> key = new CacheableSupplier<>(() -> {
+    private final CacheableSupplier<Component> key = CacheableSupplier.of(() -> {
         final MutableComponent key = Component.empty();
         types.values().stream().map(Entry::get).filter(ColorDefinition::enabled).distinct().sorted().forEach(def -> {
             if (def != unknown) {
@@ -71,8 +71,12 @@ public class BiomeColors extends RegisteredDataManager<ColorDefinition> {
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> colors, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        pProfiler.push(TFCGenViewer.ID);
+        pProfiler.push("biome-colors");
         super.apply(colors, pResourceManager, pProfiler);
         unknown = unknownGetter.get();
         key.clearCache();
+        pProfiler.pop();
+        pProfiler.pop();
     }
 }

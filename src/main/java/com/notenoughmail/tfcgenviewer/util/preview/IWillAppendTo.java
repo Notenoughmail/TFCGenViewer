@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.preview;
 
 import net.minecraft.network.chat.MutableComponent;
 

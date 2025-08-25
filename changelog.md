@@ -1,0 +1,80 @@
+# 1.5.0
+
+- Add rock editor sub-screen
+  - Can be opened via the "Edit Rocks" button below "Export Preview" in the preview screen
+  - See the [wiki page](https://notenoughmail.github.io/tfcgv/1.20.1/rock-editor) for more information about usage
+- Color gradients are now interpolated over the linear sRGB color space
+- Changed the default gradients for the *Rainfall* and *Temperature* previewers to be more vibrant and distinct
+  - As part of this, the `temp`, `temperature`, `rain`, and `rainfall` reference gradients are now separate from the `climate` gradient, which is now unused by default
+- Adjust *Temperature* visualizer range to be -23 to 33 °C
+
+# 1.4.1
+
+- Add toggleable tooltip when hovering over the preview
+- `Color`(`Gradient`)`Definition`s now have the ability to define a key for the tooltip (multiple in the case of gradients)
+- *Biomes* and *Rocks* `ColorDefinition`s can now be disabled, preventing them from being added to the color key
+- Fix in-world previews showing the coords the preview is centered on when the server has disabled coordinate viewing
+- Adjust *Temperature* visualizer range to be -20 to 30 °C to better reflect the temperature ranges available in default TFC
+
+# 1.4.0
+
+- Speed up preview generation by caching a region's `Point`s
+- Properly deal with errors that may occur during generation
+- Add error handling config: can be set to immediately stop preview creation and tell the user or to simply skip the `Point` causing an issue and fill it in with safe, though not accurate, data
+- Add progress bar along the bottom of the preview, can be disabled in the config
+- Colors and gradients can now be randomized at resource load, see the wiki for how to do so via a resource pack
+  - Add an in-built resource pack that randomizes everything
+- Convert most color handlers to (`Registered`)`DataManagers`
+  - Externally this means little more than most color (gradient) definition files are in different places than before, the new locations will be on the wiki
+- Add new grayscale reference gradient
+
+# 1.3.0
+
+- The preview screen can now be opened in-world!
+  - Also works on servers
+  - Can be opened with the `K` key by default
+  - Only has options to change the scale since the world settings are already defined
+  - Which information a player is able to access can be disable/enabled from the server, see below
+- Preview generation is now done off-thread, meaning the game should no longer completely lock up on previews that take a long time
+  - While generating, a loading icon will be displayed instead of the previous preview, this can be disabled in the client config
+  - When generation finishes, the game will ding, this can also be disabled in the client config
+- Add a permissions system to limit what players can access via the in-world preview
+  - See the [wiki page](https://notenoughmail.github.io/tfcgv/1.20.1/permissions) for an explanation
+
+# 1.2.1
+
+- Make spawn overlay colors customizable
+- Allow preview size to be changed at preview time
+  - Has 7 options: 4.1, 8.2, 16.4, 32.8, 65.5, 131.1, and 262.1 km
+  - Change config option `previewSize` to `defaultPreviewSize`, determines which size the option will default to
+- Add *Export Preview* button
+  - Exports the currently displayed preview to a file in `screenshots/tfcgenviewer`
+- Add in-world coordinates tooltip when hovering over the preview
+  - Can be toggled on and off by clicking the preview
+- Tweak the offset options to be in kilometers instead of chunks and to be based off of the center of the preview instead of the top and left edges
+
+# 1.2.0
+
+- Make visualizer colors resource packable
+  - See [the wiki page](https://notenoughmail.github.io/tfcgv/1.20.1/customization/) for more information
+- Adjust *Rocks* visualizer to show y = ~90 instead of ~0
+- Add in-built resource pack that makes the *Rocks* visualizer use the colors of [TFCSeedMaker](https://github.com/dries007/TFCSeedMaker/tree/master)
+
+# 1.1.0
+
+- Overhaul the preview screen
+  - The preview is now centered on the screen
+  - The settings on the left of the screen are now in a single column and conform to the available space
+  - The *Save* and *Cancel* buttons are now to either side of the seed button
+  - The right info area now has more info
+    - The visualizer used for the preview currently shown
+    - Where the current preview is centered on
+    - A color key for the visualizer
+    - A compass pointing North
+  - The right info are now becomes scrollable if the info contained is too tall for the screen
+- Rename *Rocks* visualizer to *Rock Types*
+- Add *Rocks* visualizer that displays the actual rock that will generate at that point
+
+# 1.0.0
+
+- Initial release!

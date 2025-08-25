@@ -1,10 +1,10 @@
-package com.notenoughmail.tfcgenviewer.config.color;
+package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import com.notenoughmail.tfcgenviewer.util.preview.IWillAppendTo;
 import net.dries007.tfc.util.RegisteredDataManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -68,16 +68,25 @@ public class Colors<T extends IWillAppendTo> extends RegisteredDataManager<T> {
     public static final Supplier<ColorGradientDefinition> RT_VOLCANIC = gradient("rock_type/volcanic");
 
     private final Runnable onApply;
+    private final String domain;
 
     public Colors(BiFunction<ResourceLocation, JsonObject, T> factory, Function<ResourceLocation, T> fallbackFactory, String domain, String typeName, Runnable onApply) {
         super(factory, fallbackFactory, TFCGenViewer.identifier(domain), typeName);
         this.onApply = onApply;
+        this.domain = domain;
     }
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> elements, ResourceManager resourceManager, ProfilerFiller profiler) {
+        profiler.push(TFCGenViewer.ID);
+        profiler.push(domain);
+        profiler.push("process");
         super.apply(elements, resourceManager, profiler);
+        profiler.popPush("post-process");
         onApply.run();
+        profiler.pop();
+        profiler.pop();
+        profiler.pop();
     }
 
     private static Supplier<ColorDefinition> color(String path) {

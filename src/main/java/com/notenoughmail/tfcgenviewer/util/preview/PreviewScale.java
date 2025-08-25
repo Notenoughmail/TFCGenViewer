@@ -1,6 +1,5 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.preview;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
@@ -12,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.common.util.Lazy;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -88,20 +88,21 @@ public enum PreviewScale {
         );
     }
 
-    public static void clearPreviews(NativeImage currentImage) {
+    public static void clearPreviews(Image currentImage) {
         for (PreviewScale scale : VALUES) {
-            // If someone is really "lucky" the game will attempt to render an image which has been close via this
+            // If someone is really "lucky" the game will attempt to render an image which has been closed via this
             // If they decide to change this config mid-generation and it explodes, that's on them tbh
-            if (!Config.useThrobber.get() && scale.texture.get().getPixels() == currentImage) continue;
+            if (!Config.useThrobber.get() && scale.texture.get().getPixels() == Image.getNative(currentImage)) continue;
             // Free the previously used images from memory
             scale.texture.get().setPixels(null);
         }
     }
 
-    public void upload(NativeImage image) {
-        Objects.requireNonNull(texture, "Tried to upload image to null texture, meaning it failed to initialize earlier");
+    public void upload(@Nullable Image image) {
+        Objects.requireNonNull(texture.get(), "Tried to upload image to null texture, meaning it failed to initialize earlier");
         clearPreviews(null);
-        texture.get().setPixels(image);
-        texture.get().upload();
+        if (image != null) {
+            image.upload(texture.get());
+        }
     }
 }

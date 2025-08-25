@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package com.notenoughmail.tfcgenviewer.util.preview;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -16,7 +16,7 @@ public record PreviewInfo(
         @Nullable Int2ObjectFunction<Component> tooltip
 ) {
 
-    public PreviewInfo(Component rightInfo, ResourceLocation image, int previewSizeGrids, int x0, int y0, Mode mode) {
+    private PreviewInfo(Component rightInfo, ResourceLocation image, int previewSizeGrids, int x0, int y0, Mode mode) {
         this(rightInfo, image, previewSizeGrids, x0, y0, mode, null);
     }
 
@@ -26,6 +26,10 @@ public record PreviewInfo(
 
     public boolean error() {
         return mode == Mode.ERROR;
+    }
+
+    public boolean preview() {
+        return mode == Mode.PREVIEW;
     }
 
     public static final PreviewInfo EMPTY = new PreviewInfo(Component.translatable("tfcgenviewer.preview_world.preview_info.generating"), TFCGenViewer.identifier("textures/gui/throbber.png"), 0, 0, 0, Mode.EMPTY);

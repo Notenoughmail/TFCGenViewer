@@ -37,4 +37,9 @@ public class TFCGenViewer {
     public static ResourceLocation identifier(String path) {
         return new ResourceLocation(ID, path);
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object o) {
+        return (T) o;
+    }
 }

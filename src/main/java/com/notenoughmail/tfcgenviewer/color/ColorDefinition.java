@@ -1,11 +1,11 @@
-package com.notenoughmail.tfcgenviewer.config.color;
+package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import com.notenoughmail.tfcgenviewer.util.preview.IWillAppendTo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -62,7 +62,7 @@ public record ColorDefinition(int color, Component name, int sort, Component too
                         value.get("r").getAsInt()
                 );
             } else if (hasAll(value, objColorKeys[1])) {
-                return ColorUtil.rgbToBgr(Mth.hsvToRgb(
+                return ColorUtil.rgb2bgr(Mth.hsvToRgb(
                         value.get("h").getAsFloat(),
                         value.get("s").getAsFloat(),
                         value.get("v").getAsFloat()
@@ -71,9 +71,9 @@ public record ColorDefinition(int color, Component name, int sort, Component too
             throw new JsonParseException("A color of an object type should have fields of either [r, g, and b] or [h, s, and v]");
         } else if (color instanceof JsonPrimitive prim) {
             if (prim.isNumber()) {
-                return ColorUtil.rgbToBgr(prim.getAsInt());
+                return ColorUtil.rgb2bgr(prim.getAsInt());
             } else if (prim.isString()) {
-                return ColorUtil.rgbToBgr(Integer.parseInt(prim.getAsString(), 16));
+                return ColorUtil.rgb2bgr(Integer.parseInt(prim.getAsString(), 16));
             }
             throw new JsonParseException("Color should be an object, a string, or an integer");
         } else if (color.isJsonNull()) {
@@ -94,7 +94,7 @@ public record ColorDefinition(int color, Component name, int sort, Component too
     public void appendTo(MutableComponent text, boolean end) {
         text.append(Component.translatable(
                 "tfcgenviewer.preview_world.color_key_template",
-                Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgrToRgb(color))),
+                Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgr2rgb(color))),
                 name
         ));
         if (!end) text.append(CommonComponents.NEW_LINE);

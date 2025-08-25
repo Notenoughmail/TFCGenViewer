@@ -1,5 +1,5 @@
 {
-  "reference": "climate",
+  "reference": "rainfall",
   "key": "tfcgenviewer.climate.rainfall",
   "tooltip_keys": [
     "tfcgenviewer.rainfall.0",

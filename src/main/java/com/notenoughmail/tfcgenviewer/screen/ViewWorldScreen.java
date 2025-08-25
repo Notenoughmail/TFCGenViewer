@@ -1,12 +1,13 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
 import com.notenoughmail.tfcgenviewer.config.Config;
-import com.notenoughmail.tfcgenviewer.util.ImageBuilder;
-import com.notenoughmail.tfcgenviewer.util.PreviewScale;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
+import com.notenoughmail.tfcgenviewer.util.custom.ButtonOption;
 import com.notenoughmail.tfcgenviewer.util.custom.InfoPane;
 import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
 import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
+import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
+import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
@@ -75,35 +76,11 @@ public class ViewWorldScreen extends Screen {
         options.add(
                 scale = PreviewScale.option(),
                 visualizerType = VisualizerType.option(visualizers),
-                new OptionInstance<>(
-                        "button.tfcgenviewer.apply",
-                        OptionInstance.noTooltip(),
-                        (caption, bool) -> caption,
-                        OptionInstance.BOOLEAN_VALUES,
-                        false,
-                        bool -> {}
-                ) {
-                    @Override
-                    public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer<Boolean> pOnValueChanged) {
-                        return Button.builder(PreviewGenerationScreen.APPLY, button -> apply()).bounds(pX, pY, pWidth, 20).build();
-                    }
-                }
+                new ButtonOption("button.tfcgenviewer.apply", PreviewGenerationScreen.APPLY, b -> apply())
         );
 
         if (allowExport) {
-            options.add(new OptionInstance<>(
-                    "button.tfcgenviewer.export",
-                    OptionInstance.noTooltip(),
-                    (caption, bool) -> caption,
-                    OptionInstance.BOOLEAN_VALUES,
-                    false,
-                    bool -> {}
-            ) {
-                @Override
-                public AbstractWidget createButton(Options pOptions, int pX, int pY, int pWidth, Consumer<Boolean> pOnValueChanged) {
-                    return Button.builder(PreviewGenerationScreen.EXPORT, button -> ImageBuilder.exportImage()).bounds(pX, pY, pWidth, 20).build();
-                }
-            });
+            options.add(new ButtonOption("button.tfcgenviewer.export", PreviewGenerationScreen.EXPORT, b -> ImageBuilder.exportImage()));
         }
 
         if (seedVisible) {

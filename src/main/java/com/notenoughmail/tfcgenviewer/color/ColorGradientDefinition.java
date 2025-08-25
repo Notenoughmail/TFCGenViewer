@@ -1,11 +1,11 @@
-package com.notenoughmail.tfcgenviewer.config.color;
+package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
-import com.notenoughmail.tfcgenviewer.util.IWillAppendTo;
+import com.notenoughmail.tfcgenviewer.util.preview.IWillAppendTo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -108,7 +108,9 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
         return switch (ref.toLowerCase(Locale.ROOT)) {
             case "blue", "ocean" -> ColorUtil.blue;
             case "green", "land" -> ColorUtil.green;
-            case "climate", "temp", "temperature", "rain", "rainfall" -> ColorUtil.climate;
+            case "climate" -> ColorUtil.legacy_climate;
+            case "temp", "temperature" -> ColorUtil.temperature;
+            case "rain", "rainfall" -> ColorUtil.rainfall;
             case "volcanic", "volcanic_rock" -> ColorUtil.volcanic;
             case "uplift", "uplift_rock" -> ColorUtil.uplift;
             case "gray", "grey", "grayscale", "greyscale" -> ColorUtil.grayscale;
@@ -121,7 +123,7 @@ public record ColorGradientDefinition(DoubleToIntFunction gradient, Component na
     public void appendTo(MutableComponent text, boolean end) {
         final MutableComponent colors = Component.empty();
         for (double i : keyValues) {
-            colors.append(Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgrToRgb(gradient.applyAsInt(i)))));
+            colors.append(Component.literal("■").withStyle(style -> style.withColor(ColorUtil.bgr2rgb(gradient.applyAsInt(i)))));
         }
         text.append(Component.translatable(
                 "tfcgenviewer.preview_world.color_key_template",
