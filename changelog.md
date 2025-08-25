@@ -1,4 +1,4 @@
-# 1.5.0 (W.I.P.)
+# 1.5.0
 
 - Add rock editor sub-screen
   - Can be opened via the "Edit Rocks" button below "Export Preview" in the preview screen
