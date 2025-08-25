@@ -120,15 +120,14 @@ public class SuggestableEditBox extends EditBox {
     }
 
     private void updateSuggestionIndex() {
+        final MutableComponent prevSelect = search.isEmpty() || selectedIndex == -1 ? null : search.get(selectedIndex);
         search = allSuggestions.stream()
                 .filter(c -> c.getString().toLowerCase(Locale.ROOT).startsWith(getValue().toLowerCase(Locale.ROOT)))
                 .toList();
-        if (getValue().isEmpty()) {
-            selectedIndex = 0;
+        if (search.isEmpty()) {
+            selectedIndex = -1;
         } else {
-            search.stream()
-                    .findFirst()
-                    .ifPresentOrElse(m -> selectedIndex = search.indexOf(m), () -> selectedIndex = -1);
+            selectedIndex = Math.max(0, search.indexOf(prevSelect));
         }
         updateRenderCache();
     }

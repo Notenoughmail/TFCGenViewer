@@ -19,6 +19,7 @@ import java.util.function.IntFunction;
 public class WidgetUtils {
 
     // Disgusting, but works the whole two times its needed
+    // Returns an array with a length in the range [0, 5]
     public static <O, I> O[] wrapList(List<I> list, BiFunction<I, Boolean, O> mapper, int index, IntFunction<O[]> arrayMaker) {
         if (index == -1 || list.isEmpty()) {
             return arrayMaker.apply(0);

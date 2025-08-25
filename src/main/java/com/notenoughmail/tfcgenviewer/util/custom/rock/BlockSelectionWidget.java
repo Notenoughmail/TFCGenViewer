@@ -53,33 +53,31 @@ public class BlockSelectionWidget extends EditBox {
 
     @Override
     public void setResponder(@Nullable Consumer<String> pResponder) {
-        Consumer<String> res = s -> {
-            try {
-                final Block prevSearch = searchResults == null || searchResults.isEmpty() || selectionIndex == -1 ? getter.get() : searchResults.get(selectionIndex);
-                searchResults = searchTree.search(s);
-                if (ifBlockIsNullMessage != null) {
-                    searchResults.add(Blocks.VOID_AIR);
-                }
-                if (!searchResults.isEmpty()) {
-                    int index = searchResults.indexOf(prevSearch);
-                    if (index != -1) {
-                        selectionIndex = index;
-                    } else {
-                        index = searchResults.indexOf(getter.get());
-                        selectionIndex = index == -1 ? 0 : index;
-                    }
-                } else {
-                    selectionIndex = -1;
-                }
-                updateSuggestionRendering();
-            } catch (Exception e) {
-                TFCGenViewer.LOGGER.error("Error encountered during value change", e);
-            }
-        };
+        Consumer<String> res = this::updateSuggestionIndex;
         if (pResponder != null) {
             res = res.andThen(pResponder);
         }
         super.setResponder(res);
+    }
+
+    private void updateSuggestionIndex(String search) {
+        final Block prevSearch = searchResults == null || searchResults.isEmpty() || selectionIndex == -1 ? getter.get() : searchResults.get(selectionIndex);
+        searchResults = searchTree.search(search);
+        if (ifBlockIsNullMessage != null) {
+            searchResults.add(Blocks.VOID_AIR);
+        }
+        if (!searchResults.isEmpty()) {
+            int index = searchResults.indexOf(prevSearch);
+            if (index != -1) {
+                selectionIndex = index;
+            } else {
+                index = searchResults.indexOf(getter.get());
+                selectionIndex = index == -1 ? 0 : index;
+            }
+        } else {
+            selectionIndex = -1;
+        }
+        updateSuggestionRendering();
     }
 
     // This is only used for drawing the background and the inner width, everything else uses field access
