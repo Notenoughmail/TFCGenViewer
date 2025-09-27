@@ -5,8 +5,11 @@ import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.config.ServerConfig;
 import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
 import com.notenoughmail.tfcgenviewer.util.TFCGVCommands;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -18,6 +21,8 @@ public class TFCGenViewer {
 
     public static final String ID = "tfcgenviewer";
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    public static final TagKey<PlacedFeature> VISUALIZABLE_FEATURES = TagKey.create(Registries.PLACED_FEATURE, identifier("visualizable_features"));
 
     public static final Component PREVIEW_WORLD = Component.translatable("button." + ID + ".preview_world");
 

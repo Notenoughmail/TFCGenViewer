@@ -7,7 +7,6 @@ import com.notenoughmail.tfcgenviewer.util.custom.*;
 import com.notenoughmail.tfcgenviewer.util.preview.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
-import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
@@ -23,6 +22,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -86,7 +86,8 @@ public class PreviewGenerationScreen extends Screen {
 
     private final CreateWorldScreen parent;
     @Nullable
-    private final ChunkGeneratorExtension generator;
+    private final TFCChunkGenerator generator;
+    private final RegistryAccess registryAccess;
     @Nullable
     private RegionChunkDataGenerator regionGenerator;
     private Settings worldSettings;
@@ -116,6 +117,7 @@ public class PreviewGenerationScreen extends Screen {
         worldSettings = generator == null ? null : generator.settings();
         regionGenerator = getRegionGenerator();
         rocks = worldSettings == null ? null : worldSettings.rockLayerSettings();
+        registryAccess = parent.getUiState().getSettings().worldgenLoadContext();
     }
 
     @Nullable
@@ -287,7 +289,8 @@ public class PreviewGenerationScreen extends Screen {
                         },
                         Config.generationProgress.get() ? previewPane::setProgress : i -> {},
                         true,
-                        seedInUse
+                        seedInUse,
+                        registryAccess
                 );
             }
         }

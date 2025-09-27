@@ -14,6 +14,7 @@ import net.dries007.tfc.world.region.Region;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -71,7 +72,8 @@ public class ImageBuilder {
             Consumer<PreviewInfo> infoReturn,
             Consumer<Integer> progressReturn,
             boolean showCoords,
-            long seed // For error reports
+            long seed, // For error reports
+            RegistryAccess registryAccess
     ) {
         if (BUILDER_STATE.get() == BuilderState.FINALIZE) {
             TFCGenViewer.LOGGER.warn("Apply was called while a previous builder was finalizing. In very special cases this can cause a crash, thus the previous builder will continue and the request for a new builder will be discarded");
@@ -137,7 +139,8 @@ public class ImageBuilder {
                                     cache[cachePos],
                                     cache[cachePos] != null ? cache[cachePos].requireAt(xPos, zPos) : ColorUtil.FAILURE_STATE,
                                     image,
-                                    colorDescriptors
+                                    colorDescriptors,
+                                    registryAccess
                             );
                         } catch (Throwable error) {
                             // This specific error is known and harmless (in this case) and can be ignored
@@ -217,7 +220,7 @@ public class ImageBuilder {
                                         xCenterGrids * 128,
                                         zCenterGrids * 128,
                                         visualizer.getName(),
-                                        visualizer.getColorKey()
+                                        visualizer.getColorKey(registryAccess)
                                 ) :
                                 Component.translatable(
                                     "tfcgenviewer.preview_world.preview_info.no_coords",
@@ -226,7 +229,7 @@ public class ImageBuilder {
                                     previewKm,
                                     previewKm,
                                     visualizer.getName(),
-                                    visualizer.getColorKey()
+                                    visualizer.getColorKey(registryAccess)
                                 ),
                         scale.textureId,
                         previewSizeGrids,
@@ -242,7 +245,7 @@ public class ImageBuilder {
         }, GENERATOR_THREAD_POOL).exceptionally(thr -> {
             TFCGenViewer.LOGGER.error("Error encountered during generation!", thr);
             return ProcessReturn.ERROR;
-        }).thenAccept(pr -> {
+        }).thenApplyAsync(pr -> {
             BUILDER_STATE.set(BuilderState.FINALIZE);
             transientImage = null;
             if (pr != null) {
@@ -250,27 +253,22 @@ public class ImageBuilder {
                 imageName = pr.imageName();
                 scale.upload(currentImage);
                 infoReturn.accept(pr.previewInfo());
-                if (pr.ding() && Config.dingWhenGenerated.get()) {
-                    Minecraft
-                            .getInstance()
-                            .getSoundManager()
-                            .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
-                }
             } else {
                 currentImage = null;
                 infoReturn.accept(PreviewInfo.ERROR);
                 PreviewScale.clearPreviews(currentImage);
-                if (Config.dingWhenGenerated.get()) {
-                    Minecraft
-                            .getInstance()
-                            .getSoundManager()
-                            .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
-                }
             }
             builderProcess = null;
             progressReturn.accept(-1);
             BUILDER_STATE.set(BuilderState.OFF);
-        });
+            return pr == null || pr.ding();
+        }).thenAcceptAsync(ding -> {
+            if (ding && Config.dingWhenGenerated.get()) {
+                Minecraft.getInstance()
+                        .getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
+            }
+        }, Minecraft.getInstance());
     }
 
     private static void addRegionToCache(Region[] cache, Region region, int xOffset, int zOffset, int size) {

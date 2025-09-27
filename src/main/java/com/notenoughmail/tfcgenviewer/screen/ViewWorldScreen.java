@@ -12,6 +12,7 @@ import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,6 +20,8 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -39,6 +42,7 @@ public class ViewWorldScreen extends Screen {
     private final RegionChunkDataGenerator generator;
     private final boolean allowExport, coordinatesVisible, seedVisible;
     private final int xCenter, zCenter;
+    private final RegistryAccess registryAccess;
 
     private OptionInstance<PreviewScale> scale;
     private OptionInstance<VisualizerType> visualizerType;
@@ -57,6 +61,9 @@ public class ViewWorldScreen extends Screen {
         this.seedVisible = seedVisible;
         this.xCenter = xCenter;
         this.zCenter = zCenter;
+        final ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        assert connection != null; // If someone creates this screen without an active connection 1. What is wrong with you, use the preview screen; 2. No
+        registryAccess = connection.registryAccess();
     }
 
     @Override
@@ -133,7 +140,8 @@ public class ViewWorldScreen extends Screen {
                 },
                 Config.generationProgress.get() ? viewPane::setProgress : i -> {},
                 coordinatesVisible,
-                seed
+                seed,
+                registryAccess
         );
     }
 

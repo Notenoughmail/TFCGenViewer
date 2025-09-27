@@ -13,12 +13,17 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-public record ColorDefinition(int color, Component name, int sort, Component tooltip, boolean enabled) implements Comparable<ColorDefinition>, IWillAppendTo {
+public record ColorDefinition(@ApiStatus.Internal int color, Component name, int sort, Component tooltip, boolean enabled) implements Comparable<ColorDefinition>, IWillAppendTo {
 
     public ColorDefinition(int color, Component name, int sort) {
         this(color, name, sort, name, true);
+    }
+
+    public static boolean isDisabled(JsonObject json) {
+        return json.has("disabled") && json.get("disabled").isJsonPrimitive() && json.get("disabled").getAsBoolean();
     }
 
     public static ColorDefinition parse(JsonObject json, String fallbackKey) {
@@ -111,8 +116,20 @@ public record ColorDefinition(int color, Component name, int sort, Component too
         return sorted;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ColorDefinition def) {
+            return compareTo(def) == 0 && color == def.color();
+        }
+        return false;
+    }
+
     public int color(Int2ObjectOpenHashMap<Component> colorDescriptors) {
         colorDescriptors.putIfAbsent(color, tooltip);
         return color;
+    }
+
+    public int color(int forcedAlpha) {
+        return FastColor.ABGR32.transparent(color) | (forcedAlpha << 24);
     }
 }

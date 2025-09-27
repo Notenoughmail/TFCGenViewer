@@ -110,7 +110,7 @@ public class ColorUtil {
     }
 
     // Drawers
-    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors) ->
+    static final VisualizerType.DrawFunction fillOcean = (x, y, xOffset, yOffset, generator, region, point, image, colorDescriptors, registryAccess) ->
             image.setPixel(
                     x, y,
                     FILL_OCEAN.get().getColor(
@@ -120,7 +120,7 @@ public class ColorUtil {
                             colorDescriptors
                     )
             );
-    static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
+    static final VisualizerType.DrawFunction dev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
         final int color = ColorUtil.grayscale.applyAsInt((double) Objects.hashCode(region) / (double) ((long) Integer.MAX_VALUE + 1));
         colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(Objects.hashCode(region))));
         image.setPixel(x, y, color);
@@ -136,7 +136,7 @@ public class ColorUtil {
         };
         return multiLinearGradient(colors);
     });
-    static final VisualizerType.DrawFunction gradientTest = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors) -> {
+    static final VisualizerType.DrawFunction gradientTest = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
         final int color;
         if (point.distanceToOcean == 0) {
             color = 0xFF000000;
