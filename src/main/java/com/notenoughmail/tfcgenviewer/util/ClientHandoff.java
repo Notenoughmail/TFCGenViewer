@@ -21,7 +21,8 @@ public class ClientHandoff {
                     Permissions.canSeeCoordinates(perms),
                     Permissions.canSeeSeed(perms),
                     Units.blockToGrid(player.getBlockX()),
-                    Units.blockToGrid(player.getBlockZ())
+                    Units.blockToGrid(player.getBlockZ()),
+                    info.visualizableFeatures()
             ));
         }
     }

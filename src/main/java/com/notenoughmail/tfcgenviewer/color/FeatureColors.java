@@ -39,24 +39,29 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
     private final Map<ResourceKey<PlacedFeature>, ColorDefinition> definitions = new IdentityHashMap<>();
 
     private Map<ResourceKey<PlacedFeature>, Pair<FeatureConfiguration, ClimatePlacement>> placements;
-    // TODO: 1.5.1 | Would it be of any benefit to make these ThreadLocals?
     private HolderLookup<Biome> biomeLookup;
-    private HolderLookup<PlacedFeature> featureLookup;
 
     protected FeatureColors() {
         super("features");
     }
 
-    // TODO: 1.5.1 | This doesn't work in-world
+    // TODO: 1.5.1 | This does not work with servers due to biome generation settings not being synced
     public List<ColorDefinition> search(int biome, float temperature, float rainfall) {
         return placements.entrySet().stream()
                 .filter(entry -> {
                     final ClimatePlacement placement = entry.getValue().getSecond();
                     final FeatureConfiguration featureConfig = entry.getValue().getFirst();
+                    final ResourceKey<PlacedFeature> featureKey = entry.getKey();
 
                     final BiomeExtension biomeExt = TFCLayers.getFromLayerId(biome);
                     final Holder<Biome> biomeHolder = biomeLookup.getOrThrow(biomeExt.key());
-                    boolean valid = biomeExt.getFlattenedFeatureSet(biomeHolder.get()).contains(featureLookup.getOrThrow(entry.getKey()).get());
+                    final var inLineByFullRelease = biomeHolder.get().getGenerationSettings().features();
+                    boolean valid = inLineByFullRelease
+                            .stream()
+                            .flatMap(HolderSet::stream)
+                            .map(h -> h.unwrapKey().orElse(null))
+                            .filter(Objects::nonNull)
+                            .anyMatch(key -> key == featureKey);
 
                     if (featureConfig instanceof IVeinConfig vein) {
                         valid &= vein.config().biomes().map(biomeHolder::is).orElse(true);
@@ -81,9 +86,9 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
     public void prime(RegistryAccess registryAccess) {
         if (placements == null) {
             biomeLookup = registryAccess.lookupOrThrow(Registries.BIOME);
-            featureLookup = registryAccess.lookupOrThrow(Registries.PLACED_FEATURE);
             placements = Map.ofEntries(
-                    featureLookup.get(TFCGenViewer.VISUALIZABLE_FEATURES)
+                    registryAccess.lookupOrThrow(Registries.PLACED_FEATURE)
+                            .get(TFCGenViewer.VISUALIZABLE_FEATURES)
                             .stream()
                             .flatMap(HolderSet::stream)
                             .map(holder -> {
@@ -96,6 +101,7 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
                                 }
                                 return null;
                             })
+                            .filter(Objects::nonNull)
                             .toArray(Map.Entry[]::new)
             );
         }

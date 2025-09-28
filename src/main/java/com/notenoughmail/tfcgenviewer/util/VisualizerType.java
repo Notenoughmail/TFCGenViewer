@@ -93,16 +93,19 @@ public enum VisualizerType implements IExtensibleEnum {
             default -> {
                 final int alpha = 0xFF / i;
                 final MutableComponent tooltip = Component.empty().append(FeatureColors.MULTIPLE_FEATURES);
+
                 final Iterator<ColorDefinition> iter = colors.iterator();
+                final ColorDefinition first = iter.next();
+                image.setPixel(x, y, first.color(0xFF));
+                tooltip.append(first.tooltip());
+
                 while (iter.hasNext()) {
                     final ColorDefinition color = iter.next();
                     image.setPixel(x, y, color.color(alpha));
-                    tooltip.append(CommonComponents.SPACE);
+                    tooltip.append(", ");
                     tooltip.append(color.tooltip());
-                    if (iter.hasNext()) {
-                        tooltip.append(",");
-                    }
                 }
+
                 colorDescriptors.putIfAbsent(image.getABGRColor(x, y), tooltip);
             }
         }

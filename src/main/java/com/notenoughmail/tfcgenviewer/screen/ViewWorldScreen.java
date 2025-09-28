@@ -1,5 +1,7 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
+import com.mojang.serialization.Lifecycle;
+import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.ButtonOption;
@@ -8,6 +10,7 @@ import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
 import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
+import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
@@ -21,15 +24,22 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -49,7 +59,7 @@ public class ViewWorldScreen extends Screen {
     private PreviewPane viewPane;
     private InfoPane infoPane;
 
-    public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter) {
+    public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter, Map<ResourceKey<PlacedFeature>, PlacedFeature> serverFeatures) {
         super(TITLE);
         this.visualizers = visualizers;
         this.seed = seed;
@@ -61,9 +71,18 @@ public class ViewWorldScreen extends Screen {
         this.seedVisible = seedVisible;
         this.xCenter = xCenter;
         this.zCenter = zCenter;
+
         final ClientPacketListener connection = Minecraft.getInstance().getConnection();
-        assert connection != null; // If someone creates this screen without an active connection 1. What is wrong with you, use the preview screen; 2. No
-        registryAccess = connection.registryAccess();
+        assert connection != null; // If someone creates this screen without an active connection 1. What is wrong with you, 2. You're better off recreating this from scratch
+
+        final MappedRegistry<PlacedFeature> remoteRegistry = new MappedRegistry<>(Registries.PLACED_FEATURE, Lifecycle.stable());
+        serverFeatures.forEach((key, val) -> remoteRegistry.register(key, val, Lifecycle.stable()));
+        remoteRegistry.getOrCreateTag(TFCGenViewer.VISUALIZABLE_FEATURES).bind(Helpers.uncheck(remoteRegistry.holders()::toList));
+
+        final Map<ResourceKey<? extends Registry<?>>, Registry<?>> map = connection.registryAccess().registries().collect(Collectors.toMap(RegistryAccess.RegistryEntry::key, RegistryAccess.RegistryEntry::value));
+        map.put(remoteRegistry.key(), remoteRegistry);
+
+        registryAccess = new RegistryAccess.ImmutableRegistryAccess(map).freeze();
     }
 
     @Override
