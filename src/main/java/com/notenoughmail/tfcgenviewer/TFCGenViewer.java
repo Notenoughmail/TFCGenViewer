@@ -16,6 +16,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
+import java.util.Map;
+import java.util.stream.Stream;
+
 @Mod(TFCGenViewer.ID)
 public class TFCGenViewer {
 
@@ -46,5 +49,10 @@ public class TFCGenViewer {
     @SuppressWarnings("unchecked")
     public static <T> T cast(Object o) {
         return (T) o;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K, V> Map<K, V> ofEntryStream(Stream<Map.Entry<K, V>> stream) {
+        return Map.ofEntries(stream.toArray(Map.Entry[]::new));
     }
 }

@@ -12,7 +12,6 @@ import net.dries007.tfc.world.region.RiverEdge;
 import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;

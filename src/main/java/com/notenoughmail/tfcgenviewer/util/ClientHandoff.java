@@ -22,7 +22,9 @@ public class ClientHandoff {
                     Permissions.canSeeSeed(perms),
                     Units.blockToGrid(player.getBlockX()),
                     Units.blockToGrid(player.getBlockZ()),
-                    info.visualizableFeatures()
+                    info.visualizableFeatures(),
+                    info.biomeInfo(),
+                    info.biomeTags()
             ));
         }
     }

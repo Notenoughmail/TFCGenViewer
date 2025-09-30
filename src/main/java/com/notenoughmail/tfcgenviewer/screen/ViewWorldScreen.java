@@ -31,7 +31,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
@@ -59,7 +61,7 @@ public class ViewWorldScreen extends Screen {
     private PreviewPane viewPane;
     private InfoPane infoPane;
 
-    public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter, Map<ResourceKey<PlacedFeature>, PlacedFeature> serverFeatures) {
+    public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter, Map<ResourceKey<PlacedFeature>, PlacedFeature> serverFeatures, Map<ResourceKey<Biome>, Biome> biomeInformation, Map<TagKey<Biome>, List<ResourceKey<Biome>>> biomeTags) {
         super(TITLE);
         this.visualizers = visualizers;
         this.seed = seed;
@@ -75,12 +77,27 @@ public class ViewWorldScreen extends Screen {
         final ClientPacketListener connection = Minecraft.getInstance().getConnection();
         assert connection != null; // If someone creates this screen without an active connection 1. What is wrong with you, 2. You're better off recreating this from scratch
 
-        final MappedRegistry<PlacedFeature> remoteRegistry = new MappedRegistry<>(Registries.PLACED_FEATURE, Lifecycle.stable());
-        serverFeatures.forEach((key, val) -> remoteRegistry.register(key, val, Lifecycle.stable()));
-        remoteRegistry.getOrCreateTag(TFCGenViewer.VISUALIZABLE_FEATURES).bind(Helpers.uncheck(remoteRegistry.holders()::toList));
+        final MappedRegistry<PlacedFeature> featureRegistry = new MappedRegistry<>(Registries.PLACED_FEATURE, Lifecycle.stable());
+        serverFeatures.forEach((key, val) -> featureRegistry.register(key, val, Lifecycle.stable()));
+        featureRegistry.getOrCreateTag(TFCGenViewer.VISUALIZABLE_FEATURES).bind(Helpers.uncheck(featureRegistry.holders()::toList));
+
+        final MappedRegistry<Biome> biomeRegistry = new MappedRegistry<>(Registries.BIOME, Lifecycle.stable());
+        biomeInformation.forEach((key, val) -> biomeRegistry.register(key, val, Lifecycle.stable()));
+        biomeRegistry.bindTags(
+                TFCGenViewer.ofEntryStream(TFCGenViewer.cast(
+                        biomeTags.entrySet().stream()
+                                .map(e -> Map.entry(
+                                        e.getKey(),
+                                        e.getValue().stream()
+                                                .map(key -> biomeRegistry.getHolder(key).orElseThrow())
+                                                .toList()
+                                ))
+                ))
+        );
 
         final Map<ResourceKey<? extends Registry<?>>, Registry<?>> map = connection.registryAccess().registries().collect(Collectors.toMap(RegistryAccess.RegistryEntry::key, RegistryAccess.RegistryEntry::value));
-        map.put(remoteRegistry.key(), remoteRegistry);
+        map.put(featureRegistry.key(), featureRegistry);
+        map.put(biomeRegistry.key(), biomeRegistry);
 
         registryAccess = new RegistryAccess.ImmutableRegistryAccess(map).freeze();
     }

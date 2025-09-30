@@ -45,7 +45,6 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
         super("features");
     }
 
-    // TODO: 1.5.1 | This does not work with servers due to biome generation settings not being synced
     public List<ColorDefinition> search(int biome, float temperature, float rainfall) {
         return placements.entrySet().stream()
                 .filter(entry -> {
@@ -55,8 +54,7 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
 
                     final BiomeExtension biomeExt = TFCLayers.getFromLayerId(biome);
                     final Holder<Biome> biomeHolder = biomeLookup.getOrThrow(biomeExt.key());
-                    final var inLineByFullRelease = biomeHolder.get().getGenerationSettings().features();
-                    boolean valid = inLineByFullRelease
+                    boolean valid = biomeHolder.get().getGenerationSettings().features()
                             .stream()
                             .flatMap(HolderSet::stream)
                             .map(h -> h.unwrapKey().orElse(null))
@@ -82,11 +80,10 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
                 .toList();
     }
 
-    @SuppressWarnings("unchecked")
     public void prime(RegistryAccess registryAccess) {
         if (placements == null) {
             biomeLookup = registryAccess.lookupOrThrow(Registries.BIOME);
-            placements = Map.ofEntries(
+            placements = TFCGenViewer.ofEntryStream(TFCGenViewer.cast(
                     registryAccess.lookupOrThrow(Registries.PLACED_FEATURE)
                             .get(TFCGenViewer.VISUALIZABLE_FEATURES)
                             .stream()
@@ -102,8 +99,7 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
                                 return null;
                             })
                             .filter(Objects::nonNull)
-                            .toArray(Map.Entry[]::new)
-            );
+            ));
         }
     }
 
