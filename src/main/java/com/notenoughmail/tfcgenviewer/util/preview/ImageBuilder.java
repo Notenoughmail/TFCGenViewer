@@ -56,7 +56,7 @@ public class ImageBuilder {
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
 
-    // TODO: [Future] Sometimes, very rarely, the first created image will fail (?) or at least somehow break and cause a GL error to be printed to the console and show up completely empty | Find out how & why that ever happened the fix it
+    // TODO: [Now~Never] Sometimes, very rarely, the first created image will fail (?) or at least somehow break and cause a GL error to be printed to the console and show up completely empty | Find out how & why that ever happened and fix it
     // OpenGL debug message: id=1281, source=API, type=ERROR, severity=HIGH, message='GL_INVALID_VALUE error generated. Invalid texture format.'
     // OpenGL debug message: id=1000, source=API, type=ERROR, severity=HIGH, message='glTexSubImage2D has generated an error (GL_INVALID_OPERATION)'
     public static void build(

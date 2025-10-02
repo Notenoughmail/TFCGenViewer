@@ -29,6 +29,11 @@ public class Permissions {
     public static final byte full = (byte) 0b11111111;
     public static final byte none = (byte) 0;
 
+    public static final int CLIMATE_CHARACTERISTICS  = 0b10000000;
+    public static final int ROCK_CHARACTERISTICS     = 0b01000000;
+    public static final int BIOME_CHARACTERISTICS    = 0b00100000;
+    public static final int ALTITUDE_CHARACTERISTICS = 0b00010000;
+
     public static byte get(ServerPlayer player) {
         return ServerConfig.viewPermission.get().getPermission(player);
     }

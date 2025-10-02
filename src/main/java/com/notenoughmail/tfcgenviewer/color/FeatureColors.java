@@ -45,6 +45,7 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
         super("features");
     }
 
+    // TODO: 1.5.1 | Is there any way some of this information can be cached in #prime
     public List<ColorDefinition> search(int biome, float temperature, float rainfall) {
         return placements.entrySet().stream()
                 .filter(entry -> {

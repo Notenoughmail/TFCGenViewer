@@ -1,6 +1,7 @@
 package com.notenoughmail.tfcgenviewer.network.packets;
 
 import com.mojang.serialization.Codec;
+import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.ClientHandoff;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.core.Holder;
