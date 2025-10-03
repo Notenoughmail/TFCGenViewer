@@ -173,6 +173,8 @@ public class Image implements MutableImage {
         }
     }
 
+    // This has a problem where while the image may be allocated when *requesting* the upload,
+    // the image can be unallocated afterward, before the image is uploaded on the render thread
     public void upload(DynamicTexture tex) {
         synchronized (image) {
             if (isAllocated()) {

@@ -106,6 +106,7 @@ public enum ViewerRequestPacket {
                                         .stream()
                                         .flatMap(HolderSet.Named::stream)
                                         .map(h -> h.unwrapKey().orElseThrow())
+                                        .distinct()
                                         .toList()
                         ))
         );

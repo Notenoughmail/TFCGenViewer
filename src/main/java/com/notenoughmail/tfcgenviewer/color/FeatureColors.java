@@ -1,9 +1,7 @@
 package com.notenoughmail.tfcgenviewer.color;
 
 import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.feature.vein.IVeinConfig;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.placement.ClimatePlacement;
@@ -20,7 +18,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,69 +35,70 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
 
     private final Map<ResourceKey<PlacedFeature>, ColorDefinition> definitions = new IdentityHashMap<>();
 
-    private Map<ResourceKey<PlacedFeature>, Pair<FeatureConfiguration, ClimatePlacement>> placements;
     private HolderLookup<Biome> biomeLookup;
+    private Map<ResourceKey<Biome>, Set<ClimateSpace>> climateCache;
 
     protected FeatureColors() {
         super("features");
     }
 
-    // TODO: 1.5.1 | Is there any way some of this information can be cached in #prime
     public List<ColorDefinition> search(int biome, float temperature, float rainfall) {
-        return placements.entrySet().stream()
-                .filter(entry -> {
-                    final ClimatePlacement placement = entry.getValue().getSecond();
-                    final FeatureConfiguration featureConfig = entry.getValue().getFirst();
-                    final ResourceKey<PlacedFeature> featureKey = entry.getKey();
-
-                    final BiomeExtension biomeExt = TFCLayers.getFromLayerId(biome);
-                    final Holder<Biome> biomeHolder = biomeLookup.getOrThrow(biomeExt.key());
-                    boolean valid = biomeHolder.get().getGenerationSettings().features()
-                            .stream()
-                            .flatMap(HolderSet::stream)
-                            .map(h -> h.unwrapKey().orElse(null))
-                            .filter(Objects::nonNull)
-                            .anyMatch(key -> key == featureKey);
-
-                    if (featureConfig instanceof IVeinConfig vein) {
-                        valid &= vein.config().biomes().map(biomeHolder::is).orElse(true);
+        final ResourceKey<Biome> biomeKey = TFCLayers.getFromLayerId(biome).key();
+        return climateCache.getOrDefault(biomeKey, Set.of())
+                .stream()
+                .filter(climateSpace -> climateSpace.check(temperature, rainfall))
+                .map(climateSpace -> {
+                    final Holder<PlacedFeature> featureHolder = climateSpace.feature();
+                    if (featureHolder.get().feature().get().config() instanceof IVeinConfig vein) {
+                        final Holder<Biome> biomeHolder = biomeLookup.getOrThrow(biomeKey);
+                        if (!vein.config().biomes().map(biomeHolder::is).orElse(true)) {
+                            return null;
+                        }
                     }
-
-                    final boolean
-                            minTemp = temperature > placement.getMinTemp(),
-                            maxTemp = temperature < placement.getMaxTemp(),
-                            minRain = rainfall > placement.getMinRainfall(),
-                            maxRain = rainfall < placement.getMaxRainfall();
-                    return valid && minRain && minTemp && maxRain && maxTemp;
+                    return definitions.get(featureHolder.unwrapKey().orElseThrow());
                 })
-                .map(Map.Entry::getKey)
-                .map(definitions::get)
                 .filter(Objects::nonNull)
-                .distinct()
-                .sorted()
                 .toList();
     }
 
     public void prime(RegistryAccess registryAccess) {
-        if (placements == null) {
+        if (climateCache == null) {
+            climateCache = new IdentityHashMap<>();
             biomeLookup = registryAccess.lookupOrThrow(Registries.BIOME);
-            placements = TFCGenViewer.ofEntryStream(TFCGenViewer.cast(
-                    registryAccess.lookupOrThrow(Registries.PLACED_FEATURE)
-                            .get(TFCGenViewer.VISUALIZABLE_FEATURES)
-                            .stream()
-                            .flatMap(HolderSet::stream)
-                            .map(holder -> {
-                                final ClimatePlacement placement = findFirst(holder);
-                                if (placement != null) {
-                                    return Map.entry(
-                                            ((Holder.Reference<PlacedFeature>) holder).key(),
-                                            Pair.of(holder.get().feature().get().config(), placement)
-                                    );
-                                }
-                                return null;
-                            })
-                            .filter(Objects::nonNull)
-            ));
+
+            final Map<ResourceKey<PlacedFeature>, ClimateSpace> featureClimates = new IdentityHashMap<>();
+
+            registryAccess.lookupOrThrow(Registries.PLACED_FEATURE)
+                    .get(TFCGenViewer.VISUALIZABLE_FEATURES)
+                    .stream()
+                    .flatMap(HolderSet::stream)
+                    .forEach(holder -> {
+                        final ClimatePlacement placement = findFirst(holder);
+                        if (placement != null) {
+                            featureClimates.computeIfAbsent(holder.unwrapKey().orElseThrow(), key -> new ClimateSpace(
+                                    placement.getMinTemp(),
+                                    placement.getMaxTemp(),
+                                    placement.getMinRainfall(),
+                                    placement.getMaxRainfall(),
+                                    holder
+                            ));
+                        }
+                    });
+
+            biomeLookup.listElements()
+                    .forEach(holder -> {
+                        final ResourceKey<Biome> key = holder.key();
+                        final Biome biome = holder.get();
+                        biome.getGenerationSettings()
+                                .features()
+                                .stream()
+                                .flatMap(HolderSet::stream)
+                                .map(h -> h.unwrapKey().orElseThrow())
+                                .map(featureClimates::get)
+                                .filter(Objects::nonNull)
+                                .forEach(space -> climateCache.computeIfAbsent(key, k -> new HashSet<>())
+                                        .add(space));
+                    });
         }
     }
 
@@ -132,9 +130,11 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
 
     @Override
     public Component apply(RegistryAccess registryAccess) {
-        placements = null;
+        climateCache = null;
         biomeLookup = null;
+
         final MutableComponent key = Component.empty();
+
         registryAccess.lookupOrThrow(Registries.PLACED_FEATURE)
                 .get(TFCGenViewer.VISUALIZABLE_FEATURES)
                 .stream()
@@ -150,6 +150,7 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
                 .distinct()
                 .sorted()
                 .forEach(c -> c.appendTo(key));
+
         Colors.RT_LAND.get().appendTo(key);
         Colors.FILL_OCEAN.get().appendTo(key, true);
         return key;
@@ -158,9 +159,20 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
     @Nullable
     private static ClimatePlacement findFirst(Holder<PlacedFeature> holder) {
         return holder.get().placement().stream()
-                .filter(mod -> mod instanceof ClimatePlacement)
+                .filter(ClimatePlacement.class::isInstance)
                 .map(ClimatePlacement.class::cast)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private record ClimateSpace(float minTemp, float maxTemp, float minRain, float maxRain, Holder<PlacedFeature> feature) {
+
+        boolean check(float temperature, float rainfall) {
+            return  temperature < maxTemp &&
+                    temperature > minTemp &&
+                    rainfall < maxRain &&
+                    rainfall > minRain;
+        }
+
     }
 }
