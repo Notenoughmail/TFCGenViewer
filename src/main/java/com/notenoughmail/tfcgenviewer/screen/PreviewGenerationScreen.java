@@ -106,7 +106,7 @@ public class PreviewGenerationScreen extends Screen {
     @Nullable
     private RockLayerSettings rocks;
 
-    // TODO: [Future] Rework to support registering other subclasses of CGEs
+    // TODO: 1.21.1 | Rework to support registering other subclasses of CGEs
     public PreviewGenerationScreen(CreateWorldScreen parent) {
         super(TITLE);
         this.parent = parent;

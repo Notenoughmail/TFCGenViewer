@@ -206,7 +206,7 @@ public class RockSettingsEditor extends SelectionList<RockSettingsEditor.Entry> 
             return i;
         };
 
-        // TODO: 1.5.0 / Future | This takes 0.2-0.4 seconds to create, which creates a noticeable delay when opening the rock editor screen the first time
+        // TODO: [Now~Future] | This takes 0.2-0.4 seconds to make, which creates a noticeable delay when opening the rock editor screen the first time
         private static final FullTextSearchTree<Block> ALL_BLOCK_SEARCH = Util.make(() -> {
             final var t = new FullTextSearchTree<>(
                     b -> Stream.of(b.getName().getString()),

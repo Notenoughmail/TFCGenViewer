@@ -87,7 +87,6 @@ public record ViewerResponsePacket(
             ).forGetter(PlacedFeature::placement)
     ).apply(instance, PlacedFeature::new));
 
-    // TODO: 1.21.1 | A Map<ResourceKey<? extends Registry<R>>, Map<TagKey<R>, Collection<Pair<ResourceKey<R>, R>>>> may be effective
     public static ViewerResponsePacket decode(FriendlyByteBuf data) {
         final byte permissions = data.readByte();
         final long seed = data.readLong();
