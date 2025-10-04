@@ -1,3 +1,14 @@
+# 1.5.1 (W.I.P.)
+
+- Add *Climate Restricted Features* visualizer
+  - By default shows Kaolin Clay and Coral spawn locations
+  - Will display anything in the `tfcgenvewier:visualizable_features` placed feature tag
+    - Can handle multiple, overlapping features gracefully
+    - Uses the climate range set in the `tfc:climate` modifier of the feature
+    - If the configured feature is a TFC ore-type, its biome tag will be respected
+    - All entries also require a matching color definition in the `/tfcgenviewer/features/` folder
+- Improve *Rivers and Mountains* and *Rocks* visualizer speeds, most noticeable with large visualization scales
+
 # 1.5.0
 
 - Add rock editor sub-screen

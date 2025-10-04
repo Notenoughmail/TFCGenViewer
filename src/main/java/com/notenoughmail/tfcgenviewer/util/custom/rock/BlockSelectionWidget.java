@@ -1,7 +1,6 @@
 package com.notenoughmail.tfcgenviewer.util.custom.rock;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
 import net.minecraft.ChatFormatting;

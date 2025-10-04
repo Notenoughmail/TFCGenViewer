@@ -2,6 +2,7 @@ package com.notenoughmail.tfcgenviewer;
 
 import com.notenoughmail.tfcgenviewer.color.BiomeColors;
 import com.notenoughmail.tfcgenviewer.color.Colors;
+import com.notenoughmail.tfcgenviewer.color.FeatureColors;
 import com.notenoughmail.tfcgenviewer.color.RockColors;
 import com.notenoughmail.tfcgenviewer.config.KeyMappings;
 import com.notenoughmail.tfcgenviewer.network.TFCGVChannel;
@@ -85,6 +86,7 @@ public class EventHandler {
     private static void registerClientResourceReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(BiomeColors.Biomes);
         event.registerReloadListener(RockColors.Rocks);
+        event.registerReloadListener(FeatureColors.Features);
         event.registerReloadListener(Colors.Color);
         event.registerReloadListener(Colors.Gradient);
     }

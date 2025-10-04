@@ -16,6 +16,7 @@
   "tfcgenviewer.preview_world.visualizer_type.biomes": "Biomes",
   "tfcgenviewer.preview_world.visualizer_type.rainfall": "Rainfall",
   "tfcgenviewer.preview_world.visualizer_type.temperature": "Temperature",
+  "tfcgenviewer.preview_world.visualizer_type.climate_features": "Climate Restricted Generation",
   "tfcgenviewer.preview_world.visualizer_type.biome_altitude": "Biome Altitude",
   "tfcgenviewer.preview_world.visualizer_type.inland_height": "Inland Height",
   "tfcgenviewer.preview_world.visualizer_type.rivers_and_mountains": "Rivers and Mountains",
@@ -174,6 +175,11 @@
 
   "tfcgenviewer.spawn.border": "Spawn Border",
   "tfcgenviewer.spawn.reticule":  "Spawn Center",
+
+  "tfcgenviewer.feature.kaolin": "Kaolin Clay Disc",
+  "tfcgenviewer.feature.coral_reef": "Coral Reef",
+
+  "tfcgenviewer.climate_features.multiple_features_present": "Multiple Features:",
 
   "tfcgenviewer.key.open_viewer": "Open World Viewer",
 

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-// TODO: 1.5.0 | Currently, the suggestion index can be outside of
 public class SuggestableEditBox extends EditBox {
 
     private int selectedIndex = -1;

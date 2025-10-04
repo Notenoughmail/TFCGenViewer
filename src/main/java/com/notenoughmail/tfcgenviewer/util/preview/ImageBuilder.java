@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.config.Config;
+import com.notenoughmail.tfcgenviewer.mixin.RiverEdgeAccessor;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
@@ -11,9 +12,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
+import net.dries007.tfc.world.region.RiverEdge;
+import net.dries007.tfc.world.region.Units;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -55,7 +59,7 @@ public class ImageBuilder {
     private static String imageName;
     private static CompletableFuture<Void> builderProcess;
 
-    // TODO: [Future] Sometimes, very rarely, the first created image will fail (?) or at least somehow break and cause a GL error to be printed to the console and show up completely empty | Find out how & why that ever happened the fix it
+    // TODO: [Now~Never] Sometimes, very rarely, the first created image will fail (?) or at least somehow break and cause a GL error to be printed to the console and show up completely empty | Find out how & why that ever happened and fix it
     // OpenGL debug message: id=1281, source=API, type=ERROR, severity=HIGH, message='GL_INVALID_VALUE error generated. Invalid texture format.'
     // OpenGL debug message: id=1000, source=API, type=ERROR, severity=HIGH, message='glTexSubImage2D has generated an error (GL_INVALID_OPERATION)'
     public static void build(
@@ -71,7 +75,8 @@ public class ImageBuilder {
             Consumer<PreviewInfo> infoReturn,
             Consumer<Integer> progressReturn,
             boolean showCoords,
-            long seed // For error reports
+            long seed, // For error reports
+            RegistryAccess registryAccess
     ) {
         if (BUILDER_STATE.get() == BuilderState.FINALIZE) {
             TFCGenViewer.LOGGER.warn("Apply was called while a previous builder was finalizing. In very special cases this can cause a crash, thus the previous builder will continue and the request for a new builder will be discarded");
@@ -137,7 +142,8 @@ public class ImageBuilder {
                                     cache[cachePos],
                                     cache[cachePos] != null ? cache[cachePos].requireAt(xPos, zPos) : ColorUtil.FAILURE_STATE,
                                     image,
-                                    colorDescriptors
+                                    colorDescriptors,
+                                    registryAccess
                             );
                         } catch (Throwable error) {
                             // This specific error is known and harmless (in this case) and can be ignored
@@ -189,16 +195,36 @@ public class ImageBuilder {
                 image.vLine(zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, scale.lineWidth, color);
             }
 
-            if (!FMLEnvironment.production && visualizer.name().equals("BORDER")) {
-                for (Region region : visitedRegions) {
-                    final int color = color(255, region.hashCode());
-                    colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
+            if (!FMLEnvironment.production) {
+                switch (visualizer.name()) {
+                    case "BORDER" -> {
+                        for (Region region : visitedRegions) {
+                            final int color = color(255, region.hashCode());
+                            colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
 
-                    image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
-                    image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                            image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                            image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
 
-                    image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
-                    image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
+                            image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
+                            image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
+                        }
+                    }
+                    case "RIVER_EDGES" -> {
+                        for (Region region : visitedRegions) {
+                            for (RiverEdge edge : region.rivers()) {
+                                final int borderColor = color(50, edge.hashCode());
+                                final RiverEdgeAccessor accessor = (RiverEdgeAccessor) (Object) edge;
+                                final int minX = Units.partToGrid(accessor.getMinPartX()) - xDrawOffsetGrids,
+                                        maxX = Units.partToGrid(accessor.getMaxPartX()) - xDrawOffsetGrids,
+                                        minZ = Units.partToGrid(accessor.getMinPartZ()) - zDrawOffsetGrids,
+                                        maxZ = Units.partToGrid(accessor.getMaxPartZ()) - zDrawOffsetGrids;
+                                image.hLine(minX, maxX, minZ, 0, borderColor);
+                                image.hLine(minX, maxX, maxZ, 0, borderColor);
+                                image.vLine(minZ, maxZ, minX, 0, borderColor);
+                                image.vLine(minZ, maxZ, maxX, 0, borderColor);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -217,7 +243,7 @@ public class ImageBuilder {
                                         xCenterGrids * 128,
                                         zCenterGrids * 128,
                                         visualizer.getName(),
-                                        visualizer.getColorKey()
+                                        visualizer.getColorKey(registryAccess)
                                 ) :
                                 Component.translatable(
                                     "tfcgenviewer.preview_world.preview_info.no_coords",
@@ -226,7 +252,7 @@ public class ImageBuilder {
                                     previewKm,
                                     previewKm,
                                     visualizer.getName(),
-                                    visualizer.getColorKey()
+                                    visualizer.getColorKey(registryAccess)
                                 ),
                         scale.textureId,
                         previewSizeGrids,
@@ -242,7 +268,7 @@ public class ImageBuilder {
         }, GENERATOR_THREAD_POOL).exceptionally(thr -> {
             TFCGenViewer.LOGGER.error("Error encountered during generation!", thr);
             return ProcessReturn.ERROR;
-        }).thenAccept(pr -> {
+        }).thenApplyAsync(pr -> {
             BUILDER_STATE.set(BuilderState.FINALIZE);
             transientImage = null;
             if (pr != null) {
@@ -250,27 +276,22 @@ public class ImageBuilder {
                 imageName = pr.imageName();
                 scale.upload(currentImage);
                 infoReturn.accept(pr.previewInfo());
-                if (pr.ding() && Config.dingWhenGenerated.get()) {
-                    Minecraft
-                            .getInstance()
-                            .getSoundManager()
-                            .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
-                }
             } else {
                 currentImage = null;
                 infoReturn.accept(PreviewInfo.ERROR);
                 PreviewScale.clearPreviews(currentImage);
-                if (Config.dingWhenGenerated.get()) {
-                    Minecraft
-                            .getInstance()
-                            .getSoundManager()
-                            .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
-                }
             }
             builderProcess = null;
             progressReturn.accept(-1);
             BUILDER_STATE.set(BuilderState.OFF);
-        });
+            return pr == null || pr.ding();
+        }).thenAcceptAsync(ding -> {
+            if (ding && Config.dingWhenGenerated.get()) {
+                Minecraft.getInstance()
+                        .getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1.0F));
+            }
+        }, Minecraft.getInstance());
     }
 
     private static void addRegionToCache(Region[] cache, Region region, int xOffset, int zOffset, int size) {

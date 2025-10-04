@@ -1,5 +1,7 @@
 package com.notenoughmail.tfcgenviewer.screen;
 
+import com.mojang.serialization.Lifecycle;
+import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.ButtonOption;
@@ -8,10 +10,12 @@ import com.notenoughmail.tfcgenviewer.util.custom.PreviewPane;
 import com.notenoughmail.tfcgenviewer.util.custom.SingleColumnOptionsList;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
+import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,14 +23,25 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -39,13 +54,14 @@ public class ViewWorldScreen extends Screen {
     private final RegionChunkDataGenerator generator;
     private final boolean allowExport, coordinatesVisible, seedVisible;
     private final int xCenter, zCenter;
+    private final RegistryAccess registryAccess;
 
     private OptionInstance<PreviewScale> scale;
     private OptionInstance<VisualizerType> visualizerType;
     private PreviewPane viewPane;
     private InfoPane infoPane;
 
-    public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter) {
+    public ViewWorldScreen(List<VisualizerType> visualizers, long seed, Settings settings, boolean allowExport, boolean coordinatesVisible, boolean seedVisible, int xCenter, int zCenter, Map<ResourceKey<PlacedFeature>, PlacedFeature> serverFeatures, Map<ResourceKey<Biome>, Biome> biomeInformation, Map<TagKey<Biome>, List<ResourceKey<Biome>>> biomeTags) {
         super(TITLE);
         this.visualizers = visualizers;
         this.seed = seed;
@@ -57,6 +73,33 @@ public class ViewWorldScreen extends Screen {
         this.seedVisible = seedVisible;
         this.xCenter = xCenter;
         this.zCenter = zCenter;
+
+        final ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        assert connection != null; // If someone creates this screen without an active connection 1. What is wrong with you, 2. You're better off recreating this from scratch
+
+        final MappedRegistry<PlacedFeature> featureRegistry = new MappedRegistry<>(Registries.PLACED_FEATURE, Lifecycle.stable());
+        serverFeatures.forEach((key, val) -> featureRegistry.register(key, val, Lifecycle.stable()));
+        featureRegistry.getOrCreateTag(TFCGenViewer.VISUALIZABLE_FEATURES).bind(Helpers.uncheck(featureRegistry.holders()::toList));
+
+        final MappedRegistry<Biome> biomeRegistry = new MappedRegistry<>(Registries.BIOME, Lifecycle.stable());
+        biomeInformation.forEach((key, val) -> biomeRegistry.register(key, val, Lifecycle.stable()));
+        biomeRegistry.bindTags(
+                TFCGenViewer.ofEntryStream(TFCGenViewer.cast(
+                        biomeTags.entrySet().stream()
+                                .map(e -> Map.entry(
+                                        e.getKey(),
+                                        e.getValue().stream()
+                                                .map(key -> biomeRegistry.getHolder(key).orElseThrow())
+                                                .toList()
+                                ))
+                ))
+        );
+
+        final Map<ResourceKey<? extends Registry<?>>, Registry<?>> map = connection.registryAccess().registries().collect(Collectors.toMap(RegistryAccess.RegistryEntry::key, RegistryAccess.RegistryEntry::value));
+        map.put(featureRegistry.key(), featureRegistry);
+        map.put(biomeRegistry.key(), biomeRegistry);
+
+        registryAccess = new RegistryAccess.ImmutableRegistryAccess(map).freeze();
     }
 
     @Override
@@ -133,7 +176,8 @@ public class ViewWorldScreen extends Screen {
                 },
                 Config.generationProgress.get() ? viewPane::setProgress : i -> {},
                 coordinatesVisible,
-                seed
+                seed,
+                registryAccess
         );
     }
 
