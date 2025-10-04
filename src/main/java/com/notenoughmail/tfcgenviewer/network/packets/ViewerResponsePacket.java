@@ -1,15 +1,21 @@
 package com.notenoughmail.tfcgenviewer.network.packets;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
+import com.notenoughmail.tfcgenviewer.color.FeatureColors;
 import com.notenoughmail.tfcgenviewer.util.ClientHandoff;
+import net.dries007.tfc.world.feature.vein.IVeinConfig;
+import net.dries007.tfc.world.placement.ClimatePlacement;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -17,7 +23,9 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +46,7 @@ public record ViewerResponsePacket(
     private static final Codec<List<HolderSet<PlacedFeature>>> BIOME_FEATURES_CODEC = holderSetCodec(Registries.PLACED_FEATURE).listOf();
     private static final Codec<BiomeGenerationSettings> BIOME_GENERATION_SETTINGS_NETWORK_CODEC = BIOME_FEATURES_CODEC.xmap(
             list -> new BiomeGenerationSettings(Map.of(), list),
-            BiomeGenerationSettings::features
+            BiomeGenerationSettings::features // TODO: 1.5.1 | Filter this to only have features in the tag, if at all possible
     );
 
     private static final Biome.ClimateSettings EMPTY_CLIMATE_SETTINGS = new Biome.ClimateSettings(false, 0F, Biome.TemperatureModifier.NONE, 0F);
@@ -60,7 +68,22 @@ public record ViewerResponsePacket(
     private static final Codec<Biome> BIOME_NETWORK_CODEC = BIOME_GENERATION_SETTINGS_NETWORK_CODEC.xmap(
             settings -> new Biome(EMPTY_CLIMATE_SETTINGS, EMPTY_SPECIAL_EFFECTS, settings, MobSpawnSettings.EMPTY),
             Biome::getGenerationSettings
-    );
+    ).fieldOf("b").codec(); // This allows for the biome to be serialized as NBT which is smaller than json when piped
+
+    // Only serialize vein configs & the climate placement
+    private static final Codec<PlacedFeature> FEATURE_NETWORK_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            RegistryFileCodec.create(
+                    Registries.CONFIGURED_FEATURE,
+                    BuiltInRegistries.FEATURE.byNameCodec().dispatch(
+                            cf -> cf.config() instanceof IVeinConfig ? cf.feature() : Feature.NO_OP,
+                            Feature::configuredCodec
+                    )
+            ).fieldOf("f").forGetter(PlacedFeature::feature),
+            ClimatePlacement.PLACEMENT_CODEC.optionalFieldOf("c").xmap(
+                    o -> (List<PlacementModifier>) (List<?>) o.stream().toList(),
+                    FeatureColors::findFirst
+            ).forGetter(PlacedFeature::placement)
+    ).apply(instance, PlacedFeature::new));
 
     // TODO: 1.21.1 | A Map<ResourceKey<? extends Registry<R>>, Map<TagKey<R>, Collection<Pair<ResourceKey<R>, R>>>> may be effective
     public static ViewerResponsePacket decode(FriendlyByteBuf data) {
@@ -69,11 +92,11 @@ public record ViewerResponsePacket(
         final Settings settings = data.readWithCodec(NbtOps.INSTANCE, Settings.CODEC.codec());
         final Map<ResourceKey<PlacedFeature>, PlacedFeature> features = data.readMap(
                 buf -> buf.readResourceKey(Registries.PLACED_FEATURE),
-                buf -> buf.readWithCodec(NbtOps.INSTANCE, PlacedFeature.DIRECT_CODEC)
+                buf -> buf.readWithCodec(NbtOps.INSTANCE, FEATURE_NETWORK_CODEC)
         );
         final Map<ResourceKey<Biome>, Biome> biomes = data.readMap(
                 buf -> buf.readResourceKey(Registries.BIOME),
-                buf -> buf.readJsonWithCodec(BIOME_NETWORK_CODEC)
+                buf -> buf.readWithCodec(NbtOps.INSTANCE, BIOME_NETWORK_CODEC)
         );
         final Map<TagKey<Biome>, List<ResourceKey<Biome>>> biomeTags = data.readMap(
                 buf -> TagKey.create(Registries.BIOME, buf.readResourceLocation()),
@@ -89,12 +112,12 @@ public record ViewerResponsePacket(
         data.writeMap(
                 visualizableFeatures,
                 FriendlyByteBuf::writeResourceKey,
-                (buf, feature) -> buf.writeWithCodec(NbtOps.INSTANCE, PlacedFeature.DIRECT_CODEC, feature)
+                (buf, feature) -> buf.writeWithCodec(NbtOps.INSTANCE, FEATURE_NETWORK_CODEC, feature)
         );
         data.writeMap(
                 biomeInfo,
                 FriendlyByteBuf::writeResourceKey,
-                (buf, biome) -> buf.writeJsonWithCodec(BIOME_NETWORK_CODEC, biome) // Use json as #writeWithCodec is only usable with CompoundTags
+                (buf, biome) -> buf.writeWithCodec(NbtOps.INSTANCE, BIOME_NETWORK_CODEC, biome) // Use json as #writeWithCodec is only usable with CompoundTags
         );
         data.writeMap(
                 biomeTags,

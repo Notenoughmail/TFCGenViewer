@@ -19,6 +19,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Reader;
@@ -158,11 +159,15 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
 
     @Nullable
     private static ClimatePlacement findFirst(Holder<PlacedFeature> holder) {
-        return holder.get().placement().stream()
+        return findFirst(holder.get().placement())
+                .orElse(null);
+    }
+
+    public static Optional<ClimatePlacement> findFirst(List<PlacementModifier> modifiers) {
+        return modifiers.stream()
                 .filter(ClimatePlacement.class::isInstance)
                 .map(ClimatePlacement.class::cast)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     private record ClimateSpace(float minTemp, float maxTemp, float minRain, float maxRain, Holder<PlacedFeature> feature) {

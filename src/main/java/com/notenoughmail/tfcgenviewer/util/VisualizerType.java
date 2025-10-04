@@ -2,7 +2,6 @@ package com.notenoughmail.tfcgenviewer.util;
 
 import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.color.ColorDefinition;
-import com.notenoughmail.tfcgenviewer.color.ColorGradientDefinition;
 import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.color.FeatureColors;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -93,13 +92,12 @@ public enum VisualizerType implements IExtensibleEnum {
             }
             default -> {
                 final int alpha = 0xFF / i;
-                final MutableComponent tooltip = Component.empty().append(FeatureColors.MULTIPLE_FEATURES);
+                final MutableComponent tooltip = Component.empty().append(FeatureColors.MULTIPLE_FEATURES).append(CommonComponents.SPACE);
 
                 final Iterator<ColorDefinition> iter = colors.iterator();
                 final ColorDefinition first = iter.next();
                 image.setPixel(x, y, first.color(0xFF));
                 tooltip.append(first.tooltip());
-                tooltip.append(CommonComponents.SPACE);
 
                 while (iter.hasNext()) {
                     final ColorDefinition color = iter.next();
@@ -131,11 +129,14 @@ public enum VisualizerType implements IExtensibleEnum {
                 color = biomeAltitude(point.discreteBiomeAltitude(), colorDescriptors);
             }
             image.setPixel(x, y, color);
-            for (RiverEdge edge : generator.regionGenerator().getOrCreatePartitionPoint(xPos, zPos).rivers()) {
-                final MidpointFractal fractal = edge.fractal();
-                if (fractal.maybeIntersect(xPos, zPos, 0.1F) && fractal.intersect(xPos, zPos, 0.35F)) {
-                    image.setPixel(x, y, RM_RIVER.get().color(colorDescriptors));
-                    return; // Stop looking for rivers, we already found one
+
+            for (RiverEdge edge : region.rivers()) {
+                if (riverEdgeEncapsulates(edge, xPos, zPos)) {
+                    final MidpointFractal fractal = edge.fractal();
+                    if (fractal.maybeIntersect(xPos, zPos, 0.1F) && fractal.intersect(xPos, zPos, 0.35F)) {
+                        image.setPixel(x, y, RM_RIVER.get().color(colorDescriptors));
+                        return; // Stop looking for rivers, we already found one
+                    }
                 }
             }
         } else {
@@ -144,8 +145,7 @@ public enum VisualizerType implements IExtensibleEnum {
     }, RiverKey),
     ROCK_TYPES(ROCK_CHARACTERISTICS, "rock_types", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> image.setPixel(x, y, rockType(point.rock, colorDescriptors)), RockTypeKey),
     ROCKS(ROCK_CHARACTERISTICS, "rocks", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
-        final int pointRock = generator.rockLayerArea().get().get(xPos * 128 - 64, zPos * 128 - 64);
-        final Block raw = generator.rockLayerSettings().sampleAtLayer(pointRock, 0).raw();
+        final Block raw = generator.rockLayerSettings().sampleAtLayer(point.rock, 0).raw();
         image.setPixel(x, y, Rocks.color(raw).color(colorDescriptors));
     }, Rocks.key());
 
@@ -153,12 +153,7 @@ public enum VisualizerType implements IExtensibleEnum {
         if (!FMLEnvironment.production) {
             create("DEV", 0, "dev", dev, r -> Component.empty());
             create("BORDER", 0, "border", dev, r -> Component.empty());
-            create("GRADIENT_TESTS", 0, "gradient_tests", gradientTest, r -> {
-                final MutableComponent text = Component.empty();
-                new ColorGradientDefinition(experimentalGradient.get(), Component.literal("Experimental Gradient")).appendTo(text, true);
-                experimentalGradient.clearCache();
-                return text;
-            });
+            create("RIVER_EDGES", 0, "river_edges", riverEdgesDev, r -> Component.empty());
         }
     }
 
@@ -196,7 +191,7 @@ public enum VisualizerType implements IExtensibleEnum {
         if (!FMLEnvironment.production) {
             visualizers.add(valueOf("DEV"));
             visualizers.add(valueOf("BORDER"));
-            visualizers.add(valueOf("GRADIENT_TESTS"));
+            visualizers.add(valueOf("RIVER_EDGES"));
         }
         return visualizers;
     }

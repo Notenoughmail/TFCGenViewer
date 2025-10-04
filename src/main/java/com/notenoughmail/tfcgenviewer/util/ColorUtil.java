@@ -1,7 +1,11 @@
 package com.notenoughmail.tfcgenviewer.util;
 
+import com.notenoughmail.tfcgenviewer.mixin.RiverEdgeAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.region.Region;
+import net.dries007.tfc.world.region.RiverEdge;
+import net.dries007.tfc.world.region.Units;
+import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
@@ -125,28 +129,15 @@ public class ColorUtil {
         colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(Objects.hashCode(region))));
         image.setPixel(x, y, color);
     };
-    static final CacheableSupplier<DoubleToIntFunction> experimentalGradient = CacheableSupplier.of(() -> {
-        final int[] colors = {
-                0xFFFF1D00,
-                0xFFFFBB00,
-                0xFF94FF63,
-                0xFF13FFE4,
-                0xFF0079FF,
-                0xFF0000D1
-        };
-        return multiLinearGradient(colors);
-    });
-    static final VisualizerType.DrawFunction gradientTest = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
-        final int color;
-        if (point.distanceToOcean == 0) {
-            color = 0xFF000000;
-        } else {
-            color = experimentalGradient.get().applyAsInt(Mth.clampedMap(point.temperature, -23F, 33F, 0F, 0.99999F));
-        }
-        colorDescriptors.putIfAbsent(color, Component.literal("%s".formatted(point.temperature)));
-        image.setPixel(x, y, color);
-        if (!point.land()) {
-            image.setPixel(x, y, 0xA0A0A0A0);
+    static final VisualizerType.DrawFunction riverEdgesDev = (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
+        dev.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess);
+        final int riverColor = color(255, region.hashCode());
+        colorDescriptors.putIfAbsent(riverColor, Component.literal(Integer.toHexString(riverColor) + " Rivers"));
+        for (RiverEdge edge : region.rivers()) {
+            final MidpointFractal fractal = edge.fractal();
+            if (fractal.maybeIntersect(xPos, zPos, 0.1F) && fractal.intersect(xPos, zPos, 0.35F)) {
+                image.setPixel(x, y, riverColor);
+            }
         }
     };
 
@@ -186,6 +177,15 @@ public class ColorUtil {
             case 1 -> RT_VOLCANIC;
             default -> RT_OCEANIC;
         }).get().getColor(nextWithSeed(rock >> 2), colorDescriptors);
+    }
+
+    static boolean riverEdgeEncapsulates(RiverEdge edge, int xGrid, int zGrid) {
+        final RiverEdgeAccessor accessor = (RiverEdgeAccessor) (Object) edge;
+        assert accessor != null; // IDEA insists on the idea that the accessor will be null
+        return  xGrid >= Units.partToGrid(accessor.getMinPartX()) &&
+                xGrid <= Units.partToGrid(accessor.getMaxPartX()) &&
+                zGrid >= Units.partToGrid(accessor.getMinPartZ()) &&
+                zGrid <= Units.partToGrid(accessor.getMaxPartZ());
     }
 
     // Default/reference gradients

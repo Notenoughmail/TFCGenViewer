@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.config.Config;
+import com.notenoughmail.tfcgenviewer.mixin.RiverEdgeAccessor;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
@@ -11,6 +12,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
+import net.dries007.tfc.world.region.RiverEdge;
+import net.dries007.tfc.world.region.Units;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -192,16 +195,36 @@ public class ImageBuilder {
                 image.vLine(zSpawnCenterGrids - length, zSpawnCenterGrids + length, xSpawnCenterGrids, scale.lineWidth, color);
             }
 
-            if (!FMLEnvironment.production && visualizer.name().equals("BORDER")) {
-                for (Region region : visitedRegions) {
-                    final int color = color(255, region.hashCode());
-                    colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
+            if (!FMLEnvironment.production) {
+                switch (visualizer.name()) {
+                    case "BORDER" -> {
+                        for (Region region : visitedRegions) {
+                            final int color = color(255, region.hashCode());
+                            colorDescriptors.putIfAbsent(color, Component.literal(Integer.toHexString(region.hashCode()) + " Border"));
 
-                    image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
-                    image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                            image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, scale.lineWidth, color);
+                            image.hLine(region.minX() - xDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, region.minZ() - zDrawOffsetGrids, scale.lineWidth, color);
 
-                    image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
-                    image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
+                            image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.maxX() - xDrawOffsetGrids, scale.lineWidth, color);
+                            image.vLine(region.minZ() - zDrawOffsetGrids, region.maxZ() - zDrawOffsetGrids, region.minX() - xDrawOffsetGrids, scale.lineWidth, color);
+                        }
+                    }
+                    case "RIVER_EDGES" -> {
+                        for (Region region : visitedRegions) {
+                            for (RiverEdge edge : region.rivers()) {
+                                final int borderColor = color(50, edge.hashCode());
+                                final RiverEdgeAccessor accessor = (RiverEdgeAccessor) (Object) edge;
+                                final int minX = Units.partToGrid(accessor.getMinPartX()) - xDrawOffsetGrids,
+                                        maxX = Units.partToGrid(accessor.getMaxPartX()) - xDrawOffsetGrids,
+                                        minZ = Units.partToGrid(accessor.getMinPartZ()) - zDrawOffsetGrids,
+                                        maxZ = Units.partToGrid(accessor.getMaxPartZ()) - zDrawOffsetGrids;
+                                image.hLine(minX, maxX, minZ, 0, borderColor);
+                                image.hLine(minX, maxX, maxZ, 0, borderColor);
+                                image.vLine(minZ, maxZ, minX, 0, borderColor);
+                                image.vLine(minZ, maxZ, maxX, 0, borderColor);
+                            }
+                        }
+                    }
                 }
             }
 
