@@ -46,7 +46,9 @@ public record ViewerResponsePacket(
     private static final Codec<List<HolderSet<PlacedFeature>>> BIOME_FEATURES_CODEC = holderSetCodec(Registries.PLACED_FEATURE).listOf();
     private static final Codec<BiomeGenerationSettings> BIOME_GENERATION_SETTINGS_NETWORK_CODEC = BIOME_FEATURES_CODEC.xmap(
             list -> new BiomeGenerationSettings(Map.of(), list),
-            BiomeGenerationSettings::features // TODO: 1.5.1 | Filter this to only have features in the tag, if at all possible
+            s -> s.features().stream()
+                    .map(ViewerResponsePacket::filterSet)
+                    .toList()
     );
 
     private static final Biome.ClimateSettings EMPTY_CLIMATE_SETTINGS = new Biome.ClimateSettings(false, 0F, Biome.TemperatureModifier.NONE, 0F);
@@ -89,16 +91,16 @@ public record ViewerResponsePacket(
     public static ViewerResponsePacket decode(FriendlyByteBuf data) {
         final byte permissions = data.readByte();
         final long seed = data.readLong();
-        final Settings settings = data.readWithCodec(NbtOps.INSTANCE, Settings.CODEC.codec());
-        final Map<ResourceKey<PlacedFeature>, PlacedFeature> features = data.readMap(
+        final Settings settings = data.readWithCodec(NbtOps.INSTANCE, Settings.CODEC.codec()); // 7644 bytes
+        final Map<ResourceKey<PlacedFeature>, PlacedFeature> features = data.readMap( // 512 bytes
                 buf -> buf.readResourceKey(Registries.PLACED_FEATURE),
                 buf -> buf.readWithCodec(NbtOps.INSTANCE, FEATURE_NETWORK_CODEC)
         );
-        final Map<ResourceKey<Biome>, Biome> biomes = data.readMap(
+        final Map<ResourceKey<Biome>, Biome> biomes = data.readMap( // 3233 bytes
                 buf -> buf.readResourceKey(Registries.BIOME),
                 buf -> buf.readWithCodec(NbtOps.INSTANCE, BIOME_NETWORK_CODEC)
         );
-        final Map<TagKey<Biome>, List<ResourceKey<Biome>>> biomeTags = data.readMap(
+        final Map<TagKey<Biome>, List<ResourceKey<Biome>>> biomeTags = data.readMap( // 72 bytes
                 buf -> TagKey.create(Registries.BIOME, buf.readResourceLocation()),
                 buf -> buf.readList(elmBuf -> elmBuf.readResourceKey(Registries.BIOME))
         );
@@ -139,5 +141,13 @@ public record ViewerResponsePacket(
                         keys -> HolderSet.direct(key -> Holder.Reference.createStandAlone(null, key), keys),
                         set -> set.stream().map(Holder::unwrapKey).map(Optional::orElseThrow).toList()
                 );
+    }
+
+    private static HolderSet<PlacedFeature> filterSet(HolderSet<PlacedFeature> set) {
+        return HolderSet.direct(
+                set.stream()
+                        .filter(h -> h.is(TFCGenViewer.VISUALIZABLE_FEATURES))
+                        .toList()
+        );
     }
 }

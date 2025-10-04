@@ -7,11 +7,6 @@
     - Will use the restrictions set in the `tfc:climate` modifier of the feature
     - If the configured feature is a TFC ore-type, its biome tag will be respected
 - Improve *Rivers and Mountains* and *Rocks* visualizer speeds, most noticeable with large visualization sizes
-- A note for server owners:
-  - In order for the new visualizer to work, a large amount of server data has to be synced to the player. This happens upon *opening* the visualizer screen
-  - Additionally, this information scales with the number of entries in the above tag
-  - However, this information will not be sent if the player does not possess permission to view `climate` visualizers
-  - By default, this results in ~150000 bytes of additional information being synced, mostly in critical biome information
 
 # 1.5.0
 
