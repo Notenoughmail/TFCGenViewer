@@ -1,0 +1,20 @@
+modLoader       = "javafml"
+loaderVersion   = "${loader_version_range}"
+license         = "${mod_license}"
+issueTrackerURL = "https://github.com/Notenoughmail/TFCGenViewer/issues"
+
+[[mods]]
+    modId       = "${mod_id}"
+    version     = "${mod_version}"
+    displayName = "${mod_name}"
+    displayURL  = "https://www.curseforge.com/minecraft/mc-mods/tfcgenviewer"
+    logoFile    = "tfcgenviewer.png"
+    authors     = "${mod_authors}"
+    description = '''${mod_description}'''
+
+[[dependencies.${mod_id}]]
+    modId = "tfc"
+    mandatory = true
+    versionRange = "${tfc_range}"
+    ordering = "NONE"
+    side = "BOTH"

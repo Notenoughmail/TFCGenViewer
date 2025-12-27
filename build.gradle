@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev.legacyforge' version '2.0.105'
+    id 'net.neoforged.moddev' version '2.0.134'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -17,20 +17,21 @@ base {
 }
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-legacyForge {
-    version = "${minecraft_version}-${forge_version}"
 
-    validateAccessTransformers = true
-
-    accessTransformers.from 'src/main/resources/META-INF/accesstransformer.cfg'
+neoForge {
+    version = project.neo_version
 
     parchment {
-        minecraftVersion = minecraft_version
-        mappingsVersion = mapping_version
+        minecraftVersion = project.parchment_minecraft_version
+        mappingsVersion = project.parchment_mappings_version
     }
+
+    validateAccessTransformers = false
+
+    accessTransformers.from 'src/main/resources/META-INF/accesstransformer.cfg'
 
     mods {
         "${mod_id}" {
@@ -44,7 +45,6 @@ legacyForge {
 
             jvmArguments = ["-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition"]
 
-            systemProperty('forge.logging.console.level', 'debug')
             systemProperty('terminal.jline', 'true')
 
             programArgument("-mixin.config=${mod_id}.mixins.json")
@@ -72,33 +72,22 @@ repositories {
             includeGroup "curse.maven"
         }
     }
-    maven {
-        // Patchouli
-        name = "BlameJared"
-        url = "https://maven.blamejared.com"
-    }
 }
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
-obfuscation {
-    createRemappingConfiguration(configurations.localRuntime)
-}
 
 dependencies {
-    modImplementation  "curse.maven:terrafirmacraft-302973:${tfc_identifier}"
-    modRuntimeOnly "vazkii.patchouli:Patchouli:${minecraft_version}-${patchouli_version}"
-
-    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+    implementation  "curse.maven:terrafirmacraft-302973:${tfc_identifier}"
+    runtimeOnly "curse.maven:patchouli-306770:${patchi_identifier}"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
-            forge_version          : forge_version,
-            forge_version_range    : forge_version_range,
+            neo_version            : neo_version,
             loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
@@ -116,7 +105,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
 
 sourceSets.main.resources.srcDir generateModMetadata
 
-legacyForge.ideSyncTask generateModMetadata
+neoForge.ideSyncTask generateModMetadata
 
 tasks.named('jar', Jar).configure {
     manifest {
@@ -135,11 +124,6 @@ tasks.named('jar', Jar).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-}
-
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
 }
 
 idea {
