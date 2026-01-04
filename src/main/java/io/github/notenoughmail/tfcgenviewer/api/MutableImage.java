@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util;
+package io.github.notenoughmail.tfcgenviewer.api;
 
 /**
  * An abstract wrapper around a {@link com.mojang.blaze3d.platform.NativeImage NativeIamge}

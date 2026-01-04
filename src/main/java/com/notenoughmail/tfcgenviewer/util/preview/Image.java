@@ -3,7 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.preview;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.mixin.NativeImageAccessor;
-import com.notenoughmail.tfcgenviewer.util.MutableImage;
+import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
 import net.minecraftforge.fml.loading.FMLPaths;

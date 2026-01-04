@@ -201,5 +201,6 @@
   "tfcgenviewer.could_not_parse.biome": "Error encountered while parsing '%s' biome color definition",
   
   "tfcgenviewer.narration.info_pane.title": "Info pane",
-  "tfcgenviewer.narration.preview_pane.title": "Preview pane"
+  "tfcgenviewer.narration.preview_pane.title": "Preview pane",
+  "tfcgenviewer.generator.tfc_overworld": "TFC Overworld"
 }

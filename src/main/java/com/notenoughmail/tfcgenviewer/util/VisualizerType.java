@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.color.ColorDefinition;
 import com.notenoughmail.tfcgenviewer.color.Colors;
 import com.notenoughmail.tfcgenviewer.color.FeatureColors;
+import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.Region;
