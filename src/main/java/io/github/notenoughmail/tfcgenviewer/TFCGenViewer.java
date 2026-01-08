@@ -2,7 +2,8 @@ package io.github.notenoughmail.tfcgenviewer;
 
 import com.mojang.logging.LogUtils;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCVisualizer;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -16,8 +17,9 @@ public class TFCGenViewer {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TFCGenViewer(IEventBus modBus) {
+        TFCGenViewerRegistration.init(modBus);
         modBus.addListener(this::newRegistries);
-        GenViewerAPI.registerGeneratorVisualizer(TFCVisualizer.INSTANCE);
+        GenViewerAPI.registerGeneratorVisualizer(TFCRegionVisualizer.INSTANCE);
     }
 
     public static <T> T cast(Object o) {
@@ -29,7 +31,7 @@ public class TFCGenViewer {
     }
 
     private void newRegistries(NewRegistryEvent event) {
-        event.register(GenViewerAPI.TFC_VISUALIZER_REGISTRY);
+        event.register(GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY);
         event.register(GenViewerAPI.GRADIENT_REGISTRY);
     }
 }

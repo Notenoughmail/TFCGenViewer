@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -36,6 +37,14 @@ public record ColorDefinition(@ApiStatus.Internal RGB color, Component name, int
         return sorted == 0 ? name.getString().compareTo(o.name.getString()) : 0;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ColorDefinition def) {
+            return color == def.color && name.equals(def.name) && tooltip.equals(def.tooltip);
+        }
+        return false;
+    }
+
     public Component getTooltip() {
         return tooltip.orElse(name);
     }
@@ -52,13 +61,17 @@ public record ColorDefinition(@ApiStatus.Internal RGB color, Component name, int
     public void appendTo(MutableComponent text, boolean end) {
         text.append(Component.translatable(
                 "tfcgenviewer.preview_world.color_key_template",
-                Component.literal("▮").withColor(argb()),
+                colorBlock(argb()),
                 name
         ));
         if (!end) text.append(CommonComponents.NEW_LINE);
     }
 
-    public int color(Int2ObjectOpenHashMap<Component> tooltips) {
-        return 0;
+    public void addTooltip(Int2ObjectOpenHashMap<Component> tooltips) {
+        tooltips.putIfAbsent(abgr(), getTooltip());
+    }
+
+    public void addTooltip(IVisualizer.DrawInfo<?, ?> info) {
+        addTooltip(info.colorDescriptors());
     }
 }

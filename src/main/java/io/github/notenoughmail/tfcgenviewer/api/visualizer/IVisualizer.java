@@ -2,7 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
-import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
+import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.core.RegistryAccess;
@@ -12,7 +12,7 @@ public interface IVisualizer<G extends ChunkGeneratorExtension, C> {
 
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
 
-    C createCache(RegistryAccess registryAccess, G generator, IScale scale, long worldSeed);
+    C createCache(RegistryAccess registryAccess, G generator, ImageSize scale, long worldSeed);
 
     void draw(
             int imageX,
@@ -20,11 +20,7 @@ public interface IVisualizer<G extends ChunkGeneratorExtension, C> {
             MutableImage image,
             int xPos,
             int zPos,
-            G generator,
-            RegistryAccess registryAccess,
-            Int2ObjectOpenHashMap<Component> colorDescriptors,
-            C cache,
-            IScale scale
+            DrawInfo<G, C> info
     );
 
     default void afterComplete(MutableImage image, G generator, RegistryAccess registryAccess, C cache, Int2ObjectOpenHashMap<Component> colorDescriptors) {}
@@ -32,4 +28,13 @@ public interface IVisualizer<G extends ChunkGeneratorExtension, C> {
     Component colorKey(RegistryAccess registryAccess, C cache);
 
     Component name();
+
+    record DrawInfo<G extends ChunkGeneratorExtension, C>(
+            G generator,
+            C cache,
+            RegistryAccess registryAccess,
+            Int2ObjectOpenHashMap<Component> colorDescriptors,
+            ImageSize scale,
+            int blocksPerPixel
+    ) {}
 }

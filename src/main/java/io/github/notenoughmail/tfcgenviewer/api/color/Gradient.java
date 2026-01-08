@@ -4,8 +4,9 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
-import net.minecraft.util.FastColor.*;
+import net.minecraft.util.FastColor.ARGB32;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 
@@ -16,10 +17,10 @@ import java.util.function.Function;
 
 import static net.minecraft.util.FastColor.ABGR32.*;
 
-public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.Registry, Gradient.Static, Gradient.FromTo {
+public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradient.Static, Gradient.FromTo {
 
     Codec<Gradient> CODEC = Codec.either(
-            Base.CODEC,
+            Preset.CODEC,
             Type.CODEC.dispatch(
                     Gradient::type,
                     t -> t.codec
@@ -42,6 +43,10 @@ public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.
         );
     }
 
+    static int index(double d, int maxExclusive) {
+        return Mth.clamp(Mth.floor(d * maxExclusive), 0, maxExclusive - 1);
+    }
+
     static DoubleToIntFunction lin(int from, int to) {
         final double
                 r0 = lin(red(from)),
@@ -58,8 +63,26 @@ public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.
         );
     }
 
-    static DoubleToIntFunction multi(int[] colors) {
-        
+    static DoubleToIntFunction multiLin(int... colors) {
+        final double[][] lin = new double[colors.length][3];
+        for (int i = 0 ; i < colors.length ; i++) {
+            final double[] l = lin[i];
+            l[0] = lin(red(colors[i]));
+            l[1] = lin(green(colors[i]));
+            l[2] = lin(blue(colors[i]));
+        }
+        final int segments = colors.length - 1;
+        return d -> {
+            final int i = index(d, segments);
+            final double[] l0 = lin[i], l1 = lin[i + 1];
+            final double delta = (d * segments) % 1;
+            return color(
+                    255,
+                    delin(Mth.lerp(delta, l0[2], l1[2])),
+                    delin(Mth.lerp(delta, l0[1], l1[1])),
+                    delin(Mth.lerp(delta, l0[0], l1[0]))
+            );
+        };
     }
 
     static double lin(int channel) {
@@ -70,78 +93,10 @@ public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.
         return 0xFF & (int) (0xFF * Math.pow(channel, 1D / 2.2D));
     }
 
-    enum Base implements Gradient, StringRepresentable {
-        BLUE(0xFF963232, 0xFFFF8C64),
-        GREEN(0xFF006400, 0xFF50C850),
-        VOLCANIC(d -> color(
-                0xFF,
-                0x64,
-                delin(d * 0.1264363868D), // 0x64 linearized
-                0xC8
-        )),
-        UPLIFT(d -> color(
-                0xFF,
-                0xC8,
-                delin(d * 0.4607566240D), // 0xB4 linearized
-                0xB4
-        )),
-        RAINFALL(
-                0xFF000287,
-                0xFF0032FF,
-                0xFF00A0FF,
-                0xFF78E8FF,
-                0xFF0FA00F,
-                0xFFD26414,
-                0xFFFAB978),
-        TEMPERATURE(
-                0xFFFF1D00,
-                0xFFFFBB00,
-                0xFF94FF63,
-                0xFF13FFE4,
-                0xFF0079FF,
-                0xFF0000D1),
-        GRAYSCALE(0xFFFFFFFF, 0xFF000000)
-        ;
-
-        static final Codec<Base> CODEC = StringRepresentable.fromEnum(Base::values);
-
-        private final String name;
-        private final DoubleToIntFunction func;
-
-        Base(int... colors) {
-            this(multi(colors));
-        }
-
-        Base(int from, int to) {
-            this(lin(from, to));
-        }
-
-        Base(DoubleToIntFunction func) {
-            name = name().toLowerCase(Locale.ROOT);
-            this.func = func;
-        }
-
-        @Override
-        public int applyAsAbgr(double value) {
-            return func.applyAsInt(value);
-        }
-
-        @Override
-        public Type type() {
-            return Type.PRESET;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
-    }
-
-
     record Data(List<RGB> colors, DoubleToIntFunction baked) implements Gradient {
 
         Data(List<RGB> colors) {
-            this(colors, multi(colors.stream().mapToInt(RGB::abgr).toArray()));
+            this(colors, multiLin(colors.stream().mapToInt(RGB::abgr).toArray()));
         }
 
         @Override
@@ -155,11 +110,13 @@ public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.
         }
     }
 
-    non-sealed abstract class Registry implements Gradient {
+    non-sealed interface Preset extends Gradient {
+
+        Codec<Preset> CODEC = GenViewerAPI.GRADIENT_REGISTRY.byNameCodec();
 
         @Override
-        public final Type type() {
-            return Type.REGISTRY;
+        default Type type() {
+            return Type.PRESET;
         }
     }
 
@@ -199,11 +156,10 @@ public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.
     }
 
     enum Type implements StringRepresentable {
-        PRESET(Base.CODEC),
-        LIST(RGB.CODEC.listOf(3, Integer.MAX_VALUE).xmap(Data::new, Data::colors)),
-        REGISTRY(GenViewerAPI.GRADIENT_REGISTRY.byNameCodec()),
-        STATIC(RGB.CODEC.xmap(Static::new, Static::color)),
-        FROM_TO(RecordCodecBuilder.<FromTo>create(i -> i.group(
+        LIST(RGB.CODEC.listOf(3, Integer.MAX_VALUE).xmap(Data::new, Data::colors).fieldOf("colors")),
+        PRESET(Preset.CODEC.fieldOf("preset")),
+        STATIC(RGB.CODEC.xmap(Static::new, Static::color).fieldOf("color")),
+        FROM_TO(RecordCodecBuilder.<FromTo>mapCodec(i -> i.group(
                 RGB.CODEC.fieldOf("from").forGetter(FromTo::from),
                 RGB.CODEC.fieldOf("to").forGetter(FromTo::to)
         ).apply(i, FromTo::new)))
@@ -214,9 +170,9 @@ public sealed interface Gradient permits Gradient.Base, Gradient.Data, Gradient.
         private final String name;
         final MapCodec<Gradient> codec;
 
-        Type(Codec<? extends Gradient> codec) {
+        Type(MapCodec<? extends Gradient> codec) {
             name = name().toLowerCase(Locale.ROOT);
-            this.codec = (MapCodec<Gradient>) codec.fieldOf(name);
+            this.codec = TFCGenViewer.cast(codec);
         }
 
         @Override

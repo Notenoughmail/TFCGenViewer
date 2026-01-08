@@ -1,9 +1,9 @@
 package io.github.notenoughmail.tfcgenviewer.impl;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.api.*;
-import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
-import io.github.notenoughmail.tfcgenviewer.api.scale.IScaleGroup;
+import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridSize;
+import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCVisualizer;
 import net.dries007.tfc.world.region.Units;
@@ -14,27 +14,27 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
 
-public class TFCVisualizer implements ITFCGeneratorVisualizer<TFCVisualizer.ScaleGroup, ITFCVisualizer<?>> {
+public class TFCRegionVisualizer implements ITFCGeneratorVisualizer<TFCRegionVisualizer.Scale, ITFCVisualizer<?>> {
 
-    public static final TFCVisualizer INSTANCE = new TFCVisualizer();
+    public static final TFCRegionVisualizer INSTANCE = new TFCRegionVisualizer();
 
     private static final Component NAME = Component.translatable("tfcgenviewer.generator.tfc_overworld");
 
-    private TFCVisualizer() {}
+    private TFCRegionVisualizer() {}
 
     @Override
     public List<ITFCVisualizer<?>> allVisualizers() {
-        return GenViewerAPI.TFC_VISUALIZER_REGISTRY.stream().toList();
+        return GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY.stream().toList();
     }
 
     @Override
-    public ScaleGroup scaleGroup() {
-        return ScaleGroup.INSTANCE;
+    public Scale scaleGroup() {
+        return Scale.INSTANCE;
     }
 
     @Override
     public List<? extends ITFCVisualizer<?>> allowedVisualizers(ServerPlayer player) {
-        return GenViewerAPI.TFC_VISUALIZER_REGISTRY.stream().filter(v -> v.isPermitted(player)).toList();
+        return GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY.stream().filter(v -> v.isPermitted(player)).toList();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TFCVisualizer implements ITFCGeneratorVisualizer<TFCVisualizer.Scal
         return ITFCVisualizer.CODEC;
     }
 
-    public enum ScaleGroup implements IScaleGroup<GridScale> {
+    public enum Scale implements IScale<GridSize> {
         INSTANCE;
 
         @Override
@@ -61,18 +61,18 @@ public class TFCVisualizer implements ITFCGeneratorVisualizer<TFCVisualizer.Scal
         }
 
         @Override
-        public Component formatScale(GridScale scale) {
-            return scale.display();
+        public Component formatSize(GridSize size) {
+            return size.display();
         }
 
         @Override
-        public List<GridScale> scales() {
-            return GridScale.SCALES;
+        public List<? extends GridSize> sizes() {
+            return GridSize.SIZES;
         }
 
         @Override
-        public Codec<GridScale> codec() {
-            return GridScale.CODEC;
+        public Codec<GridSize> codec() {
+            return GridSize.CODEC;
         }
     }
 }

@@ -1,6 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
-import io.github.notenoughmail.tfcgenviewer.api.scale.IScaleGroup;
+import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.core.registries.Registries;
@@ -9,7 +9,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 
-public interface ITFCGeneratorVisualizer<S extends IScaleGroup<?>, V extends ITFCVisualizer<?>> extends IGeneratorVisualizer<TFCChunkGenerator, S, V> {
+public interface ITFCGeneratorVisualizer<S extends IScale<?>, V extends ITFCVisualizer<?>> extends IGeneratorVisualizer<TFCChunkGenerator, S, V> {
 
     StreamCodec<RegistryFriendlyByteBuf, TFCChunkGenerator> GENERATOR_CODEC = StreamCodec.composite(
             ByteBufCodecs.registry(Registries.BIOME_SOURCE), TFCChunkGenerator::getBiomeSource,

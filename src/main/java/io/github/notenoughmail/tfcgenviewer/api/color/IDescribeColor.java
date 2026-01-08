@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.color;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public interface IDescribeColor {
@@ -8,5 +9,9 @@ public interface IDescribeColor {
 
     default void appendTo(MutableComponent text) {
         appendTo(text, false);
+    }
+
+    default Component colorBlock(int argbColor) {
+        return Component.literal("■").withColor(argbColor);
     }
 }

@@ -5,7 +5,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
-public enum GridScale implements IScale {
+public enum GridSize implements ImageSize {
     _0,
     _1,
     _2,
@@ -15,13 +15,13 @@ public enum GridScale implements IScale {
     _6
     ;
 
-    public static final List<GridScale> SCALES = List.of(values());
-    public static final Codec<GridScale> CODEC = Codec.intRange(0, SCALES.size() - 1).xmap(SCALES::get, Enum::ordinal);
+    public static final List<GridSize> SIZES = List.of(values());
+    public static final Codec<GridSize> CODEC = Codec.intRange(0, SIZES.size() - 1).xmap(SIZES::get, Enum::ordinal);
 
     private final int size, lineWidth;
     private final Component display;
 
-    GridScale() {
+    GridSize() {
         size = 2 << (ordinal() + 4); // == Math.pow(x, scale + 5)
         lineWidth = size >> 9;
         display = Component.translatable("tfcgenviewer.preview_world.km", "%.1f".formatted(size * 128 / 1000F));

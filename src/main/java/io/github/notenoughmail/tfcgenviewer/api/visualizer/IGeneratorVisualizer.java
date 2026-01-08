@@ -1,7 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
-import io.github.notenoughmail.tfcgenviewer.api.scale.IScaleGroup;
+import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
 
-public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, S extends IScaleGroup<?>, V extends IVisualizer<G, ?>> {
+public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, S extends IScale<?>, V extends IVisualizer<G, ?>> {
 
     List<? extends V> allVisualizers();
 

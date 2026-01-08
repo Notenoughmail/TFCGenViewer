@@ -33,40 +33,6 @@ import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 import static com.notenoughmail.tfcgenviewer.util.Permissions.*;
 
 public enum VisualizerType implements IExtensibleEnum {
-    BIOMES(BIOME_CHARACTERISTICS, "biomes", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> image.setPixel(x, y, Biomes.color(point.biome, colorDescriptors)), Biomes.key()),
-    RAINFALL(CLIMATE_CHARACTERISTICS, "rainfall", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
-        if (point.land()) {
-            final int color = Colors.RAINFALL.get().getColor(
-                    Mth.clampedMap(
-                            point.rainfall,
-                            0F,
-                            500F,
-                            0,
-                            1F
-                    ), colorDescriptors
-            );
-            image.setPixel(x, y, color);
-        } else {
-            fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess);
-        }
-    }, RainKey),
-    TEMPERATURE(CLIMATE_CHARACTERISTICS, "temperature", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
-        if (point.land()) {
-            final int color = Colors.TEMPERATURE.get().getColor(
-                    Mth.clampedMap(
-                            point.temperature,
-                            -23F,
-                            33F,
-                            0F,
-                            1F
-                    ),
-                    colorDescriptors
-            );
-            image.setPixel(x, y, color);
-        } else {
-            fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess);
-        }
-    }, TempKey),
     CLIMATE_FEATURES(CLIMATE_CHARACTERISTICS, "climate_features", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
         Features.prime(registryAccess);
         final List<ColorDefinition> colors = Features.search(point.biome, point.temperature, point.rainfall);
@@ -143,12 +109,7 @@ public enum VisualizerType implements IExtensibleEnum {
         } else {
             fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess);
         }
-    }, RiverKey),
-    ROCK_TYPES(ROCK_CHARACTERISTICS, "rock_types", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> image.setPixel(x, y, rockType(point.rock, colorDescriptors)), RockTypeKey),
-    ROCKS(ROCK_CHARACTERISTICS, "rocks", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
-        final Block raw = generator.rockLayerSettings().sampleAtLayer(point.rock, 0).raw();
-        image.setPixel(x, y, Rocks.color(raw).color(colorDescriptors));
-    }, Rocks.key());
+    }, RiverKey);
 
     static {
         if (!FMLEnvironment.production) {

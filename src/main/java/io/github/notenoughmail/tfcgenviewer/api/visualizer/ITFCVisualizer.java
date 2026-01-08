@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ITFCVisualizer<C> extends IVisualizer<TFCChunkGenerator, C> {
 
-    StreamCodec<RegistryFriendlyByteBuf, List<ITFCVisualizer<?>>> CODEC = ByteBufCodecs.registry(GenViewerAPI.TFC_VISUALIZERS).apply(ByteBufCodecs.list());
+    StreamCodec<RegistryFriendlyByteBuf, List<ITFCVisualizer<?>>> CODEC = ByteBufCodecs.registry(GenViewerAPI.TFC_REGION_VISUALIZER).apply(ByteBufCodecs.list());
 
     boolean isPermitted(ServerPlayer player);
 }

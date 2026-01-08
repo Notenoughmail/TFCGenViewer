@@ -17,10 +17,10 @@ import java.util.Map;
 
 public interface GenViewerAPI {
 
-    ResourceKey<Registry<ITFCVisualizer<?>>> TFC_VISUALIZERS = ResourceKey.createRegistryKey(TFCGenViewer.id("visualizers/tfc"));
-    ResourceKey<Registry<Gradient.Registry>> GRADIENT = ResourceKey.createRegistryKey(TFCGenViewer.id("gradient"));
-    Registry<ITFCVisualizer<?>> TFC_VISUALIZER_REGISTRY = new RegistryBuilder<>(TFC_VISUALIZERS).create();
-    Registry<Gradient.Registry> GRADIENT_REGISTRY = new RegistryBuilder<>(GRADIENT).create();
+    ResourceKey<Registry<ITFCVisualizer<?>>> TFC_REGION_VISUALIZER = ResourceKey.createRegistryKey(TFCGenViewer.id("visualizers/tfc_region"));
+    ResourceKey<Registry<Gradient.Preset>> GRADIENT = ResourceKey.createRegistryKey(TFCGenViewer.id("gradient"));
+    Registry<ITFCVisualizer<?>> TFC_REGION_VISUALIZER_REGISTRY = new RegistryBuilder<>(TFC_REGION_VISUALIZER).create();
+    Registry<Gradient.Preset> GRADIENT_REGISTRY = new RegistryBuilder<>(GRADIENT).create();
 
     static void registerGeneratorVisualizer(IGeneratorVisualizer<?, ?, ?> generatorVisualizer) {
         Hidden.TYPES.computeIfAbsent(generatorVisualizer.generatorType(), c -> new ArrayList<>()).add(generatorVisualizer);
