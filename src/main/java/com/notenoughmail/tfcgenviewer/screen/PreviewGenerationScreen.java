@@ -7,6 +7,8 @@ import com.notenoughmail.tfcgenviewer.util.custom.*;
 import com.notenoughmail.tfcgenviewer.util.preview.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;
+import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
+import io.github.notenoughmail.tfcgenviewer.client.widget.SingleColumnOptionsList;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;
 import net.dries007.tfc.world.region.RegionGenerator;
@@ -34,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-
+@Deprecated
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PreviewGenerationScreen extends Screen {

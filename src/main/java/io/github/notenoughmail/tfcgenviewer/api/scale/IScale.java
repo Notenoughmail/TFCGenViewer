@@ -16,14 +16,27 @@ public interface IScale<S extends ImageSize> {
     int blocksPerPixel();
 
     /**
+     * Convert the given pixel resolution position to block scale
+     * @param pixelResolutionPosition The coordinate in pixel resolution
+     * @param center If the returned block coordinate should be shifted to be in the mid-point of the pixel
+     */
+    default int pixelResolutionToBlock(int pixelResolutionPosition, boolean center) {
+        int blockRes = pixelResolutionPosition * blocksPerPixel();
+        if (center) blockRes += blocksPerPixel() / 2;
+        return blockRes;
+    }
+
+    /**
      * Format the size
      */
     Component formatSize(S size);
 
+    S getDefault();
+
     /**
      * A list of all sizes this scale possesses
      */
-    List<? extends S> sizes();
+    List<S> sizes();
 
     /**
      * A codec for the sizes, used when creating the slider in the preview screen

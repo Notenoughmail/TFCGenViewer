@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util.custom;
+package io.github.notenoughmail.tfcgenviewer.client.widget;
 
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewInfo;
@@ -16,7 +16,7 @@ import net.minecraft.util.Mth;
 
 public class PreviewPane extends AbstractWidget {
 
-    public static final Component NARRATION_TTILE = Component.translatable("tfcgenviewer.narration.preview_pane.title");
+    public static final Component NARRATION_TITLE = Component.translatable("tfcgenviewer.widget.preview_pane.narration.title");
 
     public static final ResourceLocation PROGRESS_BAR = TFCGenViewer.identifier("textures/gui/progress_bar.png");
 
@@ -119,7 +119,7 @@ public class PreviewPane extends AbstractWidget {
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput out) {
-        out.add(NarratedElementType.TITLE, NARRATION_TTILE);
+        out.add(NarratedElementType.TITLE, NARRATION_TITLE);
     }
 
     public void tick() {

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
 import com.notenoughmail.tfcgenviewer.util.WidgetUtils;
-import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
+import io.github.notenoughmail.tfcgenviewer.client.widget.SelectionList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;

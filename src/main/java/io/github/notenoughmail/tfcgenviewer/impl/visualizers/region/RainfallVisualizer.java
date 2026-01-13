@@ -6,6 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.minecraft.core.RegistryAccess;
@@ -13,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 
-public class RainfallVisualizer implements RegionVisualizer {
+public class RainfallVisualizer implements RegionVisualizerType.Simple {
 
     public static final Component NAME = Component.translatable("tfcgenviewer.preview_world.visualizer_type.rainfall");
 
@@ -30,7 +31,7 @@ public class RainfallVisualizer implements RegionVisualizer {
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache> info) {
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, NoneOpt> info) {
         final RegionPointCache.RegionPoint pair = info.cache().getRegionPoint(imageX, imageY, xPos, zPos);
         if (pair.point().land()) {
             final int color = RAINFALL.get().color(

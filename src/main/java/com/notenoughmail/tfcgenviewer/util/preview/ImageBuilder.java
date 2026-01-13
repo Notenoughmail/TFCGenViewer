@@ -8,6 +8,7 @@ import com.notenoughmail.tfcgenviewer.mixin.RiverEdgeAccessor;
 import com.notenoughmail.tfcgenviewer.util.ColorUtil;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.GeneratorPreviewException;
+import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.chunkdata.RegionChunkDataGenerator;

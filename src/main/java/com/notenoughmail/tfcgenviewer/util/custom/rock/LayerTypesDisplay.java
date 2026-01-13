@@ -3,7 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.util.GuiElement;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
+import io.github.notenoughmail.tfcgenviewer.client.widget.SelectionList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

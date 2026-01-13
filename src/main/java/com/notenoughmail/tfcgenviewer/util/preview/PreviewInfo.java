@@ -33,7 +33,7 @@ public record PreviewInfo(
     }
 
     public static final PreviewInfo EMPTY = new PreviewInfo(Component.translatable("tfcgenviewer.preview_world.preview_info.generating"), TFCGenViewer.identifier("textures/gui/throbber.png"), 0, 0, 0, Mode.EMPTY);
-    public static final PreviewInfo ERROR = new PreviewInfo(Component.translatable("tfcgenviewer.preview_world.preview_info.error"), TFCGenViewer.identifier("textures/gui/gen_error.png"), 0, 0, 0, Mode.ERROR);
+    public static final PreviewInfo ERROR = new PreviewInfo(Component.translatable("tfcgenviewer.preview_info.error"), TFCGenViewer.identifier("textures/gui/gen_error.png"), 0, 0, 0, Mode.ERROR);
 
     public enum Mode {
         PREVIEW,

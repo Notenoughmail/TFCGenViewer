@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
+import net.dries007.tfc.world.Seed;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -28,6 +29,10 @@ public class TFCGenViewer {
 
     public static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(ID, path);
+    }
+
+    public static void skip(Seed seed, int skip) {
+        for (int s = 0 ; s < skip ; s++) seed.next();
     }
 
     private void newRegistries(NewRegistryEvent event) {

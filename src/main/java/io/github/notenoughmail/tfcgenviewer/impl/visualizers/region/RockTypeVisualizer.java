@@ -6,6 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
@@ -15,7 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Random;
 
-public class RockTypeVisualizer implements RegionVisualizer {
+public class RockTypeVisualizer implements RegionVisualizerType.Simple {
 
     public static final Component NAME = Component.translatable("tfcgenviewer.preview_world.visualizer_type.rock_types");
 
@@ -37,7 +38,7 @@ public class RockTypeVisualizer implements RegionVisualizer {
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache> info) {
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, NoneOpt> info) {
         final Region.Point point = info.cache().getPoint(imageX, imageY, xPos, zPos);
         final double seed = new Random(point.rock >> 2).nextDouble();
         final ColorGradientDefinition gradient = (switch (point.rock & 0b11) {

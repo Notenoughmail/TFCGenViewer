@@ -2,7 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizer;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -71,7 +71,7 @@ public record ColorDefinition(@ApiStatus.Internal RGB color, Component name, int
         tooltips.putIfAbsent(abgr(), getTooltip());
     }
 
-    public void addTooltip(IVisualizer.DrawInfo<?, ?> info) {
+    public void addTooltip(IVisualizerType.DrawInfo<?, ?, ?, ?> info) {
         addTooltip(info.colorDescriptors());
     }
 }

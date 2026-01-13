@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util.preview;
+package io.github.notenoughmail.tfcgenviewer.impl.preview;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
@@ -6,17 +6,12 @@ import com.notenoughmail.tfcgenviewer.mixin.NativeImageAccessor;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
 
-/**
- * A shallow wrapper around {@link NativeImage} that attempts to ensure thread safety between drawing to the image and closing it
- * <p>
- * Also provides a number of helpful utils for safely writing to the image
- */
 public class Image implements MutableImage {
 
     /**
@@ -33,6 +28,10 @@ public class Image implements MutableImage {
     public Image(int size) {
         maxPixel = size - 1;
         image = new NativeImage(size, size, false);
+    }
+
+    public NativeImage getNative() {
+        return image;
     }
 
     @Override
@@ -58,7 +57,7 @@ public class Image implements MutableImage {
 
     @Override
     public void setPixel(int x, int y, int abgrColor) {
-        if (!image.isOutsideBounds(x, y)) {
+        if (inRange(x) && inRange(y)) {
             final int alpha = FastColor.ABGR32.alpha(abgrColor);
             if (alpha == 0xFF) {
                 set(x, y, abgrColor);
@@ -142,7 +141,7 @@ public class Image implements MutableImage {
 
     @Override
     public int getABGRColor(int x, int y) {
-        if (!image.isOutsideBounds(x, y)) {
+        if (inRange(x) && inRange(y)) {
             synchronized (image) {
                 if (isAllocated()) {
                     return image.getPixelRGBA(x, y);
@@ -166,10 +165,12 @@ public class Image implements MutableImage {
 
     @Override
     public void export(String name) {
-        try {
-            image.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), name));
-        } catch (Exception e) {
-            TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(name), e);
+        synchronized (image) {
+            try {
+                image.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), name));
+            } catch (Exception e) {
+                TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(name), e);
+            }
         }
     }
 

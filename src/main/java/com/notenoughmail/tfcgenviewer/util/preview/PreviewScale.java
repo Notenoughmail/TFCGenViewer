@@ -3,6 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.preview;
 import com.mojang.serialization.Codec;
 import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import com.notenoughmail.tfcgenviewer.config.Config;
+import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;

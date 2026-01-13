@@ -3,7 +3,7 @@ package com.notenoughmail.tfcgenviewer.util.custom.rock;
 import com.google.common.collect.ImmutableList;
 import com.notenoughmail.tfcgenviewer.screen.PreviewGenerationScreen;
 import com.notenoughmail.tfcgenviewer.util.MutableRockLayerSettings;
-import com.notenoughmail.tfcgenviewer.util.custom.SelectionList;
+import io.github.notenoughmail.tfcgenviewer.client.widget.SelectionList;
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.blocks.rock.LooseRockBlock;
 import net.dries007.tfc.common.blocks.rock.RockSpikeBlock;

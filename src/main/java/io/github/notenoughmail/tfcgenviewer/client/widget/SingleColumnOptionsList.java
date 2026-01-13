@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util.custom;
+package io.github.notenoughmail.tfcgenviewer.client.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -18,15 +18,19 @@ import java.util.List;
  */
 public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsList.Entry> {
 
-    public SingleColumnOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int pY0, int pY1, int pItemHeight) {
-        super(pMinecraft, pWidth, pHeight, pY0, pY1, pItemHeight);
+    public SingleColumnOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int y, int pItemHeight) {
+        super(pMinecraft, pWidth, pHeight, y, pItemHeight);
         setScrollBarOffset(-4);
     }
 
     public void add(OptionInstance<?>... options) {
         for (OptionInstance<?> option : options) {
-            addEntry(new Entry(option, width, minecraft.options));
+            add(option);
         }
+    }
+
+    public void add(OptionInstance<?> option) {
+        addEntry(new Entry(option, width, minecraft.options));
     }
 
     public class Entry extends ContainerObjectSelectionList.Entry<Entry> {
@@ -35,7 +39,7 @@ public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsLi
 
         public Entry(OptionInstance<?> option, int width, Options options) {
             final AbstractWidget instance = option.createButton(options, 2, 0, width - 8);
-            if (instance.getHeight() >= (itemHeight - 2)) {
+            if (instance.getHeight() > (itemHeight - 2)) {
                 // Limit widget height to be within the bounds of the entry
                 instance.setHeight(itemHeight - 2);
             }
@@ -43,12 +47,12 @@ public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsLi
         }
 
         @Override
-        public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
-            final AbstractWidget instance = widget.get(0);
-            instance.setX(pLeft + 2);
-            instance.setY(pTop);
-            instance.setWidth(pWidth - 4 - getScrollBarScrunchFactor());
-            instance.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        public void render(GuiGraphics pGuiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            final AbstractWidget instance = widget.getFirst();
+            instance.setX(left + 2);
+            instance.setY(top);
+            instance.setWidth(width - 4 - getScrollBarScrunchFactor());
+            instance.render(pGuiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override

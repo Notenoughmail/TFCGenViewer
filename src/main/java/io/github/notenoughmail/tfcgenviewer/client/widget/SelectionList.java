@@ -1,4 +1,4 @@
-package com.notenoughmail.tfcgenviewer.util.custom;
+package io.github.notenoughmail.tfcgenviewer.client.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
@@ -7,8 +7,8 @@ public class SelectionList<E extends ContainerObjectSelectionList.Entry<E>> exte
 
     private int scrollBarOffset;
 
-    public SelectionList(Minecraft minecraft, int width, int height, int y0, int y1, int itemHeight) {
-        super(minecraft, width, height, y0, y1, itemHeight);
+    public SelectionList(Minecraft minecraft, int width, int height, int y, int itemHeight) {
+        super(minecraft, width, height, y, itemHeight);
         scrollBarOffset = 4;
     }
 
@@ -23,7 +23,7 @@ public class SelectionList<E extends ContainerObjectSelectionList.Entry<E>> exte
 
     @Override
     protected int getScrollbarPosition() {
-        return x0 + width + scrollBarOffset;
+        return getX() + width + scrollBarOffset;
     }
 
     public int getScrollBarScrunchFactor() {

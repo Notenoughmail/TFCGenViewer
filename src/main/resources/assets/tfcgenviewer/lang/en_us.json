@@ -1,4 +1,28 @@
 {
+  "tfcgenviewer.screen.preview_world.title": "Previewing %s with %s",
+  "tfcgenviewer.screen.preview_world.option.visualizer_type": "Visualizer",
+  "tfcgenviewer.screen.preview_world.option.preview_size": "Preview Size",
+  "tfcgenviewer.screen.preview_world.option.spawn_overlay": "Spawn Overlay",
+  "tfcgenviewer.screen.preview_world.option.x_offset": "X Offset",
+  "tfcgenviewer.screen.preview_world.option.x_offset.tooltip": "The x offset, in km, of the preview's center from (0,0)",
+  "tfcgenviewer.screen.preview_world.option.z_offset": "Z Offset",
+  "tfcgenviewer.screen.preview_world.option.z_offset.tooltip": "The z offset, in km, of the preview's center from (0,0)",
+
+  "tfcgenviewer.generator.tfc_overworld.region": "TFC Overworld (Region Scale)",
+
+  "tfcgenviewer.widget.preview_pane.narration.title": "Preview pane",
+
+  "tfcgenviewer.button.preview": "Preview %s with %s",
+
+  "tfcgenviewer.preview_info.base": "Generated using %s\nDimensions: %2$s x %2$s",
+  "tfcgenviewer.preview_info.centered_on": "Centered on (%s,%s)",
+  "tfcgenviewer.preview_info.additional_from_visualizer": "Additional information from visualizer:\n%s",
+  "tfcgenviewer.preview_info.generated_regions": "Generated %s regions",
+  "tfcgenviewer.preview_info.color_key": "Color Key:\n\n%s",
+  "tfcgenviewer.preview_info.error": "An error occurred during generation\n\nPlease check the log and report the error",
+
+  "===============": "everything below this line must be removed at some point",
+
   "button.tfcgenviewer.preview_world": "Preview World",
   "button.tfcgenviewer.apply": "Apply",
   "button.tfcgenviewer.apply.will_not_apply": "%s will not proceed as the previous generation is finalizing",
@@ -12,7 +36,6 @@
   "tfcgenviewer.preview_world.title": "Preview World",
   "tfcgenviewer.preview_world.invalid_generator": "The current chunk generator for the world is not TFC's, please change the world type",
 
-  "tfcgenviewer.preview_world.visualizer_type": "Visualizer",
   "tfcgenviewer.preview_world.visualizer_type.biomes": "Biomes",
   "tfcgenviewer.preview_world.visualizer_type.rainfall": "Rainfall",
   "tfcgenviewer.preview_world.visualizer_type.temperature": "Temperature",
@@ -22,16 +45,10 @@
   "tfcgenviewer.preview_world.visualizer_type.rivers_and_mountains": "Rivers and Mountains",
   "tfcgenviewer.preview_world.visualizer_type.rock_types": "Rock Types",
   "tfcgenviewer.preview_world.visualizer_type.rocks": "Rocks",
-  "tfcgenviewer.preview_world.x_offset": "X Offset",
-  "tfcgenviewer.preview_world.x_offset.tooltip": "The x offset, in km, of the preview's center from 0",
-  "tfcgenviewer.preview_world.z_offset": "Z Offset",
-  "tfcgenviewer.preview_world.z_offset.tooltip": "The z offset, in km, of the preview's center from 0",
-  "tfcgenviewer.preview_world.spawn_overlay": "Spawn Overlay",
 
   "tfcgenviewer.preview_world.preview_info": "Generated %s regions in %s seconds\nDimensions: %s km x %s km\nCentered on: (%s,%s)\nVisualizer: %s\n\nColor Key:\n%s",
   "tfcgenviewer.preview_world.preview_info.no_coords": "Generated %s regions in %s seconds\nDimensions: %s km x %s km\nVisualizer: %s\n\nColor Key:\n%s",
   "tfcgenviewer.preview_world.preview_info.generating": "Generating...",
-  "tfcgenviewer.preview_world.preview_info.error": "An error occurred during generation\n\nPlease check the log, report the error, and restart the generator with a different seed",
   "tfcgenviewer.preview_world.color_key_template": "%s : %s",
   "tfcgenviewer.preview_world.km": "%s km",
   "tfcgenviewer.preview_world.preview_scale": "Preview Scale",
@@ -201,6 +218,5 @@
   "tfcgenviewer.could_not_parse.biome": "Error encountered while parsing '%s' biome color definition",
   
   "tfcgenviewer.narration.info_pane.title": "Info pane",
-  "tfcgenviewer.narration.preview_pane.title": "Preview pane",
-  "tfcgenviewer.generator.tfc_overworld": "TFC Overworld"
+  "tfcgenviewer.preview_world.visualizer_type.koppen": "Koppen Climate Classification"
 }

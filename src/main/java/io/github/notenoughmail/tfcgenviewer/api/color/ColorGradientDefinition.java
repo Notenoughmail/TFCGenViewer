@@ -2,7 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizer;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -51,7 +51,7 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
         return color;
     }
 
-    public int color(double value, IVisualizer.DrawInfo<?, ?> info) {
+    public int color(double value, IVisualizerType.DrawInfo<?, ?> info) {
         return color(value, info.colorDescriptors());
     }
 }

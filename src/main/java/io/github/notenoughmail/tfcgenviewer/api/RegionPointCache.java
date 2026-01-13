@@ -1,10 +1,16 @@
 package io.github.notenoughmail.tfcgenviewer.api;
 
+import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
+import net.dries007.tfc.client.overworld.SolarCalculator;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
+import net.dries007.tfc.world.region.Units;
+import net.dries007.tfc.world.settings.Settings;
+import net.minecraft.util.Mth;
 
 public class RegionPointCache {
 
@@ -15,8 +21,9 @@ public class RegionPointCache {
     private final RegionPoint[] pointCache;
     private final RegionGenerator generator;
     private final int size;
+    private int regionCount;
 
-    public RegionPointCache(RegionGenerator generator, ImageSize size) {
+    protected RegionPointCache(RegionGenerator generator, ImageSize size) {
         this.generator = generator;
         this.size = size.sizeInPixels();
         pointCache = new RegionPoint[this.size * this.size];
@@ -38,6 +45,28 @@ public class RegionPointCache {
                 pointCache[index(x, z)] = new RegionPoint(region, point);
             }
         }
+        regionCount++;
+    }
+
+    /**
+     * @return The underlying generator from which this cache derives region points
+     */
+    public RegionGenerator getGenerator() {
+        return generator;
+    }
+
+    /**
+     * @return If the z position is in the Northern hemisphere
+     */
+    public boolean isNorthernHemisphere(int gridZ, IScale<?> scale) {
+        return SolarCalculator.getInNorthernHemisphere(scale.pixelResolutionToBlock(gridZ, false), generator.settings.temperatureScale());
+    }
+
+    /**
+     * The number of regions that were generated through the cache
+     */
+    public int visitedRegions() {
+        return regionCount;
     }
 
     /**
