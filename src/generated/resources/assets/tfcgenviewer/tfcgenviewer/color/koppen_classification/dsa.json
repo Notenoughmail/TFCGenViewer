@@ -1,0 +1,11 @@
+{
+  "color": {
+    "b": 190,
+    "g": 20,
+    "r": 190
+  },
+  "name": {
+    "translate": "tfc.enum.koppenclimateclassification.dsa"
+  },
+  "sort": 17
+}

@@ -6,19 +6,21 @@ import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 
 public class TemperatureVisualizer implements RegionVisualizerType.Simple {
 
-    public static final Component NAME = Component.translatable("tfcgenviewer.preview_world.visualizer_type.temperature");
+    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_TEMPERATURE);
 
-    public static final DataManager.Reference<ColorGradientDefinition> TEMPERATURE = Colors.COMMON_GRADIENTS.getReference(TFCGenViewer.id("temperature"));
+    public static final DataManager.Reference<ColorGradientDefinition> TEMPERATURE = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("temperature"));
 
     public static final ColorKey COLOR_KEY = ColorKey.of(m -> {
         TEMPERATURE.get().appendTo(m);
@@ -31,14 +33,19 @@ public class TemperatureVisualizer implements RegionVisualizerType.Simple {
     }
 
     @Override
+    public ResourceLocation id() {
+        return TFCGenViewerRegistration.VIZ_TEMPERATURE.id();
+    }
+
+    @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, NoneOpt> info) {
         final RegionPointCache.RegionPoint pair = info.cache().getRegionPoint(imageX, imageY, xPos, zPos);
         if (pair.point().land()) {
             final int color = TEMPERATURE.get().color(
                     Mth.clampedMap(
                             pair.point().temperature,
-                            -23F,
-                            33F,
+                            -25F,
+                            35F,
                             0F,
                             1F
                     ), info

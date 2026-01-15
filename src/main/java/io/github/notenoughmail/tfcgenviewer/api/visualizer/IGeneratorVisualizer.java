@@ -1,7 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
@@ -9,12 +8,14 @@ import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I extends ImageSize, S extends IScale<I>, V extends IVisualizerType<G, ?, S, ?>> {
+
+    ResourceLocation id();
 
     /**
      * All visualizers this visualizer is capable of providing, drawing, and handling
@@ -34,7 +35,9 @@ public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I exten
     /**
      * Which visualizers the player may view the world with
      */
-    List<? extends V> allowedVisualizers(ServerPlayer player);
+    default List<? extends V> allowedVisualizers(ServerPlayer player) {
+        return allVisualizers().stream().filter(v -> v.isPermitted(player)).toList();
+    }
 
     /**
      * The name of the visualizer

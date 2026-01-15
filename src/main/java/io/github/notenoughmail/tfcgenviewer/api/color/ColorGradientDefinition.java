@@ -29,7 +29,7 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
             colors.append(colorBlock(gradient.applyAsArgb(d)));
         }
         text.append(Component.translatable(
-                "tfcgenviewer.preview_world.color_key_template",
+                "tfcgenviewer.color_key_template",
                 colors,
                 name
         ));
@@ -51,7 +51,7 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
         return color;
     }
 
-    public int color(double value, IVisualizerType.DrawInfo<?, ?> info) {
+    public int color(double value, IVisualizerType.DrawInfo<?, ?, ?, ?> info) {
         return color(value, info.colorDescriptors());
     }
 }

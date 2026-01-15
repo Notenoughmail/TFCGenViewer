@@ -1,0 +1,26 @@
+{
+  "gradient": {
+    "type": "preset",
+    "preset": "tfcgenviewer:temperature"
+  },
+  "name": {
+    "translate": "tfcgenviewer.gradient.temperature"
+  },
+  "tooltips": [
+    {
+      "translate": "tfcgenviewer.gradient.temperature.0"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.temperature.1"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.temperature.2"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.temperature.3"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.temperature.4"
+    }
+  ]
+}

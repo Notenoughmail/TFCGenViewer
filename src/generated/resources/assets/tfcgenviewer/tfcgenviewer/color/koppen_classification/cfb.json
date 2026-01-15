@@ -1,0 +1,11 @@
+{
+  "color": {
+    "b": 80,
+    "g": 200,
+    "r": 140
+  },
+  "name": {
+    "translate": "tfc.enum.koppenclimateclassification.cfb"
+  },
+  "sort": 15
+}

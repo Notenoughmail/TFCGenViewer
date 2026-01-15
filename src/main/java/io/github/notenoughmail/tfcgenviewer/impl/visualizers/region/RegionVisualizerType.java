@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 public interface RegionVisualizerType<O extends IVisualizerType.Options<O>> extends IRegionVisualizerType<RegionPointCache, O> {
 
     @Override
-    default RegionPointCache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize scale, long worldSeed) {
-        return RegionPointCache.of(generator, scale, worldSeed);
+    default RegionPointCache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+        return RegionPointCache.of(generator, size, worldSeed);
     }
 
     @Nullable

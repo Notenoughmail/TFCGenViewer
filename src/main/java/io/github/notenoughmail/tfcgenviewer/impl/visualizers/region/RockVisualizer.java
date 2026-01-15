@@ -7,18 +7,21 @@ import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionRequest;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 
 public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Options> {
 
-    public static final Component NAME = Component.translatable("tfcgenviewer.preview_world.visualizer_type.rocks");
+    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_ROCK);
 
     @Override
     public boolean isPermitted(ServerPlayer player) {
@@ -58,14 +61,21 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
     }
 
     @Override
+    public ResourceLocation id() {
+        return TFCGenViewerRegistration.VIZ_ROCK.id();
+    }
+
+    @Override
     public Options createOptions(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize scale) {
         return new Options();
     }
 
     @Override
     public void addOptions(OptionRequest optionRequest, Options options) {
-        optionRequest.orderBool("tfcgenviewer.option.region_visualizer.rock.surface", true, b -> options.surface = b);
-        optionRequest.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", 75, -64, 320, i -> options.elevation = i);
+        optionRequest.orderBool("tfcgenviewer.option.region_visualizer.rock.surface", true, b -> options.surface = b)
+                .withDisplay(IVisualizerType.Options.genericCaption(b -> b ? CommonComponents.GUI_YES : CommonComponents.GUI_NO));
+        optionRequest.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", 75, -64, 320, i -> options.elevation = i)
+                .withDisplay(IVisualizerType.Options.genericCaption(i -> Component.literal(Integer.toString(i))));
     }
 
     @Override

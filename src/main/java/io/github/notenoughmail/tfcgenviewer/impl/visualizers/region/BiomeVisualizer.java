@@ -4,6 +4,7 @@ import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.TFCBiomes;
@@ -16,11 +17,16 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class BiomeVisualizer implements RegionVisualizerType.Simple {
 
-    public static final Component NAME = Component.translatable("tfcgenviewer.preview_world.visualizer_type.biomes");
+    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_BIOME);
 
     @Override
     public boolean isPermitted(ServerPlayer player) {
         return true;
+    }
+
+    @Override
+    public ResourceLocation id() {
+        return TFCGenViewerRegistration.VIZ_BIOME.id();
     }
 
     @Override

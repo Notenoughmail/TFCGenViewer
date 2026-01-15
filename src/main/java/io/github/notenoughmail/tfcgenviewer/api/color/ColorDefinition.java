@@ -60,7 +60,7 @@ public record ColorDefinition(@ApiStatus.Internal RGB color, Component name, int
     @Override
     public void appendTo(MutableComponent text, boolean end) {
         text.append(Component.translatable(
-                "tfcgenviewer.preview_world.color_key_template",
+                "tfcgenviewer.color_key_template",
                 colorBlock(argb()),
                 name
         ));

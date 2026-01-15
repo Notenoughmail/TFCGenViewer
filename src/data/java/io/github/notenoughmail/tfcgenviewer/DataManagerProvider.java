@@ -18,10 +18,12 @@ public abstract class DataManagerProvider<T> implements DataProvider {
 
     private final PackOutput output;
     private final CompletableFuture<HolderLookup.Provider> lookup;
+    private final String name;
 
-    public DataManagerProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
+    public DataManagerProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, String name) {
         this.output = output;
         this.lookup = lookup;
+        this.name = name;
     }
 
     @Override
@@ -49,7 +51,7 @@ public abstract class DataManagerProvider<T> implements DataProvider {
 
     @Override
     public String getName() {
-        return "ColorProvider";
+        return "DataProvider[%s]".formatted(name);
     }
 
     protected abstract void make();

@@ -3,6 +3,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.134'
+    id "dev.vfyjxf.modaccessor" version "1.2.1"
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -16,7 +17,6 @@ base {
     archivesName = mod_id
 }
 
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
@@ -31,6 +31,9 @@ sourceSets {
         compileClasspath += main.compileClasspath + main.output
         runtimeClasspath += main.runtimeClasspath + main.output
     }
+    create("old") {
+        compileClasspath += main.compileClasspath + main.output
+    }
 }
 
 neoForge {
@@ -43,11 +46,12 @@ neoForge {
 
     validateAccessTransformers = false
 
-    accessTransformers.from 'src/main/resources/META-INF/accesstransformer.cfg'
+    accessTransformers.from 'src/main/resources/META-INF/accesstransformer.cfg', 'src/main/resources/META-INF/modaccesstransformer.cfg'
 
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
+            sourceSet(sourceSets.data)
         }
     }
 
@@ -87,6 +91,16 @@ neoForge {
     }
 }
 
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+modAccessor {
+    createTransformConfiguration(configurations.implementation)
+    accessTransformerFiles = project.files("src/main/resources/META-INF/modaccesstransformer.cfg")
+    interfaceInjectionFiles = project.files("injections.json")
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -98,12 +112,8 @@ repositories {
     }
 }
 
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
-}
-
 dependencies {
-    implementation  "curse.maven:terrafirmacraft-302973:${tfc_identifier}"
+    accessImplementation "curse.maven:terrafirmacraft-302973:${tfc_identifier}"
     runtimeOnly "curse.maven:patchouli-306770:${patchi_identifier}"
 }
 

@@ -6,6 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RGB;
+import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.rock.Rock;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.climate.KoppenClimateClassification;
@@ -48,7 +49,7 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
         rgb(m, SHALE, 70, 67, 70);
         rgb(m, SLATE, 125, 116, 103);
     });
-    public static String rockName(Rock rock) {
+    public static String rockKey(Rock rock) {
         return "color.tfc.rock." + rock.getSerializedName();
     }
     private static final Map<KoppenClimateClassification, RGB> KOPPEN_COLORS = Util.make(new EnumMap<>(KoppenClimateClassification.class), m -> {
@@ -84,12 +85,9 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
         rgb(m, ET, 190, 190, 190);
         rgb(m, EF, 80, 80, 80);
     });
-    public static String koppenName(KoppenClimateClassification koppen) {
-        return "color." + TFCGenViewer.ID + ".koppen_classification." + koppen.getSerializedName();
-    }
 
     public ColorProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
-        super(output, lookup);
+        super(output, lookup, "Colors");
     }
 
     @Override
@@ -100,8 +98,8 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
         makeFor(
                 Colors.ROCK_COLORS,
                 ROCK_COLORS,
-                r -> Helpers.identifier(r.getSerializedName()),
-                ColorProvider::rockName,
+                r -> TFCBlocks.ROCK_BLOCKS.get(r).get(BlockType.RAW).getId(),
+                ColorProvider::rockKey,
                 Enum::ordinal,
                 t -> null,
                 new RGB(
@@ -111,11 +109,11 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
                 ),
                 "rock"
         );
-        makeFor(
+        makeForFull(
                 Colors.KOPPEN_COLORS,
                 KOPPEN_COLORS,
-                k -> Colors.KOPPENS.get(k).id(),
-                ColorProvider::koppenName,
+                k -> Colors.KOPPEN_CLASSIFICATIONS.get(k).id(),
+                Helpers::translateEnum,
                 Enum::ordinal,
                 t -> null,
                 new RGB(
@@ -131,13 +129,13 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
         return "color." + TFCGenViewer.ID + type + ".unknown";
     }
 
-    private <T> void makeFor(
+    private <T> void makeForFull(
             ColorManager manager,
             Map<T, RGB> map,
             Function<T, ResourceLocation> id,
-            Function<T, String> name,
+            Function<T, Component> name,
             ToIntFunction<T> sort,
-            Function<T, @Nullable String> tooltip,
+            Function<T, @Nullable Component> tooltip,
             RGB unknown,
             String type
     ) {
@@ -147,10 +145,9 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
                                     id.apply(t),
                                     new ColorDefinition(
                                             rgb,
-                                            Component.translatable(name.apply(t)),
+                                            name.apply(t),
                                             sort.applyAsInt(t),
                                             Optional.ofNullable(tooltip.apply(t))
-                                                    .map(Component::translatable)
                                     )
                             )
                     );
@@ -165,6 +162,28 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
                             )
                     );
                 }
+        );
+    }
+
+    private <T> void makeFor(
+            ColorManager manager,
+            Map<T, RGB> map,
+            Function<T, ResourceLocation> id,
+            Function<T, String> key,
+            ToIntFunction<T> sort,
+            Function<T, @Nullable String> tooltip,
+            RGB unknown,
+            String type
+    ) {
+        makeForFull(
+                manager,
+                map,
+                id,
+                key.andThen(Component::translatable),
+                sort,
+                tooltip.andThen(k -> k == null ? null : Component.translatable(k)),
+                unknown,
+                type
         );
     }
 

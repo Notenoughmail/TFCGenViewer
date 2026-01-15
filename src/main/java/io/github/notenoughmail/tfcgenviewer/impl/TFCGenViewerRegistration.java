@@ -5,6 +5,9 @@ import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.color.Gradient;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.*;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.neoforged.bus.api.IEventBus;
@@ -17,19 +20,30 @@ import java.util.function.Supplier;
 public class TFCGenViewerRegistration {
 
     public static void init(IEventBus modBus) {
-        VISUALIZERS.register(modBus);
+        REGION_VISUALIZERS.register(modBus);
         GRADIENTS.register(modBus);
     }
 
-    private static final DeferredRegister<IRegionVisualizerType<?, ?>> VISUALIZERS = DeferredRegister.create(GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY, TFCGenViewer.ID);
+    private static final DeferredRegister<IRegionVisualizerType<?, ?>> REGION_VISUALIZERS = DeferredRegister.create(GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY, TFCGenViewer.ID);
     private static final DeferredRegister<Gradient.Preset> GRADIENTS = DeferredRegister.create(GenViewerAPI.GRADIENT_REGISTRY, TFCGenViewer.ID);
 
-    public static final Id<BiomeVisualizer> VIZ_BIOME = visualizer("biome", BiomeVisualizer::new);
-    public static final Id<RockTypeVisualizer> VIZ_ROCK_TYPE = visualizer("rock_type", RockTypeVisualizer::new);
-    public static final Id<RainfallVisualizer> VIZ_RAINFALL = visualizer("rainfall", RainfallVisualizer::new);
-    public static final Id<TemperatureVisualizer> VIZ_TEMPERATURE = visualizer("temperature", TemperatureVisualizer::new);
-    public static final Id<RockVisualizer> VIZ_ROCK = visualizer("rock", RockVisualizer::new);
-    public static final Id<KoppenVisualizer> VIZ_KOPPEN = visualizer("koppen", KoppenVisualizer::new);
+    // TODO: 1.21.1 | Something is very wrong with this
+    public static <T> Component visualizerName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
+        return Component.translatable(TFCGenViewer.ID + "." + regKey.location().getPath().replace("\\", ".") + viz.id().getPath());
+    }
+
+    public static Component regionVisualizerName(Id<? extends IRegionVisualizerType<?, ?>> viz) {
+        return visualizerName(GenViewerAPI.TFC_REGION_VISUALIZER, viz);
+    }
+
+    public static final Id<BiomeVisualizer> VIZ_BIOME = regionVisualizer("biome", BiomeVisualizer::new);
+    public static final Id<RockTypeVisualizer> VIZ_ROCK_TYPE = regionVisualizer("rock_type", RockTypeVisualizer::new);
+    public static final Id<RainfallVisualizer> VIZ_RAINFALL = regionVisualizer("rainfall", RainfallVisualizer::new);
+    public static final Id<TemperatureVisualizer> VIZ_TEMPERATURE = regionVisualizer("temperature", TemperatureVisualizer::new);
+    public static final Id<RockVisualizer> VIZ_ROCK = regionVisualizer("rock", RockVisualizer::new);
+    public static final Id<KoppenVisualizer> VIZ_KOPPEN = regionVisualizer("koppen", KoppenVisualizer::new);
+    public static final Id<BiomeAltitudeVisualizer> VIZ_BIOME_ALT = regionVisualizer("biome_altitude", BiomeAltitudeVisualizer::new);
+    public static final Id<RiversAndMountainsVisualizer> VIZ_RIVERS_AND_MOUNTINS = regionVisualizer("rivers_and_mountains", RiversAndMountainsVisualizer::new);
 
     public static final Id<Gradient.Preset> GRAD_BLUE = gradient("blue", Gradient.lin(0xFF963232, 0xFFFF8C64));
     public static final Id<Gradient.Preset> GRAD_GREEN = gradient("green", Gradient.lin(0xFF006400, 0xFF50C850));
@@ -67,8 +81,8 @@ public class TFCGenViewerRegistration {
         return FastColor.ABGR32.color(0xFF, c, c, c);
     });
 
-    private static <T extends IRegionVisualizerType<?, ?>> Id<T> visualizer(String name, Supplier<T> supplier) {
-        return register(VISUALIZERS, name, supplier);
+    private static <T extends IRegionVisualizerType<?, ?>> Id<T> regionVisualizer(String name, Supplier<T> supplier) {
+        return register(REGION_VISUALIZERS, name, supplier);
     }
 
     private static Id<Gradient.Preset> gradient(String name, DoubleToIntFunction gradient) {

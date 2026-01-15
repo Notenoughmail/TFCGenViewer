@@ -5,9 +5,11 @@ import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -45,7 +47,9 @@ public class Preview {
             IVisualizerType.DrawInfo<G, C, S, O> drawParams,
             V viz,
             int xCenterBlocks,
-            int zCenterBlocks
+            int zCenterBlocks,
+            ResourceLocation visualizerId,
+            PreviewPane previewPane
     ) {
         return CompletableFuture.supplyAsync(() -> {
             final Stopwatch timer = Stopwatch.createStarted();
@@ -57,6 +61,7 @@ public class Preview {
 
             for (int x = 0 ; x < previewPixels ; x++) {
                 if (!image.isAllocated()) break;
+                previewPane.updateProgress(x, imageSize);
                 for (int y = 0 ; y < previewPixels ; y++) {
                     if (!image.isAllocated()) break;
                     final int xPos = x + xDrawOffsetPixels;
@@ -70,16 +75,27 @@ public class Preview {
             timer.stop();
             return new ImageReturn(
                     image,
-                    timer.elapsed(TimeUnit.MILLISECONDS)
+                    timer.elapsed(TimeUnit.MILLISECONDS),
+                    // TODO: 1.21.1 | Allow visualizer types to append to this w/ options
+                    "%s+%s_%s.png".formatted(
+                            visualizerId.toDebugFileName(),
+                            viz.id().toDebugFileName(),
+                            Util.getFilenameFormattedDateTime()
+                    )
             );
         }, GEN_THREAD_POOL).exceptionally(thr -> {
             TFCGenViewer.LOGGER.error("Error encountered during generation preview!", thr);
-            return new ImageReturn(image, -1L);
+            return new ImageReturn(image, -1L, null);
         });
     }
 
     public record ImageReturn(
             Image image,
-            long millis
-    ) {}
+            long millis,
+            String name
+    ) {
+        public void export() {
+            image.export(name);
+        }
+    }
 }

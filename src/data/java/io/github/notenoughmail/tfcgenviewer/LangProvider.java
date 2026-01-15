@@ -1,6 +1,5 @@
 package io.github.notenoughmail.tfcgenviewer;
 
-import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -15,7 +14,6 @@ public abstract class LangProvider extends LanguageProvider {
 
     public LangProvider(PackOutput output, String modid, String locale) {
         super(output, modid, locale);
-        tree.add(modid);
         node = new Node() {
             @Override
             public Node add(String leaf, String text) {

@@ -49,8 +49,9 @@ public final class ColorKey implements CachedColorKey {
 
         @Override
         public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
-            keys.forEach(ColorKey::clearCache);
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.supplyAsync(() -> keys)
+                    .thenCompose(preparationBarrier::wait)
+                    .thenAccept(l -> l.forEach(ColorKey::clearCache));
         }
 
         @Override

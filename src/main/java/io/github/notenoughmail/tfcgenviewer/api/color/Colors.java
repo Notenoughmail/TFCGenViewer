@@ -17,14 +17,16 @@ public interface Colors {
 
     ResourceLocation UNKNOWN = TFCGenViewer.id("unknown");
 
+    DataManager<ColorDefinition> MISC_COLORS = new DataManager<>(TFCGenViewer.id("colors"), ColorDefinition.CODEC);
+
     ColorManager BIOME_COLORS = new ColorManager(TFCGenViewer.id("color/biome"));
     ColorManager ROCK_COLORS = new ColorManager(TFCGenViewer.id("color/rock"));
     ColorManager KOPPEN_COLORS = new ColorManager(TFCGenViewer.id("color/koppen_classification"));
 
-    Map<KoppenClimateClassification, Reference<ColorDefinition>> KOPPENS = Helpers.mapOf(KoppenClimateClassification.class, k -> KOPPEN_COLORS.getReference(TFCGenViewer.id(k.getSerializedName())));
+    Map<KoppenClimateClassification, Reference<ColorDefinition>> KOPPEN_CLASSIFICATIONS = Helpers.mapOf(KoppenClimateClassification.class, k -> KOPPEN_COLORS.getReference(TFCGenViewer.id(k.getSerializedName())));
 
-    DataManager<ColorGradientDefinition> COMMON_GRADIENTS = new DataManager<>(TFCGenViewer.id("gradient"), ColorGradientDefinition.CODEC);
-    Reference<ColorGradientDefinition> OCEAN = COMMON_GRADIENTS.getReference(TFCGenViewer.id("ocean"));
+    DataManager<ColorGradientDefinition> MISC_GRADIENTS = new DataManager<>(TFCGenViewer.id("gradients"), ColorGradientDefinition.CODEC);
+    Reference<ColorGradientDefinition> OCEAN = MISC_GRADIENTS.getReference(TFCGenViewer.id("ocean"));
 
     static void fillOcean(double value, int x, int y, MutableImage image, Int2ObjectOpenHashMap<Component> colorDescriptors) {
         image.setPixel(

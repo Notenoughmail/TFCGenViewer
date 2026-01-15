@@ -2,15 +2,11 @@ package io.github.notenoughmail.tfcgenviewer.api;
 
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.client.overworld.SolarCalculator;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
-import net.dries007.tfc.world.region.Units;
-import net.dries007.tfc.world.settings.Settings;
-import net.minecraft.util.Mth;
 
 public class RegionPointCache {
 
@@ -18,10 +14,10 @@ public class RegionPointCache {
         return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), scale);
     }
 
-    private final RegionPoint[] pointCache;
-    private final RegionGenerator generator;
-    private final int size;
-    private int regionCount;
+    protected final RegionPoint[] pointCache;
+    protected final RegionGenerator generator;
+    protected final int size;
+    protected int regionCount;
 
     protected RegionPointCache(RegionGenerator generator, ImageSize size) {
         this.generator = generator;
@@ -29,11 +25,11 @@ public class RegionPointCache {
         pointCache = new RegionPoint[this.size * this.size];
     }
 
-    private int index(int x, int z) {
+    protected final int index(int x, int z) {
         return x * size + z;
     }
 
-    private boolean isValid(int coordinate) {
+    protected final boolean isValid(int coordinate) {
         return coordinate >= 0 && coordinate < size;
     }
 

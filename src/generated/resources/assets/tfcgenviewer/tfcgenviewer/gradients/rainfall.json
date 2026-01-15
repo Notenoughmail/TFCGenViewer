@@ -1,0 +1,26 @@
+{
+  "gradient": {
+    "type": "preset",
+    "preset": "tfcgenviewer:rainfall"
+  },
+  "name": {
+    "translate": "tfcgenviewer.gradient.rainfall"
+  },
+  "tooltips": [
+    {
+      "translate": "tfcgenviewer.gradient.rainfall.0"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.rainfall.1"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.rainfall.2"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.rainfall.3"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.rainfall.4"
+    }
+  ]
+}

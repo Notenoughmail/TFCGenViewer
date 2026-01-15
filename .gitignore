@@ -26,3 +26,4 @@ forge*changelog.txt
 
 # Literally just TFC's test classes
 src/test
+/src/generated/resources/.cache/

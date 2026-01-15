@@ -20,5 +20,6 @@ public class TFCGenViewerClient {
         event.registerReloadListener(Colors.BIOME_COLORS);
         event.registerReloadListener(Colors.ROCK_COLORS);
         event.registerReloadListener(Colors.KOPPEN_COLORS);
+        event.registerReloadListener(Colors.MISC_COLORS);
     }
 }

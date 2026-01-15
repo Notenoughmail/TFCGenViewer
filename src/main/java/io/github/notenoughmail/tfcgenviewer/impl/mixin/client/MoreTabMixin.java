@@ -1,9 +1,11 @@
 package io.github.notenoughmail.tfcgenviewer.impl.mixin.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import com.notenoughmail.tfcgenviewer.screen.PreviewGenerationScreen;
-import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
+import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.client.screen.PreviewScreen;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.client.gui.components.Button;
@@ -15,13 +17,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(targets = "net.minecraft.client.gui.screens.worldselection.CreateWorldScreen$MoreTab")
 public abstract class MoreTabMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void tfcgenviewer$AddPreviewButton(CreateWorldScreen parent, CallbackInfo ci, @Local GridLayout.RowHelper rowHelper) {
+    private <
+            V extends IVisualizerType<G, C, S, O>,
+            G extends ChunkGeneratorExtension,
+            C,
+            S extends IScale<I>,
+            O extends IVisualizerType.Options<O>,
+            I extends ImageSize
+            > void tfcgenviewer$AddPreviewButton(CreateWorldScreen parent, CallbackInfo ci, @Local GridLayout.RowHelper rowHelper) {
         parent.getUiState()
                 .getSettings()
                 .selectedDimensions()
@@ -36,8 +44,8 @@ public abstract class MoreTabMixin {
                                                 viz.name()
                                         ),
                                         b -> parent.getMinecraft().setScreen(new PreviewScreen<>(
-                                                TFCGenViewer.cast(ext),
-                                                viz,
+                                                (G) ext,
+                                                (IGeneratorVisualizer<G, I, S, V>) viz,
                                                 parent,
                                                 key
                                         ))

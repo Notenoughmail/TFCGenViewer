@@ -6,24 +6,26 @@ import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Random;
 
 public class RockTypeVisualizer implements RegionVisualizerType.Simple {
 
-    public static final Component NAME = Component.translatable("tfcgenviewer.preview_world.visualizer_type.rock_types");
+    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_ROCK_TYPE);
 
-    public static final DataManager.Reference<ColorGradientDefinition> UPLIFT = Colors.COMMON_GRADIENTS.getReference(TFCGenViewer.id("rock_type/uplift"));
-    public static final DataManager.Reference<ColorGradientDefinition> LAND = Colors.COMMON_GRADIENTS.getReference(TFCGenViewer.id("rock_type/land"));
-    public static final DataManager.Reference<ColorGradientDefinition> VOLCANIC = Colors.COMMON_GRADIENTS.getReference(TFCGenViewer.id("rock_type/volcanic"));
-    public static final DataManager.Reference<ColorGradientDefinition> OCEANIC = Colors.COMMON_GRADIENTS.getReference(TFCGenViewer.id("rock_type/oceanic"));
+    public static final DataManager.Reference<ColorGradientDefinition> UPLIFT = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("rock_type/uplift"));
+    public static final DataManager.Reference<ColorGradientDefinition> LAND = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("rock_type/land"));
+    public static final DataManager.Reference<ColorGradientDefinition> VOLCANIC = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("rock_type/volcanic"));
+    public static final DataManager.Reference<ColorGradientDefinition> OCEANIC = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("rock_type/oceanic"));
 
     public static final ColorKey COLOR_KEY = ColorKey.of(key -> {
         LAND.get().appendTo(key);
@@ -35,6 +37,11 @@ public class RockTypeVisualizer implements RegionVisualizerType.Simple {
     @Override
     public boolean isPermitted(ServerPlayer player) {
         return true;
+    }
+
+    @Override
+    public ResourceLocation id() {
+        return TFCGenViewerRegistration.VIZ_ROCK_TYPE.id();
     }
 
     @Override

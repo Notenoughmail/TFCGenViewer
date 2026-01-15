@@ -16,6 +16,4 @@ public interface IRegionVisualizerType<C, O extends IVisualizerType.Options<O>> 
     StreamCodec<RegistryFriendlyByteBuf, List<IRegionVisualizerType<?, ?>>> NETWORK_CODEC = ByteBufCodecs.registry(GenViewerAPI.TFC_REGION_VISUALIZER).apply(ByteBufCodecs.list());
 
     Codec<IRegionVisualizerType<?, ?>> CODEC = GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY.byNameCodec();
-
-    boolean isPermitted(ServerPlayer player);
 }

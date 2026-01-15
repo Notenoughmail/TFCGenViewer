@@ -4,13 +4,10 @@
   "package": "io.github.notenoughmail.tfcgenviewer.impl.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "RiverEdgeAccessor",
-    "RockLayerSettingsAccessor",
-    "TFCLayersAccessor"
   ],
   "client": [
+    "accessor.NativeImageAccessor",
     "client.MoreTabMixin",
-    "NativeImageAccessor",
-    "WorldTabMixin"
+    "client.WorldTabMixin"
   ]
 }

@@ -1,9 +1,9 @@
 package io.github.notenoughmail.tfcgenviewer.impl.preview;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
-import com.notenoughmail.tfcgenviewer.mixin.NativeImageAccessor;
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
+import io.github.notenoughmail.tfcgenviewer.impl.mixin.accessor.NativeImageAccessor;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
 import net.neoforged.fml.loading.FMLPaths;
@@ -32,6 +32,10 @@ public class Image implements MutableImage {
 
     public NativeImage getNative() {
         return image;
+    }
+
+    public int size() {
+        return maxPixel + 1;
     }
 
     @Override
