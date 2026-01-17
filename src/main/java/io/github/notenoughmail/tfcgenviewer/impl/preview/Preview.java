@@ -5,9 +5,12 @@ import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.Util;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -49,9 +52,13 @@ public class Preview {
             int xCenterBlocks,
             int zCenterBlocks,
             ResourceLocation visualizerId,
-            PreviewPane previewPane
+            PreviewPane previewPane,
+            InfoPane infoPane,
+            SpawnInfo spawnInfo,
+            RegistryAccess registryAccess
     ) {
         return CompletableFuture.supplyAsync(() -> {
+            infoPane.setGenerating(viz);
             final Stopwatch timer = Stopwatch.createStarted();
 
             final int previewPixels = imageSize.sizeInPixels();
@@ -73,29 +80,80 @@ public class Preview {
             viz.afterComplete(image, drawParams);
 
             timer.stop();
+            final long millis = timer.elapsed(TimeUnit.MILLISECONDS);
             return new ImageReturn(
                     image,
-                    timer.elapsed(TimeUnit.MILLISECONDS),
-                    // TODO: 1.21.1 | Allow visualizer types to append to this w/ options
-                    "%s+%s_%s.png".formatted(
-                            visualizerId.toDebugFileName(),
-                            viz.id().toDebugFileName(),
-                            Util.getFilenameFormattedDateTime()
+                    millis,
+                    Util.make(new StringBuilder(), builder -> {
+                        builder.append(Util.getFilenameFormattedDateTime())
+                                .append("-")
+                                .append(visualizerId.toDebugFileName())
+                                .append("+")
+                                .append(viz.id().toDebugFileName());
+                        viz.appendToFileName(builder, drawParams.options());
+                        builder.append(".png");
+                    }).toString(),
+                    Util.make(
+                            Component.translatable("tfcgenviewer.preview_info.base", viz.name(), drawParams.scale().formatSize(imageSize), formatMillis(millis)),
+                            c -> {
+                                c.append(CommonComponents.NEW_LINE)
+                                        .append(Component.translatable("tfcgenviewer.preview_info.centered_on", xCenterBlocks, zCenterBlocks))
+                                        .append(CommonComponents.NEW_LINE)
+                                        .append(CommonComponents.NEW_LINE);
+                                final Component additional = viz.additionalPreviewInfo(drawParams);
+                                if (additional != null) {
+                                    c.append(Component.translatable("tfcgenviewer.preview_info.additional_from_visualizer", additional))
+                                            .append(CommonComponents.NEW_LINE)
+                                            .append(CommonComponents.NEW_LINE);
+                                }
+                                c.append(Component.translatable("tfcgenviewer.preview_info.color_key", viz.colorKey(registryAccess, drawParams.cache())));
+                            }
                     )
             );
         }, GEN_THREAD_POOL).exceptionally(thr -> {
             TFCGenViewer.LOGGER.error("Error encountered during generation preview!", thr);
-            return new ImageReturn(image, -1L, null);
+            previewPane.alterState(true);
+            infoPane.setError();
+            return new ImageReturn(image, -1L, null, ON_ERROR);
+        }).thenApply(ret -> {
+            if (ret.millis() != -1) {
+                final int halfImageBlocks = drawParams.scale().blocksPerPixel() * imageSize.sizeInPixels() / 2;
+                previewPane.updateImage(
+                        ret.image(),
+                        drawParams.colorDescriptors(),
+                        drawParams.scale(),
+                        xCenterBlocks - halfImageBlocks,
+                        zCenterBlocks - halfImageBlocks
+                );
+                infoPane.setMessage(ret.infoPaneMessage());
+            }
+            return ret;
         });
+    }
+
+    private static String formatMillis(long millis) {
+        final double seconds = (double) millis / 1000L;
+        if (millis < 1000) {
+            return "%.2f".formatted(seconds);
+        } else {
+            return "%.1f".formatted(seconds);
+        }
     }
 
     public record ImageReturn(
             Image image,
             long millis,
-            String name
+            String name,
+            Component infoPaneMessage
     ) {
         public void export() {
-            image.export(name);
+            if (millis != -1) {
+                image.export(name);
+            } else {
+                TFCGenViewer.LOGGER.warn("Unable to export image due to above errors");
+            }
         }
     }
+
+    public record SpawnInfo(boolean drawSpawn, int xCenterBlocks, int zCenterBlocks, int radiusBlocks) {}
 }

@@ -6,6 +6,9 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RGB;
+import io.github.notenoughmail.tfcgenviewer.impl.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.BiomeAltitudeVisualizer;
+import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RiversAndMountainsVisualizer;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.rock.Rock;
 import net.dries007.tfc.util.Helpers;
@@ -17,38 +20,42 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
-import static net.dries007.tfc.util.climate.KoppenClimateClassification.*;
 import static net.dries007.tfc.common.blocks.rock.Rock.*;
+import static net.dries007.tfc.util.climate.KoppenClimateClassification.*;
 
-public class ColorProvider extends DataManagerProvider<ColorDefinition> {
+public class ColorProvider extends DataManagerProvider {
 
-    private static final Map<Rock, RGB> ROCK_COLORS = Util.make(new EnumMap<>(Rock.class), m -> {
-        rgb(m, ANDESITE, 96, 96, 96);
-        rgb(m, BASALT, 29, 32, 33);
-        rgb(m, CHALK, 199, 199, 193);
-        rgb(m, CHERT, 122, 78, 70);
-        rgb(m, CLAYSTONE, 141, 102, 68);
-        rgb(m, CONGLOMERATE, 111, 113, 101);
-        rgb(m, DACITE, 122, 123, 123);
-        rgb(m, DIORITE, 142, 142, 142);
-        rgb(m, DOLOMITE, 60, 70, 89);
-        rgb(m, GABBRO, 93, 85, 68);
-        rgb(m, GNEISS, 115, 109, 96);
-        rgb(m, GRANITE, 85, 70, 74);
-        rgb(m, LIMESTONE, 136, 127, 107);
-        rgb(m, MARBLE, 227, 235, 235);
-        rgb(m, PHYLLITE, 148, 157, 169);
-        rgb(m, QUARTZITE, 140, 129, 128);
-        rgb(m, RHYOLITE, 115, 98, 103);
-        rgb(m, SCHIST, 77, 84, 65);
-        rgb(m, SHALE, 70, 67, 70);
-        rgb(m, SLATE, 125, 116, 103);
+    static final Map<Rock, RockInfo> ROCK_COLORS = Util.make(new EnumMap<>(Rock.class), m -> {
+        rock(m, ANDESITE, 96, 96, 96, 0, 0xBF, 0xFF);
+        rock(m, BASALT, 29, 32, 33, 0x41, 0x69, 0xE1);
+        rock(m, CHALK, 199, 199, 193, 0x7F, 0xFF, 0);
+        rock(m, CHERT, 122, 78, 70, 0, 0, 0xCD);
+        rock(m, CLAYSTONE, 141, 102, 68, 0, 0x80, 0x80);
+        rock(m, CONGLOMERATE, 111, 113, 101, 0xFF, 0xA5, 0);
+        rock(m, DACITE, 122, 123, 123, 0xFF, 0, 0xFF);
+        rock(m, DIORITE, 142, 142, 142, 0x8B, 0, 0);
+        rock(m, DOLOMITE, 60, 70, 89, 0xFF, 0xFF, 0);
+        rock(m, GABBRO, 93, 85, 68, 0x80, 0x80, 0);
+        rock(m, GNEISS, 115, 109, 96, 0xEE, 0x82, 0xEE);
+        rock(m, GRANITE, 85, 70, 74, 0xD3, 0xD3, 0xD3);
+        rock(m, LIMESTONE, 136, 127, 107, 0xFF, 0x45, 0);
+        rock(m, MARBLE, 227, 235, 235, 0x7F, 0xFF, 0xD4);
+        rock(m, PHYLLITE, 148, 157, 169, 0xFF, 0x14, 0x93);
+        rock(m, QUARTZITE, 140, 129, 128, 0xDB, 0x70, 0x93);
+        rock(m, RHYOLITE, 115, 98, 103, 0, 0xFF, 0x7F);
+        rock(m, SCHIST, 77, 84, 65, 0xFF, 0xA0, 0x7A);
+        rock(m, SHALE, 70, 67, 70, 0, 0x80, 0);
+        rock(m, SLATE, 125, 116, 103, 0xF0, 0xE6, 0x8C);
     });
+
     public static String rockKey(Rock rock) {
         return "color.tfc.rock." + rock.getSerializedName();
     }
@@ -91,24 +98,77 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
     }
 
     @Override
-    protected void make() {
-        makeFor(Colors.BIOME_COLORS, biomes -> {
-
+    protected void make(HolderLookup.Provider lookup) {
+        makeFor(Colors.ROCK_COLORS, colors -> {
+            ROCK_COLORS.forEach((r, i) -> i.make(r, true, colors::accept));
+            colors.accept(Colors.UNKNOWN, ColorDefinition.of(
+                    227, 88, 255,
+                    Component.translatable("color.tfcgenviewer.rock.unknown"),
+                    null
+            ));
         });
-        makeFor(
-                Colors.ROCK_COLORS,
-                ROCK_COLORS,
-                r -> TFCBlocks.ROCK_BLOCKS.get(r).get(BlockType.RAW).getId(),
-                ColorProvider::rockKey,
-                Enum::ordinal,
-                t -> null,
-                new RGB(
-                        255,
-                        88,
-                        227
-                ),
-                "rock"
-        );
+        makeFor(Colors.MISC_COLORS, colors -> {
+            colors.accept(ClimateFeatureCache.LAND, ColorDefinition.of(
+                    32, 168, 72,
+                    Component.translatable("tfcgenviewer.climate_features.land"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.RIVER, ColorDefinition.of(
+                    100, 180, 250,
+                    Component.translatable("biome.tfc.river"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.COASTAL_MOUNTAIN, ColorDefinition.of(
+                    240, 110, 50,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.coastal_mountain"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.INLAND_MOUNTAIN, ColorDefinition.of(
+                    150, 150, 150,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.inland_mountain"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_4, ColorDefinition.of(
+                    190, 180, 0,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_4"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_3, ColorDefinition.of(
+                    220, 110, 0,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_3"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_2, ColorDefinition.of(
+                    240, 20, 0,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_2"),
+                    null
+            ));
+            colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_1, ColorDefinition.of(
+                    240, 0, 180,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_1"),
+                    null
+            ));
+            colors.accept(BiomeAltitudeVisualizer.MOUNTAIN, ColorDefinition.of(
+                    80, 200, 80,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.mountain"),
+                    null
+            ));
+            colors.accept(BiomeAltitudeVisualizer.HIGH, ColorDefinition.of(
+                    53, 166, 53,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.high"),
+                    null
+            ));
+            colors.accept(BiomeAltitudeVisualizer.MID, ColorDefinition.of(
+                    26, 133, 26,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.mid"),
+                    null
+            ));
+            colors.accept(BiomeAltitudeVisualizer.LOW, ColorDefinition.of(
+                    0, 100, 0,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.low"),
+                    null
+            ));
+        });
         makeForFull(
                 Colors.KOPPEN_COLORS,
                 KOPPEN_COLORS,
@@ -126,7 +186,7 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
     }
 
     public static String unknownKey(String type) {
-        return "color." + TFCGenViewer.ID + type + ".unknown";
+        return "color." + TFCGenViewer.ID + "." + type + ".unknown";
     }
 
     private <T> void makeForFull(
@@ -165,29 +225,27 @@ public class ColorProvider extends DataManagerProvider<ColorDefinition> {
         );
     }
 
-    private <T> void makeFor(
-            ColorManager manager,
-            Map<T, RGB> map,
-            Function<T, ResourceLocation> id,
-            Function<T, String> key,
-            ToIntFunction<T> sort,
-            Function<T, @Nullable String> tooltip,
-            RGB unknown,
-            String type
-    ) {
-        makeForFull(
-                manager,
-                map,
-                id,
-                key.andThen(Component::translatable),
-                sort,
-                tooltip.andThen(k -> k == null ? null : Component.translatable(k)),
-                unknown,
-                type
-        );
-    }
-
     private static <T> void rgb(Map<T, RGB> map, T t, int r, int g, int b) {
         map.put(t, new RGB(r, g, b));
+    }
+
+    private static void rock(Map<Rock, RockInfo> map, Rock rock, int rs, int gs, int bs, int rm, int gm, int bm) {
+        map.put(rock, new RockInfo(
+                new RGB(rs, gs, bs),
+                new RGB(rm, gm, bm)
+        ));
+    }
+
+    public record RockInfo(RGB standard, RGB seedMaker) {
+        public void make(Rock rock, boolean standard, BiConsumer<ResourceLocation, ColorDefinition> ret) {
+            final ColorDefinition color = new ColorDefinition(
+                    standard ? this.standard : seedMaker,
+                    Component.translatable(ColorProvider.rockKey(rock)),
+                    rock.ordinal(),
+                    Optional.empty()
+            );
+            final ResourceLocation id = TFCBlocks.ROCK_BLOCKS.get(rock).get(BlockType.RAW).getId();
+            ret.accept(id, color);
+        }
     }
 }

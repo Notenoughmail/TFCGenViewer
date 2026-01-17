@@ -22,11 +22,11 @@ public class EN_US extends LangProvider {
                                 .branch("rivers_and_mountains", rivers -> rivers
                                         .branch("sensitivity", sensitivity -> sensitivity
                                                 .add("", "Sensitivity")
-                                                .add("value", "Sensitivity: %s%")
+                                                .add("value", "Sensitivity: %s%%")
                                         )
                                 )
                                 .branch("rock", rock -> rock
-                                        .add("surface", "At surface")
+                                        .add("surface", "At Surface")
                                         .add("elevation", "Elevation")
                                 )
                         )
@@ -70,11 +70,13 @@ public class EN_US extends LangProvider {
                                 .add("region", "TFC Overworld (Grid Scale)"))
                 )
                 .branch("preview_info", info -> info
-                        .add("base", "Generated using %s\nDimensions: %2$s x %2$s")
+                        .add("base", "Visualizer used: %1$s\nSize: %2$s x %2$s\nTime elapsed: %3$s seconds")
                         .add("centered_on", "Centered on (%s,%s)")
                         .add("additional_from_visualizer", "Additional information from visualizer:\n%s")
                         .add("generated_regions", "Generated %s regions")
-                        .add("color_key", "Color Key:\n\n%s")
+                        .add("generated_rock", "Generated %s regions at y-level %s")
+                        .add("color_key", "Color Key:\n%s")
+                        .add("generating", "Generating with %s...")
                         .add("error", "An error occurred during generation\n\nPlease check the log and report the error")
                 )
                 .branch("visualizers", type -> type
@@ -87,6 +89,7 @@ public class EN_US extends LangProvider {
                                 .add("koppen", "Köppen Climate Classification")
                                 .add("climate_restricted", "Climate Restricted Generation")
                                 .add("biome_altitude", "Biome Altitude")
+                                .add("rivers_and_mountains", "Rivers and Mountains")
                         )
                 )
                 .branch("gradient", gradient -> gradient
@@ -106,12 +109,56 @@ public class EN_US extends LangProvider {
                                 .add("3", "11 to 23 °C")
                                 .add("4", "23 to 35 °C")
                         )
+                        .branch("rock_type", rock -> rock
+                                .add("oceanic", "Oceanic Rock")
+                                .add("volcanic", "Volcanic Rock")
+                                .add("uplift", "Uplift Rock")
+                                .add("land", "Land Rock")
+                        )
                         .add("ocean", "Ocean")
                 )
                 .branch("unit", unit -> unit
                         .add("kilometer", "%s km")
                 )
+                .branch("climate_features", climateFeatures -> climateFeatures
+                        .add("multiple_present", "Multiple Features:")
+                        .add("list_entry", "\n- %s")
+                        .add("land", "Land")
+                )
+                .branch("visualized_feature", feature -> feature
+                        .add("kaolin", "Kaolin Clay")
+                        .add("coral", "Coral")
+                )
                 .add("color_key_template", "%s: %s")
+        );
+        branch("color", color -> color
+                .branch(TFCGenViewer.ID, self -> self
+                        .branch("koppen_classification", koppen -> koppen
+                                .add("unknown", "Not land")
+                        )
+                        .branch("rock", rock -> rock
+                                .add("unknown", "Unknown Rock")
+                        )
+                        .branch("rivers_and_mountains", river -> river
+                                .add("coastal_mountain", "Coastal Mountain")
+                                .add("inland_mountain", "Inland Mountain")
+                                .add("hot_spot_age_4", "Oldest hot Spot")
+                                .add("hot_spot_age_3", "Old Hot Spot")
+                                .add("hot_spot_age_2", "Young hot Spot")
+                                .add("hot_spot_age_1", "Active Hot Spot")
+                        )
+                        .branch("biome_altitude", alt -> alt
+                                .add("mountain", "Mountain Elevation")
+                                .add("high", "High Elevation")
+                                .add("mid", "Mid Elevation")
+                                .add("low", "Low Elevation")
+                        )
+                )
+        );
+        branch("biome", biome -> biome
+                .branch(TFCGenViewer.ID, self -> self
+                        .add("unknown", "Unknown Biome")
+                )
         );
         for (Rock rock : Rock.VALUES) {
             add(ColorProvider.rockKey(rock), capitalizeWord(rock.getSerializedName()));

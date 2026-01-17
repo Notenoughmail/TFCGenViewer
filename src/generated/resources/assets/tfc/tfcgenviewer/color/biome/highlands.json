@@ -1,0 +1,19 @@
+{
+  "color": {
+    "color": {
+      "b": 30,
+      "g": 80,
+      "r": 20
+    },
+    "name": {
+      "translate": "biome.tfc.highlands"
+    }
+  },
+  "instances": [
+    "tfc:highlands",
+    "tfc:shilin_highlands",
+    "tfc:tower_karst_highlands",
+    "tfc:doline_highlands",
+    "tfc:cenote_highlands"
+  ]
+}

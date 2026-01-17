@@ -16,7 +16,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 
@@ -56,7 +55,7 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     @Override
     public int maximumPreviewOffset() {
-        return GridSize._6.sizeInPixels() * 2;
+        return GridSize._6.sizeInPixels();
     }
 
     @Override

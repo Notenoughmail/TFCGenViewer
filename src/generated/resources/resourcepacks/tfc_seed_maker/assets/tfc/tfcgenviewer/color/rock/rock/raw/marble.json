@@ -1,0 +1,11 @@
+{
+  "color": {
+    "b": 212,
+    "g": 255,
+    "r": 127
+  },
+  "name": {
+    "translate": "color.tfc.rock.marble"
+  },
+  "sort": 20
+}

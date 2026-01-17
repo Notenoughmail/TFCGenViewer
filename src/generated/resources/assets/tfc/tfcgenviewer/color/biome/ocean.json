@@ -1,0 +1,15 @@
+{
+  "color": {
+    "color": {
+      "b": 220,
+      "g": 0,
+      "r": 0
+    },
+    "name": {
+      "translate": "biome.tfc.ocean"
+    }
+  },
+  "instances": [
+    "tfc:ocean"
+  ]
+}

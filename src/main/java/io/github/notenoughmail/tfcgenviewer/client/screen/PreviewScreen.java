@@ -10,6 +10,7 @@ import io.github.notenoughmail.tfcgenviewer.api.widget.OptionRequest;
 import io.github.notenoughmail.tfcgenviewer.client.options.EditBoxValueSet;
 import io.github.notenoughmail.tfcgenviewer.client.options.OptionOrder;
 import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
+import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.SingleColumnOptionsList;
 import io.github.notenoughmail.tfcgenviewer.impl.ColorDescriptors;
@@ -29,7 +30,6 @@ import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -40,7 +40,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 
 public class PreviewScreen<
@@ -106,6 +105,7 @@ public class PreviewScreen<
     private final OptionInstance<?>[] intransientOptionsBefore, intransientOptionsAfter;
 
     private final PreviewPane previewPane;
+    private final InfoPane infoPane;
 
     private SingleColumnOptionsList options;
 
@@ -141,7 +141,7 @@ public class PreviewScreen<
                 visualizerType = visualizerType(visualizer, v -> onVisualizerChange())
         };
         intransientOptionsAfter = new OptionInstance[] {
-                imageSize = imageSize(visualizer.scale(), i -> state.recreateVizOptions()),
+                imageSize = imageSize(visualizer.scale(), i -> state.updateVizOptions()),
                 spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {}),
                 xOffset = kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0),
                 zOffset = kmOption("tfcgenviewer.screen.preview_world.option.z_offset", -offset, offset, 0),
@@ -171,8 +171,9 @@ public class PreviewScreen<
                     }
                 })
         };
-        previewPane = new PreviewPane(0, 0, 10, () -> font, true);
-        state.recreateVizOptions();
+        previewPane = new PreviewPane(0, 0, () -> font, true);
+        infoPane = new InfoPane(0, 0, 10, 10, () -> font);
+        state.createVizOptions(true);
         visualize();
     }
 
@@ -189,25 +190,31 @@ public class PreviewScreen<
 
     @Override
     protected void init() {
-        final int previewPixels = 100; //Math.min(height - 64, width / 2);
+        final int previewPixels = Math.min(height - 64, width / 2);
 
         options = new SingleColumnOptionsList(getMinecraft(), width, height, 32, 25);
         populateOptions();
         final int leftPreview = (width - previewPixels) / 2;
-        options.updateSizeAndPosition(
-                leftPreview - 10,
+        options.setRectangle(
+                leftPreview - 6,
                 height - 64,
+                0,
                 32
         );
+        options.clampScrollAmount();
         addRenderableWidget(options);
 
         previewPane.setRectangle(previewPixels, previewPixels, leftPreview, (height - previewPixels) / 2);
         addRenderableWidget(previewPane);
-    }
 
-    @Override
-    public void tick() {
-        previewPane.tick();
+        infoPane.setRectangle(
+                leftPreview - 6,
+                height - 64,
+                leftPreview + previewPixels + 6,
+                32
+        );
+        addRenderableWidget(infoPane);
+        infoPane.fontAvailable(visualizerType.get());
     }
 
     private void visualize() {
@@ -216,8 +223,8 @@ public class PreviewScreen<
             state.previousImage.close();
             state.previousImage = null;
         }
+        previewPane.nowProcessing();
 
-        final boolean spawnOverlay = this.spawnOverlay.get();
         final int xCenterBlocks = this.xOffset.get(), zCenterBlocks = this.zOffset.get();
         final V viz = visualizerType.get();
         final C cache = viz.createCache(registryAccess, generator, imageSize.get(), state.genSeed = parseSeed());
@@ -243,36 +250,16 @@ public class PreviewScreen<
                 xCenterBlocks,
                 zCenterBlocks,
                 visualizer.id(),
-                previewPane
-        ).thenApply(ret -> {
-            final MutableComponent vizInfo = Component.translatable("tfcgenviewer.preview_info.base", viz.name(), visualizer.scale().formatSize(imageSize));
-            vizInfo.append(CommonComponents.NEW_LINE)
-                    .append(Component.translatable("tfcgenviewer.preview_info.centered_on", xCenterBlocks, zCenterBlocks))
-                    .append(CommonComponents.NEW_LINE)
-                    .append(CommonComponents.NEW_LINE);
-            if (ret.millis() == -1L) {
-                vizInfo.append(Preview.ON_ERROR);
-            } else {
-                final Component additional = viz.previewInfo(info);
-                if (additional != null) {
-                    vizInfo.append(Component.translatable("tfcgenviewer.preview_info.additional_from_visualizer", additional))
-                            .append(CommonComponents.NEW_LINE)
-                            .append(CommonComponents.NEW_LINE);
-                }
-                vizInfo.append(Component.translatable("tfcgenviewer.preview_info.color_key", viz.colorKey(registryAccess, cache)));
-            }
-
-            final int halfImageBlocks = scale.blocksPerPixel() * imageSize.sizeInPixels() / 2;
-            previewPane.updateImage(
-                    ret.image(),
-                    info.colorDescriptors(),
-                    scale,
-                    xCenterBlocks - halfImageBlocks,
-                    zCenterBlocks - halfImageBlocks
-            );
-            // Update info & preview panes
-            return ret;
-        });
+                previewPane,
+                infoPane,
+                new Preview.SpawnInfo(
+                        spawnOverlay.get(),
+                        spawnCenterX.get(),
+                        spawnCenterZ.get(),
+                        spawnDist.get()
+                ),
+                registryAccess
+        );
     }
 
     private void applySettings() {
@@ -303,22 +290,21 @@ public class PreviewScreen<
                 grassDensity.get().floatValue(),
                 finiteContinents.get()
         ));
-        state.recreateVizOptions();
+        state.updateVizOptions();
     }
 
     private long parseSeed() {
-        return WorldOptions.parseSeed(parent.getUiState().getSeed()).orElse(WorldOptions.randomSeed());
+        return WorldOptions.parseSeed(seed.get()).orElse(WorldOptions.randomSeed());
     }
 
     private void onVisualizerChange() {
-        state.recreateVizOptions();
-        populateOptions();
+        state.createVizOptions(false);
     }
 
     private void populateOptions() {
         options.children().clear();
         options.add(intransientOptionsBefore);
-        visualizerType.get().addOptions(new OptionOrders(s -> options.add(s.get())), state.vizOptions);
+        visualizerType.get().addOptions(new OptionOrders(options::add), state.vizOptions);
         options.add(intransientOptionsAfter);
     }
 
@@ -329,45 +315,52 @@ public class PreviewScreen<
         MutableImage previousImage = null;
         CompletableFuture<Preview.ImageReturn> previousImageProcess = CompletableFuture.completedFuture(null);
 
-        void recreateVizOptions() {
+        void createVizOptions(boolean initial) {
             vizOptions = visualizerType.get().createOptions(
                     registryAccess,
                     generator,
                     imageSize.get()
             );
+            if (!initial) {
+                populateOptions();
+            }
+        }
+
+        void updateVizOptions() {
+            visualizerType.get().updateOptions(
+                    registryAccess,
+                    generator,
+                    imageSize.get(),
+                    vizOptions
+            );
         }
     }
 
-    private record OptionOrders(Consumer<Supplier<OptionInstance<?>>> order) implements OptionRequest {
-
-        private <T> Order<T> order(OptionOrder<T> order) {
-            this.order.accept(order::get);
-            return order;
-        }
+    private record OptionOrders(Consumer<OptionInstance<?>> order) implements OptionRequest {
 
         @Override
         public <T> Order<T> order(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange) {
-            return order(OptionOrder.list(name, initial, values, codec, onChange));
+            return OptionOrder.list(name, initial, values, codec, onChange, order);
         }
 
         @Override
         public Order<Boolean> orderBool(String name, boolean initial, BooleanConsumer onChange) {
-            return order(OptionOrder.bool(name, initial, onChange));
+            return OptionOrder.bool(name, initial, onChange, order);
         }
 
         @Override
         public <T extends Comparable<T>> Order<T> order(String name, T initial, T min, T max, Codec<T> codec, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Consumer<T> onChange) {
-            return order(OptionOrder.comparable(name, initial, min, max, codec, toSlider, fromSlider, onChange));
+            return OptionOrder.comparable(name, initial, min, max, codec, toSlider, fromSlider, onChange, order);
         }
 
         @Override
         public Order<Integer> orderInt(String name, int initial, int min, int max, IntConsumer onChange) {
-            return order(OptionOrder.integer(name, initial, min, max, onChange));
+            return OptionOrder.integer(name, initial, min, max, onChange, order);
         }
 
         @Override
         public Order<Double> orderDouble(String name, double initial, double min, double max, DoubleConsumer onChange) {
-            return order(OptionOrder.doub(name, initial, min, max, onChange));
+            return OptionOrder.doub(name, initial, min, max, onChange, order);
         }
     }
 
@@ -386,10 +379,7 @@ public class PreviewScreen<
         return new OptionInstance<>(
                 "tfcgenviewer.option.preview_size",
                 OptionInstance.noTooltip(),
-                (caption, i) -> Options.genericValueLabel(
-                        caption,
-                        scale.formatSize(i)
-                ),
+                (caption, i) -> scale.formatSize(i),
                 new OptionInstance.Enum<>(scale.sizes(), scale.codec()),
                 scale.getDefault(),
                 onChange

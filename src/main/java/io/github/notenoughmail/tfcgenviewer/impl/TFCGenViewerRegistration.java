@@ -29,7 +29,7 @@ public class TFCGenViewerRegistration {
 
     // TODO: 1.21.1 | Something is very wrong with this
     public static <T> Component visualizerName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
-        return Component.translatable(TFCGenViewer.ID + "." + regKey.location().getPath().replace("\\", ".") + viz.id().getPath());
+        return Component.translatable(TFCGenViewer.ID + "." + regKey.location().getPath().replace("/", ".") + "." + viz.id().getPath().replace("/", "."));
     }
 
     public static Component regionVisualizerName(Id<? extends IRegionVisualizerType<?, ?>> viz) {
@@ -43,7 +43,8 @@ public class TFCGenViewerRegistration {
     public static final Id<RockVisualizer> VIZ_ROCK = regionVisualizer("rock", RockVisualizer::new);
     public static final Id<KoppenVisualizer> VIZ_KOPPEN = regionVisualizer("koppen", KoppenVisualizer::new);
     public static final Id<BiomeAltitudeVisualizer> VIZ_BIOME_ALT = regionVisualizer("biome_altitude", BiomeAltitudeVisualizer::new);
-    public static final Id<RiversAndMountainsVisualizer> VIZ_RIVERS_AND_MOUNTINS = regionVisualizer("rivers_and_mountains", RiversAndMountainsVisualizer::new);
+    public static final Id<RiversAndMountainsVisualizer> VIZ_RIVERS_AND_MOUNTAINS = regionVisualizer("rivers_and_mountains", RiversAndMountainsVisualizer::new);
+    public static final Id<ClimateRestrictedVisualizer> VIZ_CLIMATE_FEATURE = regionVisualizer("climate_restricted", ClimateRestrictedVisualizer::new);
 
     public static final Id<Gradient.Preset> GRAD_BLUE = gradient("blue", Gradient.lin(0xFF963232, 0xFFFF8C64));
     public static final Id<Gradient.Preset> GRAD_GREEN = gradient("green", Gradient.lin(0xFF006400, 0xFF50C850));

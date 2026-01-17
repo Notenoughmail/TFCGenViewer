@@ -50,12 +50,6 @@ public class FeatureColors extends UnregisteredColorsHandler<Map<ResourceKey<Pla
                 .filter(climateSpace -> climateSpace.check(temperature, rainfall))
                 .map(climateSpace -> {
                     final Holder<PlacedFeature> featureHolder = climateSpace.feature();
-                    if (featureHolder.get().feature().get().config() instanceof IVeinConfig vein) {
-                        final Holder<Biome> biomeHolder = biomeLookup.getOrThrow(biomeKey);
-                        if (!vein.config().biomes().map(biomeHolder::is).orElse(true)) {
-                            return null;
-                        }
-                    }
                     return definitions.get(featureHolder.unwrapKey().orElseThrow());
                 })
                 .filter(Objects::nonNull)

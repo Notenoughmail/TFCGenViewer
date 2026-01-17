@@ -1,0 +1,11 @@
+{
+  "color": {
+    "b": 0,
+    "g": 255,
+    "r": 127
+  },
+  "name": {
+    "translate": "color.tfc.rock.chalk"
+  },
+  "sort": 9
+}

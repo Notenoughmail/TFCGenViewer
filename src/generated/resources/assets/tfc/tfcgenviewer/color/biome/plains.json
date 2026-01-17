@@ -1,0 +1,20 @@
+{
+  "color": {
+    "color": {
+      "b": 100,
+      "g": 200,
+      "r": 100
+    },
+    "name": {
+      "translate": "biome.tfc.plains"
+    }
+  },
+  "instances": [
+    "tfc:plains",
+    "tfc:burren_plains",
+    "tfc:tower_karst_plains",
+    "tfc:doline_plains",
+    "tfc:cenote_plains",
+    "tfc:shilin_plains"
+  ]
+}

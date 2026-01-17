@@ -1,0 +1,22 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 60,
+      "r": 180
+    },
+    "name": {
+      "translate": "biome.tfc.canyons"
+    }
+  },
+  "instances": [
+    "tfc:canyons",
+    "tfc:tower_karst_canyons",
+    "tfc:shilin_canyons",
+    "tfc:doline_canyons",
+    "tfc:cenote_canyons",
+    "tfc:low_canyons",
+    "tfc:whorled_canyons",
+    "tfc:stair_step_canyons"
+  ]
+}

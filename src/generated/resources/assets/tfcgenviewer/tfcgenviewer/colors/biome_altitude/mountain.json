@@ -1,0 +1,10 @@
+{
+  "color": {
+    "b": 80,
+    "g": 200,
+    "r": 80
+  },
+  "name": {
+    "translate": "color.tfcgenviewer.biome_altitude.mountain"
+  }
+}

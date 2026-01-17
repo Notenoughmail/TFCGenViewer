@@ -19,14 +19,14 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
-public class GradientProvider extends DataManagerProvider<ColorGradientDefinition> {
+public class GradientProvider extends DataManagerProvider {
 
     public GradientProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         super(output, lookup, "Gradients");
     }
 
     @Override
-    protected void make() {
+    protected void make(HolderLookup.Provider lookup) {
         makeFor(Colors.MISC_GRADIENTS, colors -> {
             colors.accept(Colors.OCEAN, simple(
                     TFCGenViewerRegistration.GRAD_BLUE,

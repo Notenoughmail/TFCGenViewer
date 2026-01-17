@@ -1,0 +1,18 @@
+{
+  "color": {
+    "color": {
+      "b": 230,
+      "g": 150,
+      "r": 220
+    },
+    "name": {
+      "translate": "biome.tfc.lowlands"
+    }
+  },
+  "instances": [
+    "tfc:lowlands",
+    "tfc:tower_karst_bay",
+    "tfc:salt_marsh",
+    "tfc:tower_karst_lake"
+  ]
+}

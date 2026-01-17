@@ -8,8 +8,10 @@ import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.climate.KoppenClimateClassification;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.util.data.DataManager.Reference;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.Biome;
 
 import java.util.Map;
 
@@ -19,7 +21,8 @@ public interface Colors {
 
     DataManager<ColorDefinition> MISC_COLORS = new DataManager<>(TFCGenViewer.id("colors"), ColorDefinition.CODEC);
 
-    ColorManager BIOME_COLORS = new ColorManager(TFCGenViewer.id("color/biome"));
+    ColorWithInstancesManager<Biome> BIOME_COLORS = new ColorWithInstancesManager<>(TFCGenViewer.id("color/biome"), Registries.BIOME);
+    Reference<ColorWithInstancesManager.ColorWithInstances<Biome>> UNKNOWN_BIOME = BIOME_COLORS.getReference(UNKNOWN);
     ColorManager ROCK_COLORS = new ColorManager(TFCGenViewer.id("color/rock"));
     ColorManager KOPPEN_COLORS = new ColorManager(TFCGenViewer.id("color/koppen_classification"));
 

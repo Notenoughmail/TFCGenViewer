@@ -22,14 +22,12 @@ public class BiomeAltitudeVisualizer implements RegionVisualizerType.Simple {
     public static final DataManager.Reference<ColorDefinition> HIGH = color("high");
     public static final DataManager.Reference<ColorDefinition> MID = color("mid");
     public static final DataManager.Reference<ColorDefinition> LOW = color("low");
-    public static final DataManager.Reference<ColorDefinition> NEAR_ISLAND = color("near_island");
 
     public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_BIOME_ALT);
 
     public static final ColorKey COLOR_KEY = ColorKey.of(BiomeAltitudeVisualizer::keyColors);
 
     public static void keyColors(MutableComponent key) {
-        NEAR_ISLAND.get().appendTo(key);
         LOW.get().appendTo(key);
         MID.get().appendTo(key);
         HIGH.get().appendTo(key);
@@ -39,8 +37,7 @@ public class BiomeAltitudeVisualizer implements RegionVisualizerType.Simple {
 
     public static ColorDefinition getColor(int discreteHeight) {
         return (switch (discreteHeight) {
-            case -1 -> NEAR_ISLAND;
-            case 0 -> LOW;
+            case 0, -1 -> LOW; // *Supposedly* there's a secret 'near islands' height of -1, but it never showed up for me
             case 1 -> MID;
             case 2 -> HIGH;
             case 3 -> MOUNTAIN;
@@ -70,6 +67,7 @@ public class BiomeAltitudeVisualizer implements RegionVisualizerType.Simple {
                     color.abgr()
             );
         } else {
+            // TODO: 1.21.1 | Change this out for deep/mid/shallow ocean colors
             Colors.fillOcean(
                     pair.region().noise() / 2,
                     imageX,

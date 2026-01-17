@@ -54,7 +54,7 @@ public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradien
                 g0 = lin(green(from)),
                 g1 = lin(green(to)),
                 b0 = lin(blue(from)),
-                b1 = lin(blue(from));
+                b1 = lin(blue(to));
         return value -> color(
                 255,
                 delin(Mth.lerp(value, b0, b1)),

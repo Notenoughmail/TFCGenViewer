@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api;
 
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import net.dries007.tfc.client.overworld.SolarCalculator;
@@ -11,18 +12,24 @@ import net.dries007.tfc.world.region.RegionGenerator;
 public class RegionPointCache {
 
     public static RegionPointCache of(TFCChunkGenerator generator, ImageSize scale, long worldSeed) {
-        return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), scale);
+        return of (generator, scale, worldSeed, 0);
+    }
+
+    public static RegionPointCache of(TFCChunkGenerator generator, ImageSize scale, long worldSeed, int neighborRetentionDistance) {
+        return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), scale, neighborRetentionDistance);
     }
 
     protected final RegionPoint[] pointCache;
     protected final RegionGenerator generator;
     protected final int size;
+    protected final int neighborFreeDistance;
     protected int regionCount;
 
-    protected RegionPointCache(RegionGenerator generator, ImageSize size) {
+    protected RegionPointCache(RegionGenerator generator, ImageSize size, int neighborRetentionDistance) {
         this.generator = generator;
         this.size = size.sizeInPixels();
         pointCache = new RegionPoint[this.size * this.size];
+        this.neighborFreeDistance = neighborRetentionDistance + 1;
     }
 
     protected final int index(int x, int z) {
@@ -31,6 +38,16 @@ public class RegionPointCache {
 
     protected final boolean isValid(int coordinate) {
         return coordinate >= 0 && coordinate < size;
+    }
+
+    protected void maybeFree(int x) {
+        final int shiftedX = x - neighborFreeDistance;
+        if (neighborFreeDistance > 0 && isValid(shiftedX) && pointCache[index(shiftedX, 0)] != null) {
+            final int xPos = shiftedX * size;
+            for (int z = 0 ; z < size ; z++) {
+                pointCache[xPos + z] = null;
+            }
+        }
     }
 
     protected void fillCache(Region region, int xOffset, int zOffset) {
@@ -84,13 +101,22 @@ public class RegionPointCache {
      * @return The region & region point for the given position
      */
     public RegionPoint getRegionPoint(int x, int y, int gridX, int gridZ) {
+        maybeFree(x);
         final int index = index(x, y);
         RegionPoint val = pointCache[index];
         if (val == null) {
-            final Region region = generator.getOrCreateRegion(gridX, gridZ);
-            // offset = grid - image
-            final int xOffset = gridX - x, zOffset = gridZ - y;
-            fillCache(region, xOffset, zOffset);
+            Region region = generator.getOrCreateRegion(gridX, gridZ);
+            if (region.isIn(gridX, gridZ)) {
+                // offset = grid - image
+                final int xOffset = gridX - x, zOffset = gridZ - y;
+                fillCache(region, xOffset, zOffset);
+            } else {
+                TFCGenViewer.LOGGER.warn("Encountered broken region! Reusing previous point");
+                // Just lie and use the previous point
+                // It's fine, it's rare and off in the middle of the ocean
+                // nothing of value or of interest happens there
+                pointCache[index] = pointCache[index - 1];
+            }
             val = pointCache[index];
         }
         return val;

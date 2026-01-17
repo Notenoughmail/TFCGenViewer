@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 160,
+      "r": 150
+    },
+    "name": {
+      "translate": "biome.tfc.mesas"
+    }
+  },
+  "instances": [
+    "tfc:mesas",
+    "tfc:hoodoos",
+    "tfc:buttes"
+  ]
+}

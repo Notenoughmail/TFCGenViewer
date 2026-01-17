@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 115,
+      "g": 145,
+      "r": 115
+    },
+    "name": {
+      "translate": "biome.tfc.patterned_ground"
+    }
+  },
+  "instances": [
+    "tfc:patterned_ground",
+    "tfc:inverted_patterned_ground",
+    "tfc:stone_circles"
+  ]
+}

@@ -26,51 +26,7 @@ import static com.notenoughmail.tfcgenviewer.util.ColorUtil.*;
 import static com.notenoughmail.tfcgenviewer.util.Permissions.*;
 
 public enum VisualizerType implements IExtensibleEnum {
-    CLIMATE_FEATURES(CLIMATE_CHARACTERISTICS, "climate_features", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> {
-        Features.prime(registryAccess);
-        final List<ColorDefinition> colors = Features.search(point.biome, point.temperature, point.rainfall);
-        final int i = colors.size();
-        switch (i) {
-            case 0 -> {
-                if (point.land()) {
-                    image.setPixel(
-                            x, y,
-                            RT_LAND.get().getColor(
-                                    region != null ?
-                                            region.noise() :
-                                            0,
-                                    colorDescriptors
-                            )
-                    );
-                } else {
-                    fillOcean.draw(x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess);
-                }
-            }
-            case 1 -> {
-                final ColorDefinition color = colors.get(0);
-                image.setPixel(x, y, color.color(colorDescriptors));
-            }
-            default -> {
-                final int alpha = 0xFF / i;
-                final MutableComponent tooltip = Component.empty().append(FeatureColors.MULTIPLE_FEATURES).append(CommonComponents.SPACE);
-
-                final Iterator<ColorDefinition> iter = colors.iterator();
-                final ColorDefinition first = iter.next();
-                image.setPixel(x, y, first.color(0xFF));
-                tooltip.append(first.tooltip());
-
-                while (iter.hasNext()) {
-                    final ColorDefinition color = iter.next();
-                    image.setPixel(x, y, color.color(alpha));
-                    tooltip.append(", ");
-                    tooltip.append(color.tooltip());
-                }
-
-                colorDescriptors.putIfAbsent(image.getABGRColor(x, y), tooltip);
-            }
-        }
-    }, Features),
-    INLAND_HEIGHT(BIOME_CHARACTERISTICS, "inland_height", (x, y, xPos, zPos, generator, region, point, image, colorDescriptors, registryAccess) -> image.setPixel(x, y, inlandHeight(point, colorDescriptors)), InlandHeightKey);
+    ;
 
     public static final VisualizerType[] VALUES = values();
     public static final Codec<VisualizerType> CODEC = Codec.intRange(0, VALUES.length - 1).xmap(b -> VALUES[b], Enum::ordinal);

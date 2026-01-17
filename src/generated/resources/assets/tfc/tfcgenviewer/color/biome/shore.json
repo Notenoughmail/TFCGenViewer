@@ -1,0 +1,15 @@
+{
+  "color": {
+    "color": {
+      "b": 130,
+      "g": 210,
+      "r": 230
+    },
+    "name": {
+      "translate": "biome.tfc.shore"
+    }
+  },
+  "instances": [
+    "tfc:shore"
+  ]
+}

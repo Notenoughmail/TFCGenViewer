@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 140,
+      "g": 210,
+      "r": 250
+    },
+    "name": {
+      "translate": "biome.tfc.dune_sea"
+    }
+  },
+  "instances": [
+    "tfc:dune_sea",
+    "tfc:grassy_dunes"
+  ]
+}

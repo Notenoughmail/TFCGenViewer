@@ -7,7 +7,6 @@ import net.dries007.tfc.world.TFCChunkGenerator;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
 

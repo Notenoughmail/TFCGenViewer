@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "Gives the Rocks visualizer the colors of TFCSeedMaker",
+    "pack_format": 15,
+    "supported_formats": [
+      15,
+      65
+    ]
+  }
+}

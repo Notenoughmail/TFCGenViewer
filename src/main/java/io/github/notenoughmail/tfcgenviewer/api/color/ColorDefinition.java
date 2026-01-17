@@ -8,6 +8,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.FastColor;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +35,7 @@ public record ColorDefinition(@ApiStatus.Internal RGB color, Component name, int
     @Override
     public int compareTo(@NotNull ColorDefinition o) {
         final int sorted = Integer.compare(sort, o.sort);
-        return sorted == 0 ? name.getString().compareTo(o.name.getString()) : 0;
+        return sorted == 0 ? name.getString().compareTo(o.name.getString()) : sorted;
     }
 
     @Override
@@ -51,6 +52,10 @@ public record ColorDefinition(@ApiStatus.Internal RGB color, Component name, int
 
     public int abgr() {
         return color.abgr();
+    }
+
+    public int abgr(int forcedAlpha) {
+        return FastColor.ABGR32.color(forcedAlpha, abgr());
     }
 
     public int argb() {

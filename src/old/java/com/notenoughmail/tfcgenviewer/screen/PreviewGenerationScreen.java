@@ -5,6 +5,7 @@ import com.notenoughmail.tfcgenviewer.config.Config;
 import com.notenoughmail.tfcgenviewer.util.VisualizerType;
 import com.notenoughmail.tfcgenviewer.util.custom.*;
 import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
+import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.impl.ISeedSetter;
 import com.notenoughmail.tfcgenviewer.util.preview.ImageBuilder;
 import com.notenoughmail.tfcgenviewer.util.preview.PreviewScale;

@@ -6,7 +6,6 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionRequest;
 import io.github.notenoughmail.tfcgenviewer.impl.ColorDescriptors;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
@@ -28,6 +27,8 @@ public interface IVisualizerType<
 
     O createOptions(RegistryAccess registryAccess, G generator, ImageSize scale);
 
+    default void updateOptions(RegistryAccess registryAccess, G generator, ImageSize scale, O options) {}
+
     default void addOptions(OptionRequest optionRequest, O options) {}
 
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
@@ -46,9 +47,11 @@ public interface IVisualizerType<
     default void afterComplete(MutableImage image, DrawInfo<G, C, S, O> info) {}
 
     @Nullable
-    default Component previewInfo(DrawInfo<G, C, S, O> info) {
+    default Component additionalPreviewInfo(DrawInfo<G, C, S, O> info) {
         return null;
     }
+
+    default void appendToFileName(StringBuilder builder, O options) {}
 
     Component colorKey(RegistryAccess registryAccess, C cache);
 

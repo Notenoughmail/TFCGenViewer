@@ -26,5 +26,6 @@ public interface OptionRequest {
     interface Order<T> {
         Order<T> withTooltip(Function<T, Component> tooltipFactory);
         Order<T> withDisplay(BiFunction<Component, T, Component> captionFactory);
+        void finalizeOrder();
     }
 }

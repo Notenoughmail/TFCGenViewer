@@ -1,0 +1,20 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 180,
+      "r": 20
+    },
+    "name": {
+      "translate": "biome.tfc.mountain_lake"
+    }
+  },
+  "instances": [
+    "tfc:mountain_lake",
+    "tfc:oceanic_mountain_lake",
+    "tfc:old_mountain_lake",
+    "tfc:volcanic_mountain_lake",
+    "tfc:plateau_lake",
+    "tfc:volcanic_oceanic_mountain_lake"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "color": {
+    "color": {
+      "b": 156,
+      "g": 114,
+      "r": 255
+    },
+    "name": {
+      "translate": "tfcgenviewer.visualized_feature.kaolin"
+    }
+  },
+  "instances": [
+    "tfc:vein/kaolin_disc"
+  ]
+}

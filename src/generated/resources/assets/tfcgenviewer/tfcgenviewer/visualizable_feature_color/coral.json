@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 22,
+      "g": 153,
+      "r": 255
+    },
+    "name": {
+      "translate": "tfcgenviewer.visualized_feature.coral"
+    }
+  },
+  "instances": [
+    "tfc:coral_mushroom",
+    "tfc:coral_tree",
+    "tfc:coral_claw"
+  ]
+}

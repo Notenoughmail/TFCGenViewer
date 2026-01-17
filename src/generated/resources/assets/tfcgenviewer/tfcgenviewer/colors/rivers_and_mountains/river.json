@@ -1,0 +1,10 @@
+{
+  "color": {
+    "b": 250,
+    "g": 180,
+    "r": 100
+  },
+  "name": {
+    "translate": "biome.tfc.river"
+  }
+}

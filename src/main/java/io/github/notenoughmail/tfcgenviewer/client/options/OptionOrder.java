@@ -9,31 +9,32 @@ import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.*;
 
-public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionInstance<T>> {
+public interface OptionOrder<T> extends OptionRequest.Order<T> {
 
-    static B bool(String name, boolean initial, BooleanConsumer onChange) {
-        return new B(name, initial, onChange, new Mut<>(), new Mut<>());
+    static B bool(String name, boolean initial, BooleanConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
+        return new B(name, initial, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static I integer(String name, int initial, int min, int max, IntConsumer onChange) {
-        return new I(name, initial, min, max, onChange, new Mut<>(), new Mut<>());
+    static I integer(String name, int initial, int min, int max, IntConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
+        return new I(name, initial, min, max, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static D doub(String name, double initial, double min, double max, DoubleConsumer onChange) {
-        return new D(name, initial, min, max, onChange, new Mut<>(), new Mut<>());
+    static D doub(String name, double initial, double min, double max, DoubleConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
+        return new D(name, initial, min, max, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static <T> L<T> list(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange) {
-        return new L<>(name, initial, values, codec, onChange, new Mut<>(), new Mut<>());
+    static <T> L<T> list(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange, Consumer<OptionInstance<?>> onFinalize) {
+        return new L<>(name, initial, values, codec, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static <T extends Comparable<T>> C<T> comparable(String name, T initial, T min, T max, Codec<T> codec, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Consumer<T> onChange) {
-        return new C<>(name, codec, initial, min, max, onChange, toSlider, fromSlider, new Mut<>(), new Mut<>());
+    static <T extends Comparable<T>> C<T> comparable(String name, T initial, T min, T max, Codec<T> codec, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Consumer<T> onChange, Consumer<OptionInstance<?>> onFinalize) {
+        return new C<>(name, codec, initial, min, max, onChange, toSlider, fromSlider, new Mut<>(), new Mut<>(), onFinalize);
     }
 
     default OptionInstance.TooltipSupplier<T> getTooltip() {
@@ -77,17 +78,18 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
             boolean initialValue,
             BooleanConsumer onChange,
             Mut<Function<Boolean, Component>> tooltip,
-            Mut<BiFunction<Component, Boolean, Component>> caption
+            Mut<BiFunction<Component, Boolean, Component>> caption,
+            Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Boolean> {
         @Override
-        public OptionInstance<Boolean> get() {
-            return OptionInstance.createBoolean(
+        public void finalizeOrder() {
+            onFinalize.accept(OptionInstance.createBoolean(
                     name,
                     getTooltip(),
                     getCaption(OptionInstance.BOOLEAN_TO_STRING),
                     initialValue,
                     onChange
-            );
+            ));
         }
     }
 
@@ -98,18 +100,19 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
             int max,
             IntConsumer onChange,
             Mut<Function<Integer, Component>> tooltip,
-            Mut<BiFunction<Component, Integer, Component>> caption
+            Mut<BiFunction<Component, Integer, Component>> caption,
+            Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Integer> {
         @Override
-        public OptionInstance<Integer> get() {
-            return new OptionInstance<>(
+        public void finalizeOrder() {
+            onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
                     getCaption(Options::genericValueLabel),
                     new OptionInstance.IntRange(min, max),
                     initial,
                     onChange
-            );
+            ));
         }
     }
 
@@ -120,11 +123,12 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
             double max,
             DoubleConsumer onChange,
             Mut<Function<Double, Component>> tooltip,
-            Mut<BiFunction<Component, Double, Component>> caption
+            Mut<BiFunction<Component, Double, Component>> caption,
+            Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Double> {
         @Override
-        public OptionInstance<Double> get() {
-            return new OptionInstance<>(
+        public void finalizeOrder() {
+            onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
                     getCaption(d -> Component.literal(Double.toString(d))),
@@ -132,13 +136,13 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
                             Codec.DOUBLE,
                             min,
                             max,
-                            d -> d,
-                            d -> d,
+                            d -> Mth.map(d, min, max, 0D, 1D),
+                            d -> Mth.map(d, 0D, 1D, min, max),
                             Optional.empty()
                     ),
                     initial,
                     onChange
-            );
+            ));
         }
     }
 
@@ -152,12 +156,12 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
             ToDoubleFunction<T> toSlider,
             DoubleFunction<T> fromSlider,
             Mut<Function<T, Component>> tooltip,
-            Mut<BiFunction<Component, T, Component>> caption
+            Mut<BiFunction<Component, T, Component>> caption,
+            Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<T> {
-
         @Override
-        public OptionInstance<T> get() {
-            return new OptionInstance<>(
+        public void finalizeOrder() {
+            onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
                     getCaption(t -> Component.literal(t.toString())),
@@ -171,7 +175,7 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
                     ),
                     initial,
                     onChange
-            );
+            ));
         }
     }
 
@@ -182,12 +186,12 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
             Codec<T> codec,
             Consumer<T> onChange,
             Mut<Function<T, Component>> tooltip,
-            Mut<BiFunction<Component, T, Component>> caption
+            Mut<BiFunction<Component, T, Component>> caption,
+            Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<T> {
-
         @Override
-        public OptionInstance<T> get() {
-            return new OptionInstance<>(
+        public void finalizeOrder() {
+            onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
                     getCaption(t -> Component.literal(t.toString())),
@@ -197,7 +201,7 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
                     ),
                     initial,
                     onChange
-            );
+            ));
         }
     }
 
@@ -222,7 +226,7 @@ public interface OptionOrder<T> extends OptionRequest.Order<T>, Supplier<OptionI
         @Override
         public Optional<T> validateValue(T value) {
             return validator
-                    .orElse(val -> min.compareTo(val) < 0 && max.compareTo(val) > 0)
+                    .orElse(val -> min.compareTo(val) <= 0 && max.compareTo(val) >= 0)
                     .test(value) ? Optional.of(value) : Optional.empty();
         }
     }

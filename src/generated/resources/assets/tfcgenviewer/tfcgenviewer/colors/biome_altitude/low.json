@@ -1,0 +1,10 @@
+{
+  "color": {
+    "b": 0,
+    "g": 100,
+    "r": 0
+  },
+  "name": {
+    "translate": "color.tfcgenviewer.biome_altitude.low"
+  }
+}

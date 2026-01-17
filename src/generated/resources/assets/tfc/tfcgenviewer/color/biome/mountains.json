@@ -1,0 +1,18 @@
+{
+  "color": {
+    "color": {
+      "b": 50,
+      "g": 50,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.mountains"
+    }
+  },
+  "instances": [
+    "tfc:mountains",
+    "tfc:volcanic_mountains",
+    "tfc:old_mountains",
+    "tfc:extreme_doline_mountains"
+  ]
+}

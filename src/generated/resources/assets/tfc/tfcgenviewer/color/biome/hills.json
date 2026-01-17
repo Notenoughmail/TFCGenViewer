@@ -1,0 +1,19 @@
+{
+  "color": {
+    "color": {
+      "b": 80,
+      "g": 130,
+      "r": 80
+    },
+    "name": {
+      "translate": "biome.tfc.hills"
+    }
+  },
+  "instances": [
+    "tfc:hills",
+    "tfc:shilin_hills",
+    "tfc:tower_karst_hills",
+    "tfc:doline_hills",
+    "tfc:cenote_hills"
+  ]
+}

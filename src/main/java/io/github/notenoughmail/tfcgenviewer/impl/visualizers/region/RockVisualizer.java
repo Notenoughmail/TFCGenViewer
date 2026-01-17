@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Nullable;
 
 public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Options> {
 
@@ -73,9 +74,11 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
     @Override
     public void addOptions(OptionRequest optionRequest, Options options) {
         optionRequest.orderBool("tfcgenviewer.option.region_visualizer.rock.surface", true, b -> options.surface = b)
-                .withDisplay(IVisualizerType.Options.genericCaption(b -> b ? CommonComponents.GUI_YES : CommonComponents.GUI_NO));
+                .withDisplay((c, b) -> b ? CommonComponents.GUI_YES : CommonComponents.GUI_NO)
+                .finalizeOrder();
         optionRequest.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", 75, -64, 320, i -> options.elevation = i)
-                .withDisplay(IVisualizerType.Options.genericCaption(i -> Component.literal(Integer.toString(i))));
+                .withDisplay(IVisualizerType.Options.genericCaption(i -> Component.literal(Integer.toString(i))))
+                .finalizeOrder();
     }
 
     @Override
@@ -88,7 +91,20 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
         return NAME;
     }
 
+    @Nullable
+    @Override
+    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, Options> info) {
+        return info.options().surface ?
+                RegionVisualizerType.super.additionalPreviewInfo(info) :
+                Component.translatable(
+                        "tfcgenviewer.preview_info.generated_rock",
+                        info.cache().visitedRegions(),
+                        info.options().elevation
+                );
+    }
+
     public static final class Options implements IVisualizerType.Options<Options> {
+
         boolean surface = true;
         int elevation = 75; // Random guess for 'surface' y-level
 

@@ -1,0 +1,18 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 255,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.ice_sheet"
+    }
+  },
+  "instances": [
+    "tfc:ice_sheet",
+    "tfc:subglacial_lake",
+    "tfc:ice_sheet_oceanic",
+    "tfc:ice_sheet_tuyas"
+  ]
+}

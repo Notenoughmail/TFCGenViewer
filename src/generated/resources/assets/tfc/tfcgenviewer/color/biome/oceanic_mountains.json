@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 0,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.oceanic_mountains"
+    }
+  },
+  "instances": [
+    "tfc:oceanic_mountains",
+    "tfc:volcanic_oceanic_mountains"
+  ]
+}

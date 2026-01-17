@@ -19,7 +19,7 @@ public interface RegionVisualizerType<O extends IVisualizerType.Options<O>> exte
 
     @Nullable
     @Override
-    default Component previewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, O> info) {
+    default Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, O> info) {
         return Component.translatable("tfcgenviewer.preview_info.generated_regions", info.cache().visitedRegions());
     }
 

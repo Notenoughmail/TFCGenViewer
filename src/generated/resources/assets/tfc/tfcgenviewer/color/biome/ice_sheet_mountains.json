@@ -1,0 +1,19 @@
+{
+  "color": {
+    "color": {
+      "b": 195,
+      "g": 195,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.ice_sheet_mountains"
+    }
+  },
+  "instances": [
+    "tfc:ice_sheet_mountains",
+    "tfc:ice_sheet_mountains_edge",
+    "tfc:ice_sheet_oceanic_mountains",
+    "tfc:ice_sheet_oceanic_mountains_edge",
+    "tfc:ice_sheet_shield_volcano"
+  ]
+}

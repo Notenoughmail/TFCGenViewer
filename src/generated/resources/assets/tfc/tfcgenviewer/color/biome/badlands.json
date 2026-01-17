@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 50,
+      "g": 160,
+      "r": 205
+    },
+    "name": {
+      "translate": "biome.tfc.badlands"
+    }
+  },
+  "instances": [
+    "tfc:badlands",
+    "tfc:burren_badlands",
+    "tfc:burren_badlands_tall"
+  ]
+}

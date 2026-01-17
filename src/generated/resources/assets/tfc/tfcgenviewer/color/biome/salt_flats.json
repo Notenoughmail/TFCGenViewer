@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 190,
+      "g": 190,
+      "r": 190
+    },
+    "name": {
+      "translate": "biome.tfc.slat_flats"
+    }
+  },
+  "instances": [
+    "tfc:salt_flats",
+    "tfc:guano_island"
+  ]
+}

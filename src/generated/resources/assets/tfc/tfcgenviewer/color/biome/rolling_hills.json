@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 50,
+      "g": 100,
+      "r": 50
+    },
+    "name": {
+      "translate": "biome.tfc.rolling_hills"
+    }
+  },
+  "instances": [
+    "tfc:rolling_hills",
+    "tfc:doline_rolling_hills",
+    "tfc:cenote_rolling_hills"
+  ]
+}
