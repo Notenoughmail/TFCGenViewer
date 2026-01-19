@@ -9,7 +9,7 @@
       "translate": "tfcgenviewer.visualized_feature.coral"
     }
   },
-  "instances": [
+  "keys": [
     "tfc:coral_mushroom",
     "tfc:coral_tree",
     "tfc:coral_claw"

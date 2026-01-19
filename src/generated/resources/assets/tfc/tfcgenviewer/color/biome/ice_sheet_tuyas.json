@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 235,
+      "g": 235,
+      "r": 235
+    },
+    "name": {
+      "translate": "biome.tfc.ice_sheet_tuyas"
+    },
+    "sort": 431
+  },
+  "keys": [
+    "tfc:ice_sheet_tuyas",
+    "tfc:ice_sheet_tuyas_edge"
+  ]
+}

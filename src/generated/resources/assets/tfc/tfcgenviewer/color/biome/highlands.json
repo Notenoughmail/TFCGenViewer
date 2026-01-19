@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.highlands"
-    }
+    },
+    "sort": 151
   },
-  "instances": [
+  "keys": [
     "tfc:highlands",
     "tfc:shilin_highlands",
     "tfc:tower_karst_highlands",

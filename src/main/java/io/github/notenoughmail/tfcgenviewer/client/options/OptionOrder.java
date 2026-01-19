@@ -1,13 +1,17 @@
 package io.github.notenoughmail.tfcgenviewer.client.options;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.api.widget.OptionRequest;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.doubles.DoubleConsumer;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -15,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.*;
 
-public interface OptionOrder<T> extends OptionRequest.Order<T> {
+public interface OptionOrder<T> extends OptionProvider.Order<T> {
 
     static B bool(String name, boolean initial, BooleanConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
         return new B(name, initial, onChange, new Mut<>(), new Mut<>(), onFinalize);
@@ -40,7 +44,7 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
     default OptionInstance.TooltipSupplier<T> getTooltip() {
         return tooltip()
                 .get(
-                        f -> t -> Tooltip.create(f.apply(t)),
+                        f -> t -> Tooltip.create(f.make(t)),
                         OptionInstance.noTooltip()
                 );
     }
@@ -48,7 +52,7 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
     default OptionInstance.CaptionBasedToString<T> getCaption(OptionInstance.CaptionBasedToString<T> def) {
         return caption()
                 .get(
-                        f -> f::apply,
+                        f -> f::make,
                         def
                 );
     }
@@ -57,18 +61,18 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
         return getCaption((c, t) -> Options.genericValueLabel(c, def.apply(t)));
     }
 
-    Mut<Function<T, Component>> tooltip();
+    Mut<OptionProvider.TooltipFactory<T>> tooltip();
 
-    Mut<BiFunction<Component, T, Component>> caption();
+    Mut<OptionProvider.DisplayFactory<T>> caption();
 
     @Override
-    default OptionRequest.Order<T> withTooltip(Function<T, Component> tooltipFactory) {
+    default OptionProvider.Order<T> withTooltip(OptionProvider.TooltipFactory<T> tooltipFactory) {
         tooltip().set(tooltipFactory);
         return this;
     }
 
     @Override
-    default OptionRequest.Order<T> withDisplay(BiFunction<Component, T, Component> captionFactory) {
+    default OptionProvider.Order<T> withDisplay(OptionProvider.DisplayFactory<T> captionFactory) {
         caption().set(captionFactory);
         return this;
     }
@@ -77,16 +81,20 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
             String name,
             boolean initialValue,
             BooleanConsumer onChange,
-            Mut<Function<Boolean, Component>> tooltip,
-            Mut<BiFunction<Component, Boolean, Component>> caption,
+            Mut<OptionProvider.TooltipFactory<Boolean>> tooltip,
+            Mut<OptionProvider.DisplayFactory<Boolean>> caption,
             Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Boolean> {
+
+        static final OptionInstance.CaptionBasedToString<Boolean> DEFAULT = IVisualizerType.Options.<Boolean>genericDisplay(b -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)::make;
+
         @Override
-        public void finalizeOrder() {
-            onFinalize.accept(OptionInstance.createBoolean(
+        public void finish() {
+            onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
-                    getCaption(OptionInstance.BOOLEAN_TO_STRING),
+                    getCaption(DEFAULT),
+                    ImprovedEnumValueSet.BOOL,
                     initialValue,
                     onChange
             ));
@@ -99,12 +107,12 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
             int min,
             int max,
             IntConsumer onChange,
-            Mut<Function<Integer, Component>> tooltip,
-            Mut<BiFunction<Component, Integer, Component>> caption,
+            Mut<OptionProvider.TooltipFactory<Integer>> tooltip,
+            Mut<OptionProvider.DisplayFactory<Integer>> caption,
             Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Integer> {
         @Override
-        public void finalizeOrder() {
+        public void finish() {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -122,12 +130,12 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
             double min,
             double max,
             DoubleConsumer onChange,
-            Mut<Function<Double, Component>> tooltip,
-            Mut<BiFunction<Component, Double, Component>> caption,
+            Mut<OptionProvider.TooltipFactory<Double>> tooltip,
+            Mut<OptionProvider.DisplayFactory<Double>> caption,
             Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Double> {
         @Override
-        public void finalizeOrder() {
+        public void finish() {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -138,7 +146,7 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
                             max,
                             d -> Mth.map(d, min, max, 0D, 1D),
                             d -> Mth.map(d, 0D, 1D, min, max),
-                            Optional.empty()
+                            Optional.of(d -> d <= max && d >= min)
                     ),
                     initial,
                     onChange
@@ -155,12 +163,12 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
             Consumer<T> onChange,
             ToDoubleFunction<T> toSlider,
             DoubleFunction<T> fromSlider,
-            Mut<Function<T, Component>> tooltip,
-            Mut<BiFunction<Component, T, Component>> caption,
+            Mut<OptionProvider.TooltipFactory<T>> tooltip,
+            Mut<OptionProvider.DisplayFactory<T>> caption,
             Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<T> {
         @Override
-        public void finalizeOrder() {
+        public void finish() {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -185,17 +193,17 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
             List<T> values,
             Codec<T> codec,
             Consumer<T> onChange,
-            Mut<Function<T, Component>> tooltip,
-            Mut<BiFunction<Component, T, Component>> caption,
+            Mut<OptionProvider.TooltipFactory<T>> tooltip,
+            Mut<OptionProvider.DisplayFactory<T>> caption,
             Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<T> {
         @Override
-        public void finalizeOrder() {
+        public void finish() {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
                     getCaption(t -> Component.literal(t.toString())),
-                    new OptionInstance.Enum<>(
+                    new ImprovedEnumValueSet<>(
                             values,
                             codec
                     ),
@@ -228,6 +236,28 @@ public interface OptionOrder<T> extends OptionRequest.Order<T> {
             return validator
                     .orElse(val -> min.compareTo(val) <= 0 && max.compareTo(val) >= 0)
                     .test(value) ? Optional.of(value) : Optional.empty();
+        }
+    }
+
+    record ImprovedEnumValueSet<T>(List<T> values, Codec<T> codec) implements OptionInstance.ValueSet<T> {
+
+        public static final ImprovedEnumValueSet<Boolean> BOOL = new ImprovedEnumValueSet<>(List.of(true, false), Codec.BOOL);
+
+        @Override
+        public Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> tooltipSupplier, Options options, int x, int y, int width, Consumer<T> onValueChanged) {
+            return instance -> CycleButton.builder(instance.toString)
+                    .withValues(values)
+                    .withInitialValue(instance.get())
+                    .displayOnlyValue() // <-- Effectively the only change
+                    .create(x, y, width, 20, instance.caption, (button, value) -> {
+                        instance.set(value);
+                        onValueChanged.accept(value);
+                    });
+        }
+
+        @Override
+        public Optional<T> validateValue(T value) {
+            return values.contains(value) ? Optional.of(value) : Optional.empty();
         }
     }
 }

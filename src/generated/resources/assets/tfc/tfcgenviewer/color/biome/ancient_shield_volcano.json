@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 155,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.ancient_shield_volcano"
+    },
+    "sort": 351
+  },
+  "keys": [
+    "tfc:ancient_shield_volcano",
+    "tfc:sunken_shield_volcano"
+  ]
+}

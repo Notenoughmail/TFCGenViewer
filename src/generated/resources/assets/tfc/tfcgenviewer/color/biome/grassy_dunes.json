@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 90,
+      "g": 165,
+      "r": 90
+    },
+    "name": {
+      "translate": "biome.tfc.grassy_dunes"
+    },
+    "sort": 181
+  },
+  "keys": [
+    "tfc:grassy_dunes"
+  ]
+}

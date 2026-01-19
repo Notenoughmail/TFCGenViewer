@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 215,
+      "g": 215,
+      "r": 215
+    },
+    "name": {
+      "translate": "biome.tfc.ice_sheet_oceanic"
+    },
+    "sort": 421
+  },
+  "keys": [
+    "tfc:ice_sheet_oceanic"
+  ]
+}

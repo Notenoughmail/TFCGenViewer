@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.plains"
-    }
+    },
+    "sort": 191
   },
-  "instances": [
+  "keys": [
     "tfc:plains",
     "tfc:burren_plains",
     "tfc:tower_karst_plains",

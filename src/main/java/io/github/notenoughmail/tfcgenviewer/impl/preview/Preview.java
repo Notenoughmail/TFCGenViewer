@@ -2,17 +2,25 @@ package io.github.notenoughmail.tfcgenviewer.impl.preview;
 
 import com.google.common.base.Stopwatch;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
+import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
+import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.OptionInstance;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -21,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Preview {
+
+    public static final DataManager.Reference<ColorDefinition> SPAWN_BORDER = Colors.MISC_COLORS.getReference(TFCGenViewer.id("spawn/border"));
+    public static final DataManager.Reference<ColorDefinition> SPAWN_RETICULE = Colors.MISC_COLORS.getReference(TFCGenViewer.id("spawn/reticule"));
 
     public static final Component ON_ERROR = Component.translatable("tfcgenviewer.preview_info.error");
 
@@ -63,12 +74,15 @@ public class Preview {
 
             final int previewPixels = imageSize.sizeInPixels();
             final int halfPreviewPixels = previewPixels >> 1;
-            final int xDrawOffsetPixels = (xCenterBlocks / drawParams.scale().blocksPerPixel()) - halfPreviewPixels;
-            final int zDrawOffsetPixels = (zCenterBlocks / drawParams.scale().blocksPerPixel()) - halfPreviewPixels;
+            final int blocksPerPixel = drawParams.scale().blocksPerPixel();
+            final int xDrawOffsetPixels = (xCenterBlocks / blocksPerPixel) - halfPreviewPixels;
+            final int zDrawOffsetPixels = (zCenterBlocks / blocksPerPixel) - halfPreviewPixels;
 
             for (int x = 0 ; x < previewPixels ; x++) {
                 if (!image.isAllocated()) break;
-                previewPane.updateProgress(x, imageSize);
+                if (TFCGenViewerClient.displayGenerationProgress.getAsBoolean()) {
+                    previewPane.updateProgress(x, imageSize);
+                }
                 for (int y = 0 ; y < previewPixels ; y++) {
                     if (!image.isAllocated()) break;
                     final int xPos = x + xDrawOffsetPixels;
@@ -78,6 +92,28 @@ public class Preview {
             }
 
             viz.afterComplete(image, drawParams);
+
+            if (spawnInfo.drawSpawn()) {
+                final int xSpawnCenterPixels = (spawnInfo.xCenterBlocks() / blocksPerPixel) - xDrawOffsetPixels;
+                final int zSpawnCenterPixels = (spawnInfo.zCenterBlocks() / blocksPerPixel) - zDrawOffsetPixels;
+                final int spawnRadiusPixels = spawnInfo.radiusBlocks() / blocksPerPixel;
+
+                final ColorDefinition border = SPAWN_BORDER.get();
+                final ColorDefinition reticule = SPAWN_RETICULE.get();
+                border.addTooltip(drawParams);
+                reticule.addTooltip(drawParams);
+
+                final int lineWidth = drawParams.size().lineWidth();
+
+                image.hLine(xSpawnCenterPixels - spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, lineWidth, border.abgr());
+                image.hLine(xSpawnCenterPixels - spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, zSpawnCenterPixels - spawnRadiusPixels, lineWidth, border.abgr());
+                image.vLine(zSpawnCenterPixels - spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, lineWidth, border.abgr());
+                image.vLine(zSpawnCenterPixels - spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, xSpawnCenterPixels - spawnRadiusPixels, lineWidth, border.abgr());
+
+                final int reticuleLength = Math.min(spawnRadiusPixels / 4, previewPixels /12);
+                image.hLine(xSpawnCenterPixels - reticuleLength, xSpawnCenterPixels + reticuleLength, zSpawnCenterPixels, lineWidth, reticule.abgr());
+                image.vLine(zSpawnCenterPixels - reticuleLength, zSpawnCenterPixels + reticuleLength, xSpawnCenterPixels, lineWidth, reticule.abgr());
+            }
 
             timer.stop();
             final long millis = timer.elapsed(TimeUnit.MILLISECONDS);
@@ -90,7 +126,7 @@ public class Preview {
                                 .append(visualizerId.toDebugFileName())
                                 .append("+")
                                 .append(viz.id().toDebugFileName());
-                        viz.appendToFileName(builder, drawParams.options());
+                        viz.appendToFileName(s -> builder.append("-").append(s), drawParams.options());
                         builder.append(".png");
                     }).toString(),
                     Util.make(
@@ -120,12 +156,17 @@ public class Preview {
                 final int halfImageBlocks = drawParams.scale().blocksPerPixel() * imageSize.sizeInPixels() / 2;
                 previewPane.updateImage(
                         ret.image(),
-                        drawParams.colorDescriptors(),
+                        drawParams.colorTooltips(),
                         drawParams.scale(),
                         xCenterBlocks - halfImageBlocks,
                         zCenterBlocks - halfImageBlocks
                 );
                 infoPane.setMessage(ret.infoPaneMessage());
+            }
+            if (TFCGenViewerClient.dingWhenGenerated.getAsBoolean()) {
+                Minecraft.getInstance()
+                        .getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1F));
             }
             return ret;
         });
@@ -155,5 +196,16 @@ public class Preview {
         }
     }
 
-    public record SpawnInfo(boolean drawSpawn, int xCenterBlocks, int zCenterBlocks, int radiusBlocks) {}
+    public record SpawnInfo(boolean drawSpawn, int xCenterBlocks, int zCenterBlocks, int radiusBlocks) {
+
+        public static SpawnInfo of(OptionInstance<Boolean> drawSpawn, OptionInstance<Integer> xCenterBlocks, OptionInstance<Integer> zCenterBlocks, OptionInstance<Integer> radiusBlocks) {
+            if (drawSpawn.get()) {
+                return new SpawnInfo(true, xCenterBlocks.get(), zCenterBlocks.get(), radiusBlocks.get());
+            }
+            return NO_SPAWN;
+        }
+
+        public static final SpawnInfo NO_SPAWN = new SpawnInfo(false, 0, 0, 0);
+
+    }
 }

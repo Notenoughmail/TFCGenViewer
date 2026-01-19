@@ -3,10 +3,11 @@ package io.github.notenoughmail.tfcgenviewer.color;
 import io.github.notenoughmail.tfcgenviewer.DataManagerProvider;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
-import io.github.notenoughmail.tfcgenviewer.api.color.ColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RGB;
+import io.github.notenoughmail.tfcgenviewer.api.color.manager.ColorManager;
 import io.github.notenoughmail.tfcgenviewer.impl.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.impl.preview.Preview;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.BiomeAltitudeVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RiversAndMountainsVisualizer;
 import net.dries007.tfc.common.blocks.TFCBlocks;
@@ -103,70 +104,82 @@ public class ColorProvider extends DataManagerProvider {
             ROCK_COLORS.forEach((r, i) -> i.make(r, true, colors::accept));
             colors.accept(Colors.UNKNOWN, ColorDefinition.of(
                     227, 88, 255,
-                    Component.translatable("color.tfcgenviewer.rock.unknown"),
-                    null
+                    Component.translatable("color.tfcgenviewer.rock.unknown")
             ));
         });
         makeFor(Colors.MISC_COLORS, colors -> {
             colors.accept(ClimateFeatureCache.LAND, ColorDefinition.of(
                     32, 168, 72,
-                    Component.translatable("tfcgenviewer.climate_features.land"),
-                    null
+                    Component.translatable("tfcgenviewer.climate_features.land")
             ));
             colors.accept(RiversAndMountainsVisualizer.RIVER, ColorDefinition.of(
                     100, 180, 250,
-                    Component.translatable("biome.tfc.river"),
-                    null
+                    Component.translatable("biome.tfc.river")
             ));
             colors.accept(RiversAndMountainsVisualizer.COASTAL_MOUNTAIN, ColorDefinition.of(
-                    240, 110, 50,
-                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.coastal_mountain"),
-                    null
+                    150, 240, 150,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.coastal_mountain")
             ));
             colors.accept(RiversAndMountainsVisualizer.INLAND_MOUNTAIN, ColorDefinition.of(
                     150, 150, 150,
-                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.inland_mountain"),
-                    null
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.inland_mountain")
             ));
             colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_4, ColorDefinition.of(
                     190, 180, 0,
-                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_4"),
-                    null
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_4")
             ));
             colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_3, ColorDefinition.of(
                     220, 110, 0,
-                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_3"),
-                    null
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_3")
             ));
             colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_2, ColorDefinition.of(
                     240, 20, 0,
-                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_2"),
-                    null
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_2")
             ));
             colors.accept(RiversAndMountainsVisualizer.HOT_SPOT_AGE_1, ColorDefinition.of(
                     240, 0, 180,
-                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_1"),
-                    null
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.hot_spot_age_1")
+            ));
+            colors.accept(RiversAndMountainsVisualizer.LAND, ColorDefinition.of(
+                    0, 148, 0,
+                    Component.translatable("color.tfcgenviewer.rivers_and_mountains.land")
             ));
             colors.accept(BiomeAltitudeVisualizer.MOUNTAIN, ColorDefinition.of(
                     80, 200, 80,
-                    Component.translatable("color.tfcgenviewer.biome_altitude.mountain"),
-                    null
+                    Component.translatable("color.tfcgenviewer.biome_altitude.mountain")
             ));
             colors.accept(BiomeAltitudeVisualizer.HIGH, ColorDefinition.of(
                     53, 166, 53,
-                    Component.translatable("color.tfcgenviewer.biome_altitude.high"),
-                    null
+                    Component.translatable("color.tfcgenviewer.biome_altitude.high")
             ));
             colors.accept(BiomeAltitudeVisualizer.MID, ColorDefinition.of(
                     26, 133, 26,
-                    Component.translatable("color.tfcgenviewer.biome_altitude.mid"),
-                    null
+                    Component.translatable("color.tfcgenviewer.biome_altitude.mid")
             ));
             colors.accept(BiomeAltitudeVisualizer.LOW, ColorDefinition.of(
                     0, 100, 0,
-                    Component.translatable("color.tfcgenviewer.biome_altitude.low"),
-                    null
+                    Component.translatable("color.tfcgenviewer.biome_altitude.low")
+            ));
+            colors.accept(BiomeAltitudeVisualizer.SHALLOW, ColorDefinition.of(
+                    150, 160, 255,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.shallow")
+
+            ));
+            colors.accept(BiomeAltitudeVisualizer.DEEP, ColorDefinition.of(
+                    120, 120, 240,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.deep")
+            ));
+            colors.accept(BiomeAltitudeVisualizer.VERY_DEEP, ColorDefinition.of(
+                    100, 100, 200,
+                    Component.translatable("color.tfcgenviewer.biome_altitude.very_deep")
+            ));
+            colors.accept(Preview.SPAWN_BORDER, ColorDefinition.of(
+                    50, 50, 50,
+                    Component.translatable("color.tfcgenviewer.spawn.border")
+            ));
+            colors.accept(Preview.SPAWN_RETICULE, ColorDefinition.of(
+                    198, 15, 48,
+                    Component.translatable("color.tfcgenviewer.spawn.reticule")
             ));
         });
         makeForFull(

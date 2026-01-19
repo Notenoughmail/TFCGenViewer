@@ -23,7 +23,7 @@ public final class SynchronizationRequest {
 
     }
 
-    <T> void syncContents(TagKey<T> tag) {
+    public <T> void syncContents(TagKey<T> tag) {
 
     }
 }

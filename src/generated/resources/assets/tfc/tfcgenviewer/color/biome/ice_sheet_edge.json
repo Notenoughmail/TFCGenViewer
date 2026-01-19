@@ -1,15 +1,16 @@
 {
   "color": {
     "color": {
-      "b": 255,
-      "g": 195,
-      "r": 255
+      "b": 165,
+      "g": 165,
+      "r": 165
     },
     "name": {
       "translate": "biome.tfc.ice_sheet_edge"
-    }
+    },
+    "sort": 401
   },
-  "instances": [
+  "keys": [
     "tfc:ice_sheet_edge",
     "tfc:ice_sheet_shore"
   ]

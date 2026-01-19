@@ -7,12 +7,11 @@
     },
     "name": {
       "translate": "biome.tfc.ice_sheet"
-    }
+    },
+    "sort": 411
   },
-  "instances": [
+  "keys": [
     "tfc:ice_sheet",
-    "tfc:subglacial_lake",
-    "tfc:ice_sheet_oceanic",
-    "tfc:ice_sheet_tuyas"
+    "tfc:subglacial_lake"
   ]
 }

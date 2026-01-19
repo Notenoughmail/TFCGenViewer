@@ -12,18 +12,29 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I extends ImageSize, S extends IScale<I>, V extends IVisualizerType<G, ?, S, ?>> {
 
+    /**
+     * The id of the generator visualizer
+     */
     ResourceLocation id();
 
     /**
-     * All visualizers this visualizer is capable of providing, drawing, and handling
+     * All {@link IVisualizerType}s this generator visualizer possesses
      */
-    List<V> allVisualizers();
+    Stream<V> visualzierStream();
 
     /**
-     * The scale of the visualizer
+     * All {@link IVisualizerType}s this generator visualizer possesses
+     */
+    default List<V> allVisualizers() {
+        return visualzierStream().toList();
+    };
+
+    /**
+     * The {@link IScale scale} of the generator visualizer
      */
     S scale();
 
@@ -35,17 +46,17 @@ public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I exten
     /**
      * Which visualizers the player may view the world with
      */
-    default List<? extends V> allowedVisualizers(ServerPlayer player) {
-        return allVisualizers().stream().filter(v -> v.isPermitted(player)).toList();
+    default Stream<V> allowedVisualizers(ServerPlayer player) {
+        return visualzierStream().filter(v -> v.isPermitted(player));
     }
 
     /**
-     * The name of the visualizer
+     * The formatted name of the generator visualizer
      */
     Component name();
 
     /**
-     * The chunk generator class the visualizer can handle
+     * The {@link ChunkGeneratorExtension} class this generator visualizer is for
      */
     Class<? extends G> generatorType();
 
@@ -55,7 +66,7 @@ public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I exten
     boolean supportsRockEditing();
 
     /**
-     * Synchronize server-only registry information so that is available in the registry access when drawing
+     * Synchronize server-only registry information so that is available to {@link IVisualizerType}s
      */
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
 
@@ -74,5 +85,9 @@ public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I exten
      */
     StreamCodec<RegistryFriendlyByteBuf, List<V>> visualizerNetworkCodec();
 
+    /**
+     * A codec for the {@link IVisualizerType}s this generator visualizer handles
+     * @return
+     */
     Codec<V> visualizerCodec();
 }

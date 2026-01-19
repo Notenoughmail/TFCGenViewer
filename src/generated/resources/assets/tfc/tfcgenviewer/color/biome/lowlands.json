@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.lowlands"
-    }
+    },
+    "sort": 111
   },
-  "instances": [
+  "keys": [
     "tfc:lowlands",
     "tfc:tower_karst_bay",
     "tfc:salt_marsh",

@@ -27,8 +27,6 @@ public class TFCGenViewer {
 
     public static final TagKey<PlacedFeature> VISUALIZABLE_FEATURES = TagKey.create(Registries.PLACED_FEATURE, identifier("visualizable_features"));
 
-    public static final Component PREVIEW_WORLD = Component.translatable("button." + ID + ".preview_world");
-
     public TFCGenViewer() {
 
         TFCGVChannel.init();

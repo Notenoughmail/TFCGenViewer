@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 180,
+      "r": 230
+    },
+    "name": {
+      "translate": "biome.tfc.hoodoos"
+    },
+    "sort": 221
+  },
+  "keys": [
+    "tfc:hoodoos"
+  ]
+}

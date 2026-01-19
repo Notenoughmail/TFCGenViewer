@@ -15,6 +15,7 @@ import net.minecraft.util.FormattedCharSequence;
 import java.util.List;
 import java.util.function.Supplier;
 
+// TODO: 1.21.1 | The compass is wonky with very wide panes
 // For all intents and purposes, a holder for a scrollable view of a wrapped text component
 public class InfoPane extends AbstractScrollWidget {
 
@@ -26,7 +27,7 @@ public class InfoPane extends AbstractScrollWidget {
     private List<FormattedCharSequence> lines;
     private int maxLengthOfContent;
     private final Supplier<Font> font;
-    private boolean fontAvailable;
+    private boolean fontAvailable, showCompass;
 
     public InfoPane(int x, int y, int width, int height, Supplier<Font> font) {
         super(x, y, width, height, CommonComponents.EMPTY);
@@ -47,23 +48,36 @@ public class InfoPane extends AbstractScrollWidget {
         if (fontAvailable) {
             setMessage(Component.translatable("tfcgenviewer.preview_info.generating", viz.name()));
         }
+        showCompass = false;
     }
 
     public void setError() {
         setMessage(ERROR);
+        showCompass = false;
     }
 
     @Override
     public void setMessage(Component message) {
-        lines = font.get().split(message, getWidth() - 8);
-        maxLengthOfContent = lines.size() * font.get().lineHeight + getWidth() + 13;
+        lines = font.get().split(message, getWidth() - 8 - 4);
+        updateLengthOfContent();
         setScrollAmount(0);
+        showCompass = true;
+    }
+
+    @Override
+    public void setRectangle(int width, int height, int x, int y) {
+        super.setRectangle(width, height, x, y);
+        updateLengthOfContent();
+    }
+
+    private void updateLengthOfContent() {
+        maxLengthOfContent = lines.size() * font.get().lineHeight + getWidth() + 13;
     }
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(graphics, mouseX, mouseY, partialTick);
-        if (!scrollbarVisible()) {
+        if (!scrollbarVisible() && showCompass) {
             final int compassSize = getWidth() - 4;
             graphics.blitSprite(
                     COMPASS,
@@ -89,10 +103,10 @@ public class InfoPane extends AbstractScrollWidget {
     protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         int elementY = getY() + 4;
         for (FormattedCharSequence chars : lines) {
-            graphics.drawString(font.get(), chars, getX() + 4, elementY, 0xFFFFFFFF, false);
+            graphics.drawString(font.get(), chars, getX() + 2, elementY, 0xFFFFFFFF, false);
             elementY += 9;
         }
-        if (scrollbarVisible()) {
+        if (scrollbarVisible() && showCompass) {
             elementY += 9;
             final int compassSize = getWidth() - 4;
             graphics.blitSprite(

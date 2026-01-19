@@ -4,9 +4,8 @@ import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
-import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.api.widget.OptionRequest;
+import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
@@ -67,18 +66,17 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
     }
 
     @Override
-    public Options createOptions(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize scale) {
+    public Options createOptions(RegistryAccess registryAccess) {
         return new Options();
     }
 
     @Override
-    public void addOptions(OptionRequest optionRequest, Options options) {
-        optionRequest.orderBool("tfcgenviewer.option.region_visualizer.rock.surface", true, b -> options.surface = b)
-                .withDisplay((c, b) -> b ? CommonComponents.GUI_YES : CommonComponents.GUI_NO)
-                .finalizeOrder();
-        optionRequest.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", 75, -64, 320, i -> options.elevation = i)
-                .withDisplay(IVisualizerType.Options.genericCaption(i -> Component.literal(Integer.toString(i))))
-                .finalizeOrder();
+    public void addOptions(OptionProvider optionProvider, Options options) {
+        optionProvider.orderBool("tfcgenviewer.option.region_visualizer.rock.surface", options.surface, b -> options.surface = b)
+                .withDisplay(optionProvider.genericDisplay(b -> b ? CommonComponents.GUI_YES : CommonComponents.GUI_NO))
+                .finish();
+        optionProvider.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", options.elevation, -64, 320, i -> options.elevation = i)
+                .finish();
     }
 
     @Override

@@ -155,7 +155,6 @@ public class Image implements MutableImage {
         return 0;
     }
 
-    @Override
     public void close() {
         synchronized (image) {
             image.close();
@@ -167,7 +166,6 @@ public class Image implements MutableImage {
         return ((NativeImageAccessor) (Object) image).tfcgenviewer$GetPixels() != 0L;
     }
 
-    @Override
     public void export(String name) {
         synchronized (image) {
             try {

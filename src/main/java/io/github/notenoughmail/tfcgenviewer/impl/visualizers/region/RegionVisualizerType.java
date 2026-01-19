@@ -26,7 +26,7 @@ public interface RegionVisualizerType<O extends IVisualizerType.Options<O>> exte
     interface Simple extends RegionVisualizerType<NoneOpt> {
 
         @Override
-        default NoneOpt createOptions(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize scale) {
+        default NoneOpt createOptions(RegistryAccess registryAccess) {
             return NoneOpt.INSTANCE;
         }
     }

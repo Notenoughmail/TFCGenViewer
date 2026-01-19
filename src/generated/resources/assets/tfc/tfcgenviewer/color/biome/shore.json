@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.shore"
-    }
+    },
+    "sort": 301
   },
-  "instances": [
+  "keys": [
     "tfc:shore"
   ]
 }

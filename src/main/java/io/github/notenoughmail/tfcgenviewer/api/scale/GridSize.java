@@ -5,6 +5,10 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
+/**
+ * {@link ImageSize}s at {@link net.dries007.tfc.world.region.Units#GRID_WIDTH_IN_BLOCK grid scale} ranging from 4.2 km
+ * to 242.1 km in powers of 2
+ */
 public enum GridSize implements ImageSize {
     _0,
     _1,

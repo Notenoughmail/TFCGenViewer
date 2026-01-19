@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.badlands"
-    }
+    },
+    "sort": 201
   },
-  "instances": [
+  "keys": [
     "tfc:badlands",
     "tfc:burren_badlands",
     "tfc:burren_badlands_tall"

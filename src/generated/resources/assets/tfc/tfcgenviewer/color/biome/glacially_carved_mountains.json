@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 135,
+      "g": 135,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.glacially_carved_mountains"
+    },
+    "sort": 501
+  },
+  "keys": [
+    "tfc:glacially_carved_mountains"
+  ]
+}

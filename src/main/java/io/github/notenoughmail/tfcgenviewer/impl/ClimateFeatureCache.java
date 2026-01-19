@@ -2,8 +2,9 @@ package io.github.notenoughmail.tfcgenviewer.impl;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
-import io.github.notenoughmail.tfcgenviewer.api.color.ColorWithInstancesManager;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
+import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.placement.ClimatePlacement;
 import net.minecraft.core.Holder;
@@ -24,14 +25,14 @@ import java.util.*;
 public class ClimateFeatureCache<C> {
 
     public static final DataManager.Reference<ColorDefinition> LAND = Colors.MISC_COLORS.getReference(TFCGenViewer.id("visualizable_feature_land"));
-    public static final ColorWithInstancesManager<PlacedFeature> FEATURES = new ColorWithInstancesManager<>(TFCGenViewer.id("visualizable_feature_color"), Registries.PLACED_FEATURE);
+    public static final RegistryLinkedColorManager<PlacedFeature> FEATURES = new RegistryLinkedColorManager<>(TFCGenViewer.id("visualizable_feature_color"), Registries.PLACED_FEATURE);
     public static final TagKey<PlacedFeature> VISUALIZABLE_FEATURES = TagKey.create(Registries.PLACED_FEATURE, TFCGenViewer.id("visualizable_features"));
 
     private final Map<ResourceKey<Biome>, Set<ClimateSpace>> climates;
-    public final C regionCache;
+    public final C innerCache;
 
-    public ClimateFeatureCache(RegistryAccess access, C regionCache) {
-        this.regionCache = regionCache;
+    public ClimateFeatureCache(RegistryAccess access, C innerCache) {
+        this.innerCache = innerCache;
         climates = new IdentityHashMap<>();
 
         final Map<ResourceKey<PlacedFeature>, ClimateSpace> featureClimates = new IdentityHashMap<>();
@@ -87,7 +88,7 @@ public class ClimateFeatureCache<C> {
         FEATURES.getValues()
                 .stream()
                 .sorted()
-                .map(ColorWithInstancesManager.ColorWithInstances::color)
+                .map(RegistryLinkedColor::color)
                 .forEach(color -> color.appendTo(key));
         LAND.get().appendTo(key);
         Colors.OCEAN.get().appendTo(key, true);

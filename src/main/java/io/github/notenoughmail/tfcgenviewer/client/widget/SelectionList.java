@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.client.widget;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 
 public class SelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends ContainerObjectSelectionList<E> {
@@ -13,11 +14,14 @@ public class SelectionList<E extends ContainerObjectSelectionList.Entry<E>> exte
     }
 
     @Override
+    protected void renderListSeparators(GuiGraphics guiGraphics) {}
+
+    @Override
     public int getRowWidth() {
         return width;
     }
 
-    protected void setScrollBarOffset(int offset) {
+    public void setScrollBarOffset(int offset) {
         scrollBarOffset = offset;
     }
 

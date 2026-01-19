@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 185,
+      "g": 215,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.ice_sheet_shield_volcano"
+    },
+    "sort": 461
+  },
+  "keys": [
+    "tfc:ice_sheet_shield_volcano"
+  ]
+}

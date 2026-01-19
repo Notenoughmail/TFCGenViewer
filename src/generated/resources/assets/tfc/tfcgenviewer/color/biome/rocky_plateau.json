@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 110,
+      "g": 160,
+      "r": 180
+    },
+    "name": {
+      "translate": "biome.tfc.rocky_plateau"
+    },
+    "sort": 261
+  },
+  "keys": [
+    "tfc:rocky_plateau"
+  ]
+}

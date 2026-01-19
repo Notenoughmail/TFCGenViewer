@@ -3,6 +3,7 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.VisibleForDebug;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
@@ -32,17 +33,20 @@ public record RGB(int[] storage) {
 
     void compute() {
         if (storage[3] == 0) {
+            storage[3] = 1;
             storage[4] = FastColor.ABGR32.color(255, b(), g(), r());
             storage[5] = FastColor.ARGB32.color(255, r(), g(), b());
         }
     }
 
-    int abgr() {
+    @VisibleForDebug
+    public int abgr() {
         compute();
         return storage[4];
     }
 
-    int argb() {
+    @VisibleForDebug
+    public int argb() {
         compute();
         return storage[5];
     }

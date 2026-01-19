@@ -10,16 +10,40 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 
 @Mod(value = TFCGenViewer.ID, dist = Dist.CLIENT)
 public class TFCGenViewerClient {
 
-    public TFCGenViewerClient(IEventBus modBus) {
+    public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress;
+
+    public TFCGenViewerClient(IEventBus modBus, ModContainer container) {
         modBus.addListener(this::clientReloadListeners);
         modBus.addListener(this::addPackFinders);
+
+        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+        final ModConfigSpec.Builder configBuilder = new ModConfigSpec.Builder();
+        dingWhenGenerated = configBuilder
+                .comment(
+                        "",
+                        " If a sound should be played when a preview finishes generating",
+                        ""
+                ).define("dingWhenGenerated", true);
+        displayGenerationProgress = configBuilder
+                .comment(
+                        "",
+                        " If the info pane should show a progress bar while a preview is being generated",
+                        ""
+                ).define("displayGenerationProgress", true);
+        container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 
     private void clientReloadListeners(RegisterClientReloadListenersEvent event) {

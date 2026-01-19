@@ -7,16 +7,16 @@
     },
     "name": {
       "translate": "biome.tfc.plateau"
-    }
+    },
+    "sort": 141
   },
-  "instances": [
+  "keys": [
     "tfc:plateau",
     "tfc:extreme_doline_plateau",
     "tfc:cenote_plateau",
     "tfc:doline_plateau",
     "tfc:shilin_plateau",
     "tfc:burren_plateau",
-    "tfc:rocky_plateau",
     "tfc:plateau_wide"
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 195,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.ice_sheet_oceanic_mountains"
+    },
+    "sort": 451
+  },
+  "keys": [
+    "tfc:ice_sheet_oceanic_mountains",
+    "tfc:ice_sheet_oceanic_mountains_edge"
+  ]
+}

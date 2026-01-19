@@ -81,11 +81,4 @@ public class EventHandler {
             TFCGVChannel.send(PacketDistributor.SERVER.noArg(), ViewerRequestPacket.INSTANCE);
         }
     }
-
-    private static void registerClientResourceReloadListeners(RegisterClientReloadListenersEvent event) {
-        event.registerReloadListener(RockColors.Rocks);
-        event.registerReloadListener(FeatureColors.Features);
-        event.registerReloadListener(Colors.Color);
-        event.registerReloadListener(Colors.Gradient);
-    }
 }

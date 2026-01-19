@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.hills"
-    }
+    },
+    "sort": 171
   },
-  "instances": [
+  "keys": [
     "tfc:hills",
     "tfc:shilin_hills",
     "tfc:tower_karst_hills",

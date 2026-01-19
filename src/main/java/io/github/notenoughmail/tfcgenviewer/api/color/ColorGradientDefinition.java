@@ -12,7 +12,7 @@ import net.minecraft.network.chat.MutableComponent;
 import java.util.List;
 import java.util.Optional;
 
-public record ColorGradientDefinition(Gradient gradient, Component name, Optional<List<Component>> tooltips) implements IDescribeColor {
+public record ColorGradientDefinition(Gradient gradient, Component name, Optional<List<Component>> tooltips) implements DescribableColor {
 
     public static final Codec<ColorGradientDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
             Gradient.CODEC.fieldOf("gradient").forGetter(ColorGradientDefinition::gradient),
@@ -52,6 +52,6 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
     }
 
     public int color(double value, IVisualizerType.DrawInfo<?, ?, ?, ?> info) {
-        return color(value, info.colorDescriptors());
+        return color(value, info.colorTooltips());
     }
 }

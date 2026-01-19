@@ -1,8 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer;
 
 import io.github.notenoughmail.tfcgenviewer.color.ColorProvider;
-import io.github.notenoughmail.tfcgenviewer.color.ColorWithInstancesProvider;
 import io.github.notenoughmail.tfcgenviewer.color.GradientProvider;
+import io.github.notenoughmail.tfcgenviewer.color.RegistryLinkedColorProvider;
 import io.github.notenoughmail.tfcgenviewer.color.SeedMakerRockColorsProvider;
 import io.github.notenoughmail.tfcgenviewer.langs.EN_US;
 import net.minecraft.core.HolderLookup;
@@ -25,7 +25,7 @@ public class DataEntry {
 
         if (event.includeServer()) {
             event.addProvider(new TagProvider(output, lookup, event.getExistingFileHelper()));
-            event.addProvider(new ColorWithInstancesProvider(output, lookup));
+            event.addProvider(new RegistryLinkedColorProvider(output, lookup));
         }
 
         if (event.includeClient()) {

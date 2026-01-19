@@ -1,0 +1,10 @@
+{
+  "color": {
+    "b": 50,
+    "g": 50,
+    "r": 50
+  },
+  "name": {
+    "translate": "color.tfcgenviewer.spawn.border"
+  }
+}

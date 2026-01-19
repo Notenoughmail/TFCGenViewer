@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.lake"
-    }
+    },
+    "sort": 61
   },
-  "instances": [
+  "keys": [
     "tfc:lake",
     "tfc:meltwater_lake"
   ]

@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 135,
+      "g": 165,
+      "r": 135
+    },
+    "name": {
+      "translate": "biome.tfc.drumlins"
+    },
+    "sort": 371
+  },
+  "keys": [
+    "tfc:drumlins",
+    "tfc:burren_roche_moutonee"
+  ]
+}

@@ -3,7 +3,7 @@ package io.github.notenoughmail.tfcgenviewer.client.widget;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
-import io.github.notenoughmail.tfcgenviewer.impl.ColorDescriptors;
+import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -63,8 +63,8 @@ public class PreviewPane extends AbstractWidget {
         }
     }
 
-    public void updateImage(Image image, ColorDescriptors colorDescriptors, IScale<?> scale, int x0, int z0) {
-        display = new DisplayState(image, colorDescriptors, scale, x0, z0, getTexture(image));
+    public void updateImage(Image image, ColorTooltips colorTooltips, IScale<?> scale, int x0, int z0) {
+        display = new DisplayState(image, colorTooltips, scale, x0, z0, getTexture(image));
         state = State.DISPLAY;
         resetProgress();
     }
@@ -87,15 +87,13 @@ public class PreviewPane extends AbstractWidget {
                     getWidth(),
                     getHeight()
             );
-            case ERROR -> {
-                graphics.blitSprite(
-                        ERROR,
-                        getX(),
-                        getY(),
-                        getWidth(),
-                        getHeight()
-                );
-            }
+            case ERROR -> graphics.blitSprite(
+                    ERROR,
+                    getX(),
+                    getY(),
+                    getWidth(),
+                    getHeight()
+            );
             case DISPLAY -> {
                 if (isMouseOver(mouseX, mouseY)) {
                     switch (tooltipMode) {
@@ -136,25 +134,28 @@ public class PreviewPane extends AbstractWidget {
             }
         }
         if (progress != -1F) {
-            final int leftPos = getX() + (getWidth() >> 1) - 51;
+            final int scale = 5 - Minecraft.getInstance().options.guiScale().get();
+            final int width = Math.min(102 * scale, getWidth() - 10);
+            final int leftPos = getX() + ((getWidth() - width) >> 1);
             final int yPos = getY() + getHeight() - 8;
+            final int height = Math.min(5 * scale, 20);
             graphics.blitSprite(
                     PROGRESS_BACKGROUND,
                     leftPos,
                     yPos,
-                    102,
-                    5
+                    width,
+                    height
             );
             graphics.blitSprite(
                     PROGRESS_FILL,
-                    102,
-                    5,
+                    width,
+                    height,
                     0,
                     0,
                     leftPos,
                     yPos,
-                    (int) (progress * 102),
-                    5
+                    (int) (progress * width),
+                    height
             );
         }
     }
@@ -193,7 +194,7 @@ public class PreviewPane extends AbstractWidget {
         DISPLAY
     }
 
-    private record DisplayState(Image image, ColorDescriptors colors, IScale<?> scale, int x0, int z0, DynamicTexture texture) {
+    private record DisplayState(Image image, ColorTooltips colors, IScale<?> scale, int x0, int z0, DynamicTexture texture) {
 
         int sizeInBlocks() {
             return image.size() * scale.blocksPerPixel();

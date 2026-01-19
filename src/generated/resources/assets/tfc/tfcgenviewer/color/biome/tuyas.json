@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 115,
+      "g": 145,
+      "r": 115
+    },
+    "name": {
+      "translate": "biome.tfc.tuyas"
+    },
+    "sort": 361
+  },
+  "keys": [
+    "tfc:tuyas"
+  ]
+}

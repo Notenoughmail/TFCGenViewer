@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.deep_ocean_trench"
-    }
+    },
+    "sort": 41
   },
-  "instances": [
+  "keys": [
     "tfc:deep_ocean_trench"
   ]
 }

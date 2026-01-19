@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.mud_flats"
-    }
+    },
+    "sort": 291
   },
-  "instances": [
+  "keys": [
     "tfc:mud_flats"
   ]
 }

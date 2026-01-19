@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.mountain_lake"
-    }
+    },
+    "sort": 51
   },
-  "instances": [
+  "keys": [
     "tfc:mountain_lake",
     "tfc:oceanic_mountain_lake",
     "tfc:old_mountain_lake",

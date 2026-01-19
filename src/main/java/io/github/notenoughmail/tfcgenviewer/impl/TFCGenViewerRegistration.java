@@ -27,7 +27,6 @@ public class TFCGenViewerRegistration {
     private static final DeferredRegister<IRegionVisualizerType<?, ?>> REGION_VISUALIZERS = DeferredRegister.create(GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY, TFCGenViewer.ID);
     private static final DeferredRegister<Gradient.Preset> GRADIENTS = DeferredRegister.create(GenViewerAPI.GRADIENT_REGISTRY, TFCGenViewer.ID);
 
-    // TODO: 1.21.1 | Something is very wrong with this
     public static <T> Component visualizerName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
         return Component.translatable(TFCGenViewer.ID + "." + regKey.location().getPath().replace("/", ".") + "." + viz.id().getPath().replace("/", "."));
     }

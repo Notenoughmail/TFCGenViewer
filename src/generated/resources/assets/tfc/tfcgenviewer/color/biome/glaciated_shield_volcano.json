@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 125,
+      "g": 185,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.glaciated_shield_volcano"
+    },
+    "sort": 491
+  },
+  "keys": [
+    "tfc:glaciated_shield_volcano"
+  ]
+}

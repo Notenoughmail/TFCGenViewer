@@ -1,0 +1,10 @@
+{
+  "color": {
+    "b": 200,
+    "g": 100,
+    "r": 100
+  },
+  "name": {
+    "translate": "color.tfcgenviewer.biome_altitude.very_deep"
+  }
+}

@@ -20,6 +20,7 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerator, GridSize, TFCRegionVisualizer.Scale, IRegionVisualizerType<?, ?>> {
 
@@ -44,8 +45,8 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
     }
 
     @Override
-    public List<IRegionVisualizerType<?, ?>> allVisualizers() {
-        return GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY.stream().toList();
+    public Stream<IRegionVisualizerType<?, ?>> visualzierStream() {
+        return GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY.stream();
     }
 
     @Override
@@ -55,7 +56,7 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     @Override
     public int maximumPreviewOffset() {
-        return GridSize._6.sizeInPixels();
+        return GridSize._5.sizeInPixels();
     }
 
     @Override
@@ -110,7 +111,6 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
         public GridSize getDefault() {
             return GridSize._3;
         }
-
 
         @Override
         public List<GridSize> sizes() {

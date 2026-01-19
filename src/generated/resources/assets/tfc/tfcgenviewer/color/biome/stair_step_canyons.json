@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 190,
+      "r": 250
+    },
+    "name": {
+      "translate": "biome.tfc.stair_step_canyons"
+    },
+    "sort": 211
+  },
+  "keys": [
+    "tfc:stair_step_canyons"
+  ]
+}

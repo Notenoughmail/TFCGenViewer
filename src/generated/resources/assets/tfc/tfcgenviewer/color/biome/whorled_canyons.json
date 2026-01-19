@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 215,
+      "r": 250
+    },
+    "name": {
+      "translate": "biome.tfc.whorled_canyons"
+    },
+    "sort": 251
+  },
+  "keys": [
+    "tfc:whorled_canyons"
+  ]
+}

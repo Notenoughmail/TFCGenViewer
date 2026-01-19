@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.river"
-    }
+    },
+    "sort": 71
   },
-  "instances": [
+  "keys": [
     "tfc:river"
   ]
 }

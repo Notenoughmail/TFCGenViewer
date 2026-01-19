@@ -2,6 +2,8 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
+import io.github.notenoughmail.tfcgenviewer.api.color.manager.ColorManager;
+import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
@@ -19,10 +21,10 @@ public interface Colors {
 
     ResourceLocation UNKNOWN = TFCGenViewer.id("unknown");
 
-    DataManager<ColorDefinition> MISC_COLORS = new DataManager<>(TFCGenViewer.id("colors"), ColorDefinition.CODEC);
+    DataManager<ColorDefinition> MISC_COLORS = new DataManager<>(TFCGenViewer.id("misc_color"), ColorDefinition.CODEC);
 
-    ColorWithInstancesManager<Biome> BIOME_COLORS = new ColorWithInstancesManager<>(TFCGenViewer.id("color/biome"), Registries.BIOME);
-    Reference<ColorWithInstancesManager.ColorWithInstances<Biome>> UNKNOWN_BIOME = BIOME_COLORS.getReference(UNKNOWN);
+    RegistryLinkedColorManager<Biome> BIOME_COLORS = new RegistryLinkedColorManager<>(TFCGenViewer.id("color/biome"), Registries.BIOME);
+    Reference<RegistryLinkedColor<Biome>> UNKNOWN_BIOME = BIOME_COLORS.getReference(UNKNOWN);
     ColorManager ROCK_COLORS = new ColorManager(TFCGenViewer.id("color/rock"));
     ColorManager KOPPEN_COLORS = new ColorManager(TFCGenViewer.id("color/koppen_classification"));
 
@@ -42,6 +44,6 @@ public interface Colors {
     }
 
     static void fillOcean(double value, int x, int y, MutableImage image, IVisualizerType.DrawInfo<?, ?, ?, ?> info) {
-        fillOcean(value, x, y, image, info.colorDescriptors());
+        fillOcean(value, x, y, image, info.colorTooltips());
     }
 }

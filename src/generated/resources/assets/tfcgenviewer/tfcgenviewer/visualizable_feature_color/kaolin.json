@@ -9,7 +9,7 @@
       "translate": "tfcgenviewer.visualized_feature.kaolin"
     }
   },
-  "instances": [
+  "keys": [
     "tfc:vein/kaolin_disc"
   ]
 }

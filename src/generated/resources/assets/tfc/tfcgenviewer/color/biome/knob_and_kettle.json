@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 115,
+      "g": 115,
+      "r": 115
+    },
+    "name": {
+      "translate": "biome.tfc.knob_and_kettle"
+    },
+    "sort": 381
+  },
+  "keys": [
+    "tfc:knob_and_kettle"
+  ]
+}

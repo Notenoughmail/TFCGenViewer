@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 85,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.active_shield_volcano"
+    },
+    "sort": 321
+  },
+  "keys": [
+    "tfc:active_shield_volcano"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 160,
+      "r": 190
+    },
+    "name": {
+      "translate": "biome.tfc.buttes"
+    },
+    "sort": 241
+  },
+  "keys": [
+    "tfc:buttes"
+  ]
+}

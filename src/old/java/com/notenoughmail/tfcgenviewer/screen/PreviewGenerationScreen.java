@@ -249,55 +249,6 @@ public class PreviewGenerationScreen extends Screen {
     }
 
     private void applyUpdates(boolean local) {
-        if (generator != null) {
-              worldSettings = new Settings(
-                    flatBedrock.get(),
-                    spawnDist.get(),
-                    spawnCenterX.get(),
-                    spawnCenterZ.get(),
-                    0.49 < tempConst.get() && tempConst.get() < 0.51 ? tempScale.get() : 0,
-                    (float) (tempConst.get() * 2.0 - 1.0),
-                    0.49 < rainConst.get() && rainConst.get() < 0.51 ? rainScale.get() : 0,
-                    (float) (rainConst.get() * 2.0 - 1.0),
-                    rocks,
-                    continentalness.get().floatValue(),
-                    grassDensity.get().floatValue()
-            );
-            localSeed = editorSeed;
-            if (!local) {
-                generator.applySettings(old -> worldSettings); // Rock layers are not changed on this screen, so should be fine
-                parent.getUiState().setSeed(localSeed);
-                if (parent.tabNavigationBar != null) {
-                    parent.tabNavigationBar.tabs.forEach(tab -> {
-                        if (tab instanceof ISeedSetter setter) {
-                            setter.tfcgenviewer$SetSeed(localSeed);
-                        }
-                    });
-                }
-            } else {
-                regionGenerator = getRegionGenerator();
-                assert regionGenerator != null;
-                ImageBuilder.build(
-                        regionGenerator,
-                        visualizerType.get(),
-                        xOffset.get(),
-                        zOffset.get(),
-                        spawnOverlay.get(),
-                        spawnDist.get(),
-                        spawnCenterX.get(),
-                        spawnCenterZ.get(),
-                        previewScale.get(),
-                        info -> {
-                            infoPane.setMessage(info.rightInfo());
-                            previewPane.setInfo(info);
-                        },
-                        Config.generationProgress.get() ? previewPane::setProgress : i -> {},
-                        true,
-                        seedInUse,
-                        registryAccess
-                );
-            }
-        }
     }
 
     public void setRocks(RockLayerSettings rocks) {

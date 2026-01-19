@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.oceanic_mountains"
-    }
+    },
+    "sort": 81
   },
-  "instances": [
+  "keys": [
     "tfc:oceanic_mountains",
     "tfc:volcanic_oceanic_mountains"
   ]

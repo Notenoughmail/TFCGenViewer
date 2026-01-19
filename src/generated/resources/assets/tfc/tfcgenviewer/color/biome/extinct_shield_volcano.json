@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 135,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.extinct_shield_volcano"
+    },
+    "sort": 341
+  },
+  "keys": [
+    "tfc:extinct_shield_volcano"
+  ]
+}

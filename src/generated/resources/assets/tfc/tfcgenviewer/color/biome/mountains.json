@@ -7,12 +7,11 @@
     },
     "name": {
       "translate": "biome.tfc.mountains"
-    }
+    },
+    "sort": 121
   },
-  "instances": [
+  "keys": [
     "tfc:mountains",
-    "tfc:volcanic_mountains",
-    "tfc:old_mountains",
-    "tfc:extreme_doline_mountains"
+    "tfc:volcanic_mountains"
   ]
 }

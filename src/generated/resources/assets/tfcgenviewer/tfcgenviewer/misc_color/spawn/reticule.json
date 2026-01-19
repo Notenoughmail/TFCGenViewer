@@ -1,0 +1,10 @@
+{
+  "color": {
+    "b": 48,
+    "g": 15,
+    "r": 198
+  },
+  "name": {
+    "translate": "color.tfcgenviewer.spawn.reticule"
+  }
+}

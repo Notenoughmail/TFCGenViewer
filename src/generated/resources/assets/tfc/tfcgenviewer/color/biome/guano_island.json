@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 50,
+      "g": 120,
+      "r": 120
+    },
+    "name": {
+      "translate": "biome.tfc.guano_island"
+    },
+    "sort": 311
+  },
+  "keys": [
+    "tfc:guano_island"
+  ]
+}

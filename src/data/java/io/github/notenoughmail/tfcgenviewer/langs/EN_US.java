@@ -46,6 +46,11 @@ public class EN_US extends LangProvider {
                         .add("preview", "Preview %s with %s")
                         .add("apply", "Apply")
                         .add("export", "Export Preview")
+                        .add("save", "Save")
+                        .branch("current_seed", seed -> seed
+                                .add("", "Current seed: %s")
+                                .add("tooltip", "Click to set as seed and copy to clipboard")
+                        )
                 )
                 .branch("screen", screen -> screen
                         .branch("preview_world", previewWorld -> previewWorld
@@ -67,7 +72,7 @@ public class EN_US extends LangProvider {
                 )
                 .branch("generator", gen -> gen
                         .branch("tfc_overworld", tfc -> tfc
-                                .add("region", "TFC Overworld (Grid Scale)"))
+                                .add("region", "TFC (Grid Scale)"))
                 )
                 .branch("preview_info", info -> info
                         .add("base", "Visualizer used: %1$s\nSize: %2$s x %2$s\nTime elapsed: %3$s seconds")
@@ -146,12 +151,20 @@ public class EN_US extends LangProvider {
                                 .add("hot_spot_age_3", "Old Hot Spot")
                                 .add("hot_spot_age_2", "Young hot Spot")
                                 .add("hot_spot_age_1", "Active Hot Spot")
+                                .add("land", "Land")
                         )
                         .branch("biome_altitude", alt -> alt
                                 .add("mountain", "Mountain Elevation")
                                 .add("high", "High Elevation")
                                 .add("mid", "Mid Elevation")
                                 .add("low", "Low Elevation")
+                                .add("shallow", "Shallow Ocean")
+                                .add("deep", "Deep Ocean")
+                                .add("very_deep", "Very Deep Ocean")
+                        )
+                        .branch("spawn", spawn -> spawn
+                                .add("border", "Spawn Region Edge")
+                                .add("reticule", "Spawn Region Center")
                         )
                 )
         );

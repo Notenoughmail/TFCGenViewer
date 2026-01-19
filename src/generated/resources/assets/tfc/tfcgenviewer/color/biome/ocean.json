@@ -7,9 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.ocean"
-    }
+    },
+    "sort": 11
   },
-  "instances": [
+  "keys": [
     "tfc:ocean"
   ]
 }

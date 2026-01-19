@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 165,
+      "r": 255
+    },
+    "name": {
+      "translate": "biome.tfc.glaciated_oceanic_mountains"
+    },
+    "sort": 481
+  },
+  "keys": [
+    "tfc:glaciated_oceanic_mountains"
+  ]
+}

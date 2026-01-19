@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
@@ -33,7 +34,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     }
 
     @Override
-    public NoneOpt createOptions(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize scale) {
+    public NoneOpt createOptions(RegistryAccess registryAccess) {
         return NoneOpt.INSTANCE;
     }
 
@@ -44,7 +45,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, TFCRegionVisualizer.Scale, NoneOpt> info) {
-        final RegionPointCache.RegionPoint regionPoint = info.cache().regionCache.getRegionPoint(imageX, imageY, xPos, zPos);
+        final RegionPointCache.RegionPoint regionPoint = info.cache().innerCache.getRegionPoint(imageX, imageY, xPos, zPos);
         final Region.Point point = regionPoint.point();
         final List<ColorDefinition> colors = info.cache().search(
                 TFCLayers.getFromLayerId(point.biome).key(),
@@ -97,7 +98,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
                     tooltip.append(Component.translatable("tfcgenviewer.climate_features.list_entry", color.getTooltip()));
                 }
 
-                info.colorDescriptors().putIfAbsent(
+                info.colorTooltips().putIfAbsent(
                         image.getABGRColor(imageX, imageY),
                         tooltip
                 );
@@ -108,7 +109,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     @Nullable
     @Override
     public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, TFCRegionVisualizer.Scale, NoneOpt> info) {
-        return Component.translatable("tfcgenviewer.preview_info.generated_regions", info.cache().regionCache.visitedRegions());
+        return Component.translatable("tfcgenviewer.preview_info.generated_regions", info.cache().innerCache.visitedRegions());
     }
 
     @Override
@@ -124,5 +125,10 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     @Override
     public boolean isPermitted(ServerPlayer player) {
         return true;
+    }
+
+    @Override
+    public void additionalSynchronization(SynchronizationRequest synchronizationRequest) {
+        synchronizationRequest.syncContents(ClimateFeatureCache.VISUALIZABLE_FEATURES);
     }
 }

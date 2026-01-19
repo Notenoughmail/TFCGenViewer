@@ -7,11 +7,10 @@
     },
     "name": {
       "translate": "biome.tfc.mesas"
-    }
+    },
+    "sort": 231
   },
-  "instances": [
-    "tfc:mesas",
-    "tfc:hoodoos",
-    "tfc:buttes"
+  "keys": [
+    "tfc:mesas"
   ]
 }

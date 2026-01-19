@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 110,
+      "r": 200
+    },
+    "name": {
+      "translate": "biome.tfc.low_canyons"
+    },
+    "sort": 101
+  },
+  "keys": [
+    "tfc:low_canyons"
+  ]
+}

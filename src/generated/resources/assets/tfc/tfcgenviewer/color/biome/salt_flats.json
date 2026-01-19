@@ -6,11 +6,11 @@
       "r": 190
     },
     "name": {
-      "translate": "biome.tfc.slat_flats"
-    }
+      "translate": "biome.tfc.salt_flats"
+    },
+    "sort": 281
   },
-  "instances": [
-    "tfc:salt_flats",
-    "tfc:guano_island"
+  "keys": [
+    "tfc:salt_flats"
   ]
 }
