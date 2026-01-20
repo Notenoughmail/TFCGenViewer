@@ -7,6 +7,7 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.client.screen.PreviewScreen;
+import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -36,7 +37,7 @@ public abstract class MoreTabMixin {
                 .dimensions()
                 .forEach((key, value) -> {
                     if (value.generator() instanceof ChunkGeneratorExtension ext) {
-                        GenViewerAPI.getVisualizersFor(ext.getClass()).forEach(viz -> rowHelper.addChild(
+                        ImplAPI.getVisualizersFor(ext).forEach(viz -> rowHelper.addChild(
                                 Button.builder(
                                         Component.translatable(
                                                 "tfcgenviewer.button.preview",

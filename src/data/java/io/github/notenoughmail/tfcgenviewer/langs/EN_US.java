@@ -53,7 +53,7 @@ public class EN_US extends LangProvider {
                         )
                 )
                 .branch("screen", screen -> screen
-                        .branch("preview_world", previewWorld -> previewWorld
+                        .branch("preview_world", preview -> preview
                                 .add("title", "Previewing %s with %s")
                                 .branch("option", option -> option
                                         .add("visualizer_type", "Visualizer")
@@ -69,8 +69,15 @@ public class EN_US extends LangProvider {
                                         )
                                 )
                         )
+                        .branch("multiple_generator_visualizers", multi -> multi
+                                .add("title", "Multiple Generator Visualizers Available")
+                                .add("entry", "View with: %s")
+                        )
+                        .branch("view_world", view -> view
+                                .add("title", "Viewing %s with %s")
+                        )
                 )
-                .branch("generator", gen -> gen
+                .branch("generatorVisualizer", gen -> gen
                         .branch("tfc_overworld", tfc -> tfc
                                 .add("region", "TFC (Grid Scale)"))
                 )
@@ -135,6 +142,18 @@ public class EN_US extends LangProvider {
                         .add("coral", "Coral")
                 )
                 .add("color_key_template", "%s: %s")
+                .branch("network", network -> network
+                        .branch("view_request", request -> request
+                                .branch("response", response -> response
+                                        .add("absent", "TFCGenViewer is not present on the server")
+                                        .add("fail", "Cannot visualize this world as it is not TFC like")
+                                        .add("empty", "There are no know ways to visualize this world")
+                                )
+                        )
+                )
+                .branch("key", key -> key
+                        .add("open_viewer", "Open World Viewer")
+                )
         );
         branch("color", color -> color
                 .branch(TFCGenViewer.ID, self -> self

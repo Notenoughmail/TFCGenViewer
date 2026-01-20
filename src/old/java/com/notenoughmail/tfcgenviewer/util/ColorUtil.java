@@ -18,7 +18,7 @@ public class ColorUtil {
 
     public static final Random COLOR_GENERATOR = new Random(System.nanoTime() ^ System.currentTimeMillis());
 
-    // A blank region for use when the region generator produces nonsense, which happens on occasion with 262km
+    // A blank region for use when the region generatorVisualizer produces nonsense, which happens on occasion with 262km
     // Attempting to travel to a location represented by the failure state will result in a JVM crash
     public static final Region.Point FAILURE_STATE = new Region.Point();
 

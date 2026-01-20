@@ -6,7 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RGB;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.ColorManager;
-import io.github.notenoughmail.tfcgenviewer.impl.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Preview;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.BiomeAltitudeVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RiversAndMountainsVisualizer;

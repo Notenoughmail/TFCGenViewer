@@ -1,20 +1,25 @@
 package io.github.notenoughmail.tfcgenviewer.impl.preview;
 
 import com.google.common.base.Stopwatch;
+import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
+import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.Options;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
@@ -22,11 +27,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Preview {
 
@@ -125,7 +134,7 @@ public class Preview {
                                 .append("-")
                                 .append(visualizerId.toDebugFileName())
                                 .append("+")
-                                .append(viz.id().toDebugFileName());
+                                .append(Objects.requireNonNull(GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz)).toDebugFileName());
                         viz.appendToFileName(s -> builder.append("-").append(s), drawParams.options());
                         builder.append(".png");
                     }).toString(),
@@ -205,7 +214,52 @@ public class Preview {
             return NO_SPAWN;
         }
 
-        public static final SpawnInfo NO_SPAWN = new SpawnInfo(false, 0, 0, 0);
+        public static SpawnInfo of(OptionInstance<Boolean> drawSpawn, Settings settings) {
+            if (drawSpawn.get()) {
+                return new SpawnInfo(true, settings.spawnCenterX(), settings.spawnCenterZ(), settings.spawnDistance());
+            }
+            return NO_SPAWN;
+        }
 
+        public static final SpawnInfo NO_SPAWN = new SpawnInfo(false, 0, 0, 0);
+    }
+
+    public static <I extends ImageSize> OptionInstance<I> imageSizeOption(IScale<I> scale) {
+        return new OptionInstance<>(
+                "tfcgenviewer.option.preview_size",
+                OptionInstance.noTooltip(),
+                (caption, i) -> scale.formatSize(i),
+                new OptionInstance.Enum<>(scale.sizes(), scale.codec()),
+                scale.getDefault(),
+                i -> {}
+        );
+    }
+
+    private static final Codec<IVisualizerType<?, ?, ?, ?>> VIZ_CODEC = GenViewerAPI.VISUALIZER_REGISTRY.byNameCodec();
+
+    public static <V extends IVisualizerType<?, ?, ?, ?>> OptionInstance<V> visualizerTypeOption(IGeneratorVisualizer<?, ?, ?, V> visualizer, List<V> visualziers, Consumer<V> onChange) {
+        return new OptionInstance<>(
+                "tfcgenviewer.option.visualizer_type",
+                OptionInstance.noTooltip(),
+                (caption, viz) -> viz.name(),
+                new OptionInstance.Enum<>(visualziers, VIZ_CODEC.xmap(TFCGenViewer::<V>cast, Function.identity())),
+                visualziers.getFirst(),
+                onChange
+        );
+    }
+
+    // Taken from CreateTFCWorldScreen
+    public static OptionInstance<Integer> kmOption(String caption, int min, int max, int defaultValue) {
+        return new OptionInstance<>(
+                caption,
+                OptionInstance.cachedConstantTooltip(Component.translatable(caption + ".tooltip")),
+                (text, value) -> Options.genericValueLabel(
+                        text,
+                        Component.translatable("tfc.settings.km", String.format("%.1f", value / 1000.0))
+                ),
+                new OptionInstance.IntRange(min, max),
+                defaultValue,
+                i -> {}
+        );
     }
 }

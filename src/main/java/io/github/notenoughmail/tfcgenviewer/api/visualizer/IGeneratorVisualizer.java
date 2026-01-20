@@ -14,27 +14,32 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.List;
 import java.util.stream.Stream;
 
-public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I extends ImageSize, S extends IScale<I>, V extends IVisualizerType<G, ?, S, ?>> {
+public interface IGeneratorVisualizer<
+        G extends ChunkGeneratorExtension,
+        I extends ImageSize,
+        S extends IScale<I>,
+        V extends IVisualizerType<G, ?, S, ?>
+        > {
 
     /**
-     * The id of the generator visualizer
+     * The id of the generatorVisualizer visualizer
      */
     ResourceLocation id();
 
     /**
-     * All {@link IVisualizerType}s this generator visualizer possesses
+     * All {@link IVisualizerType}s this generatorVisualizer visualizer possesses
      */
     Stream<V> visualzierStream();
 
     /**
-     * All {@link IVisualizerType}s this generator visualizer possesses
+     * All {@link IVisualizerType}s this generatorVisualizer visualizer possesses
      */
     default List<V> allVisualizers() {
         return visualzierStream().toList();
     };
 
     /**
-     * The {@link IScale scale} of the generator visualizer
+     * The {@link IScale scale} of the generatorVisualizer visualizer
      */
     S scale();
 
@@ -51,43 +56,32 @@ public interface IGeneratorVisualizer<G extends ChunkGeneratorExtension, I exten
     }
 
     /**
-     * The formatted name of the generator visualizer
+     * The formatted name of the generatorVisualizer visualizer
      */
     Component name();
 
     /**
-     * The {@link ChunkGeneratorExtension} class this generator visualizer is for
+     * The {@link ChunkGeneratorExtension} class this generatorVisualizer visualizer is for
      */
     Class<? extends G> generatorType();
 
     /**
-     * If the generator and visualizer support rock editing
+     * If the generatorVisualizer and visualizer support rock editing
      */
     boolean supportsRockEditing();
 
     /**
-     * Synchronize server-only registry information so that is available to {@link IVisualizerType}s
+     * Synchronize server-only registry information so that is available to all {@link IVisualizerType}s handled by this generatorVisualizer visualizer
      */
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
 
     /**
-     * Recreate the generator, will error if simply {@code return generator;}
+     * Recreate the generatorVisualizer, will error if simply {@code return generatorVisualizer;}
      */
     G recreateGenerator(G generator);
 
     /**
-     * A codec to serialize the generator over-the-network to recreate it on the client
+     * A codec to serialize the generatorVisualizer over-the-network to recreate it on the client
      */
     StreamCodec<RegistryFriendlyByteBuf, G> generatorNetworkCodec();
-
-    /**
-     * A codec to serialize the allowed visualizers over-the-network so they may be known on the client
-     */
-    StreamCodec<RegistryFriendlyByteBuf, List<V>> visualizerNetworkCodec();
-
-    /**
-     * A codec for the {@link IVisualizerType}s this generator visualizer handles
-     * @return
-     */
-    Codec<V> visualizerCodec();
 }

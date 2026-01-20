@@ -1,6 +1,8 @@
-package io.github.notenoughmail.tfcgenviewer.api;
+package io.github.notenoughmail.tfcgenviewer.api.cache;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
@@ -11,7 +13,7 @@ import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
 
 /**
- * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link GenViewerAPI#TFC_REGION_VISUALIZER_REGISTRY region visualizers}
+ * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link GenViewerAPI#VISUALIZER_REGISTRY region visualizers}
  * as the cache of {@link RegionGenerator} is generally too small for the scales often encountered by visualizers
  */
 public class RegionPointCache {
@@ -72,7 +74,7 @@ public class RegionPointCache {
     }
 
     /**
-     * @return The underlying generator from which this cache derives region points
+     * @return The underlying generatorVisualizer from which this cache derives region points
      */
     public RegionGenerator getGenerator() {
         return generator;

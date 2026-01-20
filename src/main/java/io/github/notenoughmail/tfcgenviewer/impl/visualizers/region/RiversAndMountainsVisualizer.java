@@ -2,14 +2,14 @@ package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
-import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
@@ -18,7 +18,6 @@ import net.dries007.tfc.world.region.Units;
 import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 
@@ -54,7 +53,7 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, Options> info) {
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, Options> info) {
         final RegionPointCache.RegionPoint pair = info.cache().getRegionPoint(imageX, imageY, xPos, zPos);
         final Region.Point point = pair.point();
         if (point.land()) {
@@ -95,11 +94,6 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
                     info
             );
         }
-    }
-
-    @Override
-    public ResourceLocation id() {
-        return TFCGenViewerRegistration.VIZ_RIVERS_AND_MOUNTAINS.id();
     }
 
     @Override
@@ -146,6 +140,11 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
 
     private static DataManager.Reference<ColorDefinition> color(String path) {
         return Colors.MISC_COLORS.getReference(TFCGenViewer.id("rivers_and_mountains/" + path));
+    }
+
+    @Override
+    public int sort() {
+        return 80;
     }
 
     public static class Options implements IVisualizerType.Options<Options> {

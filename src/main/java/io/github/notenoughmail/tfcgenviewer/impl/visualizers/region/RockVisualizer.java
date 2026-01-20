@@ -1,20 +1,19 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
-import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +28,7 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, Options> info) {
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, Options> info) {
         final Region.Point point = info.cache().getPoint(imageX, imageY, xPos, zPos);
         final Block raw;
         if (info.options().surface) {
@@ -61,11 +60,6 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
     }
 
     @Override
-    public ResourceLocation id() {
-        return TFCGenViewerRegistration.VIZ_ROCK.id();
-    }
-
-    @Override
     public Options createOptions(RegistryAccess registryAccess) {
         return new Options();
     }
@@ -91,7 +85,7 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
 
     @Nullable
     @Override
-    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, Options> info) {
+    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, Options> info) {
         return info.options().surface ?
                 RegionVisualizerType.super.additionalPreviewInfo(info) :
                 Component.translatable(
@@ -99,6 +93,11 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
                         info.cache().visitedRegions(),
                         info.options().elevation
                 );
+    }
+
+    @Override
+    public int sort() {
+        return 50;
     }
 
     public static final class Options implements IVisualizerType.Options<Options> {

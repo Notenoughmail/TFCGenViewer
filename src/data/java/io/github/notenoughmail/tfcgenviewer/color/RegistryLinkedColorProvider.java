@@ -5,7 +5,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RGB;
 import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
-import io.github.notenoughmail.tfcgenviewer.impl.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.dries007.tfc.util.Helpers;

@@ -1,23 +1,29 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
+import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
-import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.impl.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,12 +32,7 @@ import java.util.List;
 
 public class ClimateRestrictedVisualizer implements IRegionVisualizerType<ClimateFeatureCache<RegionPointCache>, IVisualizerType.NoneOpt> {
 
-    public static final Component NAME = Component.translatable("tfcgenviewer.visualizers.region.climate_restricted");
-
-    @Override
-    public ResourceLocation id() {
-        return TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE.id();
-    }
+    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE);
 
     @Override
     public NoneOpt createOptions(RegistryAccess registryAccess) {
@@ -44,7 +45,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, TFCRegionVisualizer.Scale, NoneOpt> info) {
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, GridScale, NoneOpt> info) {
         final RegionPointCache.RegionPoint regionPoint = info.cache().innerCache.getRegionPoint(imageX, imageY, xPos, zPos);
         final Region.Point point = regionPoint.point();
         final List<ColorDefinition> colors = info.cache().search(
@@ -108,7 +109,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
 
     @Nullable
     @Override
-    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, TFCRegionVisualizer.Scale, NoneOpt> info) {
+    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, GridScale, NoneOpt> info) {
         return Component.translatable("tfcgenviewer.preview_info.generated_regions", info.cache().innerCache.visitedRegions());
     }
 
@@ -129,6 +130,20 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
 
     @Override
     public void additionalSynchronization(SynchronizationRequest synchronizationRequest) {
-        synchronizationRequest.syncContents(ClimateFeatureCache.VISUALIZABLE_FEATURES);
+        synchronizationRequest.request(ClimateFeatureCache.VISUALIZABLE_FEATURES);
+    }
+
+    @Nullable
+    @Override
+    public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
+        if (Registries.PLACED_FEATURE.equals(registry)) {
+            return TFCGenViewer.cast(ClimateFeatureCache.FEATURE_CODEC);
+        }
+        return null;
+    }
+
+    @Override
+    public int sort() {
+        return 70;
     }
 }

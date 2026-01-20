@@ -1,13 +1,12 @@
 package io.github.notenoughmail.tfcgenviewer.client.screen;
 
-import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
+import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.options.EditBoxValueSet;
-import io.github.notenoughmail.tfcgenviewer.client.options.OptionOrder;
+import io.github.notenoughmail.tfcgenviewer.client.options.OptionOrders;
 import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
@@ -16,9 +15,6 @@ import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.impl.ISeedSetter;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Preview;
-import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import it.unimi.dsi.fastutil.doubles.DoubleConsumer;
-import it.unimi.dsi.fastutil.ints.IntConsumer;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.Settings;
@@ -39,12 +35,9 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.neoforged.neoforge.common.extensions.ILevelExtension;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
-import java.util.function.DoubleFunction;
-import java.util.function.ToDoubleFunction;
 
 public class PreviewScreen<
         G extends ChunkGeneratorExtension,
@@ -82,20 +75,6 @@ public class PreviewScreen<
         );
     }
 
-    private static OptionInstance<Integer> kmOption(String caption, int min, int max, int defaultValue) {
-        return new OptionInstance<>(
-                caption,
-                OptionInstance.cachedConstantTooltip(Component.translatable(caption + ".tooltip")),
-                (text, value) -> Options.genericValueLabel(
-                        text,
-                        Component.translatable("tfc.settings.km", String.format("%.1f", value / 1000.0))
-                ),
-                new OptionInstance.IntRange(min, max),
-                defaultValue,
-                i -> {}
-        );
-    }
-
     private final G generator, originalGenerator;
     private final IGeneratorVisualizer<G, I, S, V> visualizer;
     private final CreateWorldScreen parent;
@@ -119,7 +98,12 @@ public class PreviewScreen<
 
     private SingleColumnOptionsList options;
 
-    public PreviewScreen(G generator, IGeneratorVisualizer<G, I, S, V> visualizer, CreateWorldScreen parent, ResourceKey<LevelStem> dimension) {
+    public PreviewScreen(
+            G generator,
+            IGeneratorVisualizer<G, I, S, V> visualizer,
+            CreateWorldScreen parent,
+            ResourceKey<LevelStem> dimension
+    ) {
         super(Component.translatable(
                 "tfcgenviewer.screen.preview_world.title",
                 Component.translatable(dimension.location().toLanguageKey(ILevelExtension.TRANSLATION_PREFIX)),
@@ -138,23 +122,23 @@ public class PreviewScreen<
         final int offset = visualizer.scale().blocksPerPixel() * visualizer.maximumPreviewOffset();
         intransientOptionsBefore = new OptionInstance[] {
                 flatBedrock = OptionInstance.createBoolean("tfc.create_world.flat_bedrock", settings.flatBedrock(), b -> {}),
-                spawnDist = kmOption("tfc.create_world.spawn_distance", 100, 20_000, settings.spawnDistance()),
-                spawnCenterX = kmOption("tfc.create_world.spawn_center_x", -20_000, 20_000, settings.spawnCenterX()),
-                spawnCenterZ = kmOption("tfc.create_world.spawn_center_z", -20_000, 20_000, settings.spawnCenterZ()),
-                tempScale = kmOption("tfc.create_world.temperature_scale", 0, 40_000, settings.temperatureScale()),
-                rainScale = kmOption("tfc.create_world.rainfall_scale", 0, 40_000, settings.rainfallScale()),
+                spawnDist = Preview.kmOption("tfc.create_world.spawn_distance", 100, 20_000, settings.spawnDistance()),
+                spawnCenterX = Preview.kmOption("tfc.create_world.spawn_center_x", -20_000, 20_000, settings.spawnCenterX()),
+                spawnCenterZ = Preview.kmOption("tfc.create_world.spawn_center_z", -20_000, 20_000, settings.spawnCenterZ()),
+                tempScale = Preview.kmOption("tfc.create_world.temperature_scale", 0, 40_000, settings.temperatureScale()),
+                rainScale = Preview.kmOption("tfc.create_world.rainfall_scale", 0, 40_000, settings.rainfallScale()),
                 tempConst = constOption("tfc.create_world.temperature_constant", settings.temperatureConstant()),
                 rainConst = constOption("tfc.create_world.rainfall_constant", settings.rainfallConstant()),
                 continentalness = pctOption("tfc.create_world.continentalness", settings.continentalness()),
                 grassDensity = pctOption("tfc.create_world.grass_density", settings.continentalness()),
                 finiteContinents = OptionInstance.createBoolean("tfc.create_world.finite_continents", settings.finiteContinents(), b -> {}),
-                visualizerType = visualizerType(visualizer, v -> onVisualizerChange())
+                visualizerType = Preview.visualizerTypeOption(visualizer, visualizer.allVisualizers(), v -> onVisualizerChange())
         };
         intransientOptionsAfter = new OptionInstance[] {
-                imageSize = imageSize(visualizer.scale()),
+                imageSize = Preview.imageSizeOption(visualizer.scale()),
                 spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {}),
-                xOffset = kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0),
-                zOffset = kmOption("tfcgenviewer.screen.preview_world.option.z_offset", -offset, offset, 0),
+                xOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0),
+                zOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.z_offset", -offset, offset, 0),
                 seed = new OptionInstance<>(
                         "selectWorld.enterSeed",
                         OptionInstance.noTooltip(),
@@ -213,11 +197,12 @@ public class PreviewScreen<
     public void onClose() {
         super.onClose();
         getMinecraft().setScreen(parent);
+        state.close();
     }
 
     @Override
     protected void init() {
-        final int previewPixels = Math.min(height - 64, width / 2);
+        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewerClient.maxPreviewWidth.getAsDouble()));
 
         options = new SingleColumnOptionsList(getMinecraft(), width, height, 32, 25);
         options.setScrollBarOffset(-8);
@@ -232,7 +217,12 @@ public class PreviewScreen<
         options.clampScrollAmount();
         addRenderableWidget(options);
 
-        previewPane.setRectangle(previewPixels, previewPixels, leftPreview, (height - previewPixels) / 2);
+        previewPane.setRectangle(
+                previewPixels,
+                previewPixels,
+                leftPreview,
+                (height - previewPixels) / 2
+        );
         addRenderableWidget(previewPane);
 
         infoPane.setRectangle(
@@ -274,14 +264,10 @@ public class PreviewScreen<
     }
 
     private void visualize() {
-        state.previousImageProcess.cancel(true);
-        if (state.previousImage != null) {
-            state.previousImage.close();
-            state.previousImage = null;
-        }
+        state.close();
         previewPane.nowProcessing();
 
-        final int xCenterBlocks = this.xOffset.get(), zCenterBlocks = this.zOffset.get();
+        final int xCenterBlocks = xOffset.get(), zCenterBlocks = zOffset.get();
         state.genSeed = parseSeed();
         seedButton.setMessage(Component.translatable("tfcgenviewer.button.current_seed", state.genSeed));
 
@@ -398,55 +384,13 @@ public class PreviewScreen<
                 populateOptions();
             }
         }
-    }
 
-    private record OptionOrders(Consumer<OptionInstance<?>> order) implements OptionProvider {
-
-        @Override
-        public <T> Order<T> order(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange) {
-            return OptionOrder.list(name, initial, values, codec, onChange, order);
+        void close() {
+            previousImageProcess.cancel(true);
+            if (previousImage != null) {
+                previousImage.close();
+                previousImage = null;
+            }
         }
-
-        @Override
-        public Order<Boolean> orderBool(String name, boolean initial, BooleanConsumer onChange) {
-            return OptionOrder.bool(name, initial, onChange, order);
-        }
-
-        @Override
-        public <T extends Comparable<T>> Order<T> order(String name, T initial, T min, T max, Codec<T> codec, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Consumer<T> onChange) {
-            return OptionOrder.comparable(name, initial, min, max, codec, toSlider, fromSlider, onChange, order);
-        }
-
-        @Override
-        public Order<Integer> orderInt(String name, int initial, int min, int max, IntConsumer onChange) {
-            return OptionOrder.integer(name, initial, min, max, onChange, order);
-        }
-
-        @Override
-        public Order<Double> orderDouble(String name, double initial, double min, double max, DoubleConsumer onChange) {
-            return OptionOrder.doub(name, initial, min, max, onChange, order);
-        }
-    }
-
-    public static <V extends IVisualizerType<?, ?, ?, ?>> OptionInstance<V> visualizerType(IGeneratorVisualizer<?, ?, ?, V> visualizer, Consumer<V> onChange) {
-        return new OptionInstance<>(
-                "tfcgenviewer.option.visualizer_type",
-                OptionInstance.noTooltip(),
-                (caption, viz) -> viz.name(),
-                new OptionInstance.Enum<>(visualizer.allVisualizers(), visualizer.visualizerCodec()),
-                visualizer.allVisualizers().getFirst(),
-                onChange
-        );
-    }
-
-    public static <I extends ImageSize> OptionInstance<I> imageSize(IScale<I> scale) {
-        return new OptionInstance<>(
-                "tfcgenviewer.option.preview_size",
-                OptionInstance.noTooltip(),
-                (caption, i) -> scale.formatSize(i),
-                new OptionInstance.Enum<>(scale.sizes(), scale.codec()),
-                scale.getDefault(),
-                i -> {}
-        );
     }
 }

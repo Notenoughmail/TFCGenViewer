@@ -9,21 +9,13 @@ import net.minecraft.tags.TagKey;
 
 import java.util.function.Predicate;
 
-public final class SynchronizationRequest {
+public interface SynchronizationRequest {
 
-    public <T> void request(ResourceKey<? extends Registry<T>> registry, StreamCodec<RegistryFriendlyByteBuf, T> codec) {
-
+    default <T> void request(ResourceKey<? extends Registry<T>> registry) {
+        request(registry, h -> true);
     }
 
-    public <T> void request(TagKey<T> tag, StreamCodec<RegistryFriendlyByteBuf, T> codec) {
+    <T> void request(TagKey<T> tag);
 
-    }
-
-    public <T> void request(ResourceKey<? extends Registry<T>> registry, StreamCodec<RegistryFriendlyByteBuf, T> codec, Predicate<Holder<T>> elementFilter) {
-
-    }
-
-    public <T> void syncContents(TagKey<T> tag) {
-
-    }
+    <T> void request(ResourceKey<? extends Registry<T>> registry, Predicate<Holder<T>> elementFilter);
 }

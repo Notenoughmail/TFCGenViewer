@@ -1,15 +1,15 @@
 package io.github.notenoughmail.tfcgenviewer.impl;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridSize;
-import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeSourceExtension;
-import net.dries007.tfc.world.region.Units;
 import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -19,10 +19,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerator, GridSize, TFCRegionVisualizer.Scale, IRegionVisualizerType<?, ?>> {
+public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerator, GridSize, GridScale, IRegionVisualizerType<?, ?>> {
 
     public static final TFCRegionVisualizer INSTANCE = new TFCRegionVisualizer();
 
@@ -37,6 +39,13 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     public static final ResourceLocation ID = TFCGenViewer.id("tfc_region");
 
+    private final Supplier<List<IRegionVisualizerType<?, ?>>> validVisualizers =
+            Suppliers.memoize(() -> GenViewerAPI.VISUALIZER_REGISTRY.stream()
+                    .filter(IRegionVisualizerType.class::isInstance)
+                    .<IRegionVisualizerType<?, ?>>map(IRegionVisualizerType.class::cast)
+                    .sorted(Comparator.comparing(IRegionVisualizerType::sort))
+                    .toList());
+
     private TFCRegionVisualizer() {}
 
     @Override
@@ -46,12 +55,12 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     @Override
     public Stream<IRegionVisualizerType<?, ?>> visualzierStream() {
-        return GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY.stream();
+        return validVisualizers.get().stream();
     }
 
     @Override
-    public Scale scale() {
-        return Scale.INSTANCE;
+    public GridScale scale() {
+        return GridScale.INSTANCE;
     }
 
     @Override
@@ -82,44 +91,5 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
     @Override
     public StreamCodec<RegistryFriendlyByteBuf, TFCChunkGenerator> generatorNetworkCodec() {
         return GENERATOR_NETWORK_CODEC;
-    }
-
-    @Override
-    public StreamCodec<RegistryFriendlyByteBuf, List<IRegionVisualizerType<?, ?>>> visualizerNetworkCodec() {
-        return IRegionVisualizerType.NETWORK_CODEC;
-    }
-
-    @Override
-    public Codec<IRegionVisualizerType<?, ?>> visualizerCodec() {
-        return IRegionVisualizerType.CODEC;
-    }
-
-    public enum Scale implements IScale<GridSize> {
-        INSTANCE;
-
-        @Override
-        public int blocksPerPixel() {
-            return Units.GRID_WIDTH_IN_BLOCK;
-        }
-
-        @Override
-        public Component formatSize(GridSize size) {
-            return size.display();
-        }
-
-        @Override
-        public GridSize getDefault() {
-            return GridSize._3;
-        }
-
-        @Override
-        public List<GridSize> sizes() {
-            return GridSize.SIZES;
-        }
-
-        @Override
-        public Codec<GridSize> codec() {
-            return GridSize.CODEC;
-        }
     }
 }

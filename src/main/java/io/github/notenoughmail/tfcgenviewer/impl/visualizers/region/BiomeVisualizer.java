@@ -1,22 +1,21 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
-import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Cache, IVisualizerType.NoneOpt> {
@@ -39,11 +38,6 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     }
 
     @Override
-    public ResourceLocation id() {
-        return TFCGenViewerRegistration.VIZ_BIOME.id();
-    }
-
-    @Override
     public NoneOpt createOptions(RegistryAccess registryAccess) {
         return NoneOpt.INSTANCE;
     }
@@ -54,7 +48,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, Cache, TFCRegionVisualizer.Scale, NoneOpt> info) {
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, Cache, GridScale, NoneOpt> info) {
         final ColorDefinition color = info.cache().getColor(imageX, imageY, xPos, zPos);
         color.addTooltip(info);
         image.setPixel(imageX, imageY, color.abgr());
@@ -68,6 +62,11 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public int sort() {
+        return 0;
     }
 
     public static class Cache {

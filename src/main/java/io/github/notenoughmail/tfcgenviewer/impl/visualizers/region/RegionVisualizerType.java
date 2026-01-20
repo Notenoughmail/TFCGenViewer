@@ -1,10 +1,10 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
-import io.github.notenoughmail.tfcgenviewer.api.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
+import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
@@ -19,7 +19,7 @@ public interface RegionVisualizerType<O extends IVisualizerType.Options<O>> exte
 
     @Nullable
     @Override
-    default Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, TFCRegionVisualizer.Scale, O> info) {
+    default Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, O> info) {
         return Component.translatable("tfcgenviewer.preview_info.generated_regions", info.cache().visitedRegions());
     }
 

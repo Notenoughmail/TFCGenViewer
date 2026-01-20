@@ -1,5 +1,6 @@
-package io.github.notenoughmail.tfcgenviewer.impl;
+package io.github.notenoughmail.tfcgenviewer.api.cache;
 
+import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
@@ -11,8 +12,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
@@ -27,6 +31,11 @@ public class ClimateFeatureCache<C> {
     public static final DataManager.Reference<ColorDefinition> LAND = Colors.MISC_COLORS.getReference(TFCGenViewer.id("visualizable_feature_land"));
     public static final RegistryLinkedColorManager<PlacedFeature> FEATURES = new RegistryLinkedColorManager<>(TFCGenViewer.id("visualizable_feature_color"), Registries.PLACED_FEATURE);
     public static final TagKey<PlacedFeature> VISUALIZABLE_FEATURES = TagKey.create(Registries.PLACED_FEATURE, TFCGenViewer.id("visualizable_features"));
+    public static final Codec<PlacedFeature> FEATURE_CODEC =
+            ClimatePlacement.CODEC.codec().xmap(
+                    p -> new PlacedFeature(null, List.of(p)),
+                    f -> findFirst(f.placement()).orElseThrow()
+            );
 
     private final Map<ResourceKey<Biome>, Set<ClimateSpace>> climates;
     public final C innerCache;

@@ -4,6 +4,7 @@ import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.color.Gradient;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.*;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
@@ -24,7 +25,7 @@ public class TFCGenViewerRegistration {
         GRADIENTS.register(modBus);
     }
 
-    private static final DeferredRegister<IRegionVisualizerType<?, ?>> REGION_VISUALIZERS = DeferredRegister.create(GenViewerAPI.TFC_REGION_VISUALIZER_REGISTRY, TFCGenViewer.ID);
+    private static final DeferredRegister<IVisualizerType<?, ?, ?, ?>> REGION_VISUALIZERS = DeferredRegister.create(GenViewerAPI.VISUALIZER_REGISTRY, TFCGenViewer.ID);
     private static final DeferredRegister<Gradient.Preset> GRADIENTS = DeferredRegister.create(GenViewerAPI.GRADIENT_REGISTRY, TFCGenViewer.ID);
 
     public static <T> Component visualizerName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
@@ -32,7 +33,7 @@ public class TFCGenViewerRegistration {
     }
 
     public static Component regionVisualizerName(Id<? extends IRegionVisualizerType<?, ?>> viz) {
-        return visualizerName(GenViewerAPI.TFC_REGION_VISUALIZER, viz);
+        return visualizerName(GenViewerAPI.VISUALIZER, viz);
     }
 
     public static final Id<BiomeVisualizer> VIZ_BIOME = regionVisualizer("biome", BiomeVisualizer::new);
@@ -82,7 +83,7 @@ public class TFCGenViewerRegistration {
     });
 
     private static <T extends IRegionVisualizerType<?, ?>> Id<T> regionVisualizer(String name, Supplier<T> supplier) {
-        return register(REGION_VISUALIZERS, name, supplier);
+        return register(REGION_VISUALIZERS, "region/" + name, supplier);
     }
 
     private static Id<Gradient.Preset> gradient(String name, DoubleToIntFunction gradient) {

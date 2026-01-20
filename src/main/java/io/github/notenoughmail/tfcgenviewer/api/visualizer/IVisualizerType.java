@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
+import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
@@ -7,9 +8,10 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,14 +20,14 @@ import java.util.function.Function;
 
 /**
  * A visualizer type is tied to a single {@link IGeneratorVisualizer} and must be stateless. It is responsible for
- * drawing on an {@link MutableImage image} to visualize a feature about the chunk generator type it handles
+ * drawing on an {@link MutableImage image} to visualize a feature about the chunk generatorVisualizer type it handles
  * <p>
  * The order of operations proceeds as follows
  * <ul>
  *     <li>
  *         If the player is attempting to visualize in-world
  *         <ul>
- *             <li>{@link #isPermitted(ServerPlayer) isPermitted} if the generator visualizer makes use of it</li>
+ *             <li>{@link #isPermitted(ServerPlayer) isPermitted} if the generatorVisualizer visualizer makes use of it</li>
  *             <li>{@link #additionalSynchronization(SynchronizationRequest) additionalSynchronization} if the visualizer type is permitted</li>
  *         </ul>
  *     </li>
@@ -58,11 +60,6 @@ public interface IVisualizerType<
         > {
 
     /**
-     * The id of the visualizer type, should be completely distinct across all {@link IGeneratorVisualizer}s
-     */
-    ResourceLocation id();
-
-    /**
      * Create a {@link Options} instance which will store information about player-specified {@link #draw(int, int, MutableImage, int, int, DrawInfo) draw}
      * settings. {@link NoneOpt} should be returned when the visualizer type has no options
      * <p>
@@ -81,6 +78,14 @@ public interface IVisualizerType<
      * Request server-only registry information to be synchronized to the client
      */
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
+
+    /**
+     * Get the codec used to {@link #additionalSynchronization(SynchronizationRequest) sync} server-only registry contents
+     */
+    @Nullable
+    default <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
+        return null;
+    }
 
     /**
      * Create the cache object which will be available during drawing via {@link DrawInfo}

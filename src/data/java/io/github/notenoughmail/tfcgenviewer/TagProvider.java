@@ -1,6 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer;
 
-import io.github.notenoughmail.tfcgenviewer.impl.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import net.dries007.tfc.util.Helpers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
