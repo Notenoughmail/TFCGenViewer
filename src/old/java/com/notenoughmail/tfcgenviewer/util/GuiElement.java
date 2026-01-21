@@ -1,6 +1,5 @@
 package com.notenoughmail.tfcgenviewer.util;
 
-import com.notenoughmail.tfcgenviewer.TFCGenViewer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -13,8 +12,8 @@ public enum GuiElement {
     REMOVE(0, 0),
     CONFIRM(40, 0);
 
-    private static final ResourceLocation DEFAULT = TFCGenViewer.identifier("textures/gui/common_gui_elements/default.png");
-    private static final ResourceLocation HIGH_CONTRAST = TFCGenViewer.identifier("textures/gui/common_gui_elements/high_contrast.png");
+    private static final ResourceLocation DEFAULT = null;
+    private static final ResourceLocation HIGH_CONTRAST = null;
 
     public static ResourceLocation getId() {
         return Minecraft.getInstance().options.highContrast().get() ? HIGH_CONTRAST : DEFAULT;

@@ -3,26 +3,25 @@ package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
-import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
+import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
+import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
@@ -131,13 +130,16 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     @Override
     public void additionalSynchronization(SynchronizationRequest synchronizationRequest) {
         synchronizationRequest.request(ClimateFeatureCache.VISUALIZABLE_FEATURES);
+        synchronizationRequest.request(Registries.BIOME, h -> h.is(k -> k.location().getNamespace().equals(TerraFirmaCraft.MOD_ID)));
     }
 
     @Nullable
     @Override
     public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
         if (Registries.PLACED_FEATURE.equals(registry)) {
-            return TFCGenViewer.cast(ClimateFeatureCache.FEATURE_CODEC);
+            return TFCGenViewer.cast(ClimateFeatureCache.MINIMAL_FEATURE_CODEC);
+        } else if (Registries.BIOME.equals(registry)) {
+            return TFCGenViewer.cast(ClimateFeatureCache.MINIMAL_BIOME_CODEC);
         }
         return null;
     }

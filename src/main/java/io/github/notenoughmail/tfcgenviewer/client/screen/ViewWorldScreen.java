@@ -71,8 +71,8 @@ public class ViewWorldScreen<
             int zOrigin
     ) {
         super(Component.translatable(
-                "tfcgenviewer.screen.view_world",
-                Minecraft.getInstance().level.dimension().location().toLanguageKey(ILevelExtension.TRANSLATION_PREFIX),
+                "tfcgenviewer.screen.view_world.title",
+                Component.translatable(Minecraft.getInstance().level.dimension().location().toLanguageKey(ILevelExtension.TRANSLATION_PREFIX)),
                 generatorVisualizer.name()
         ));
         this.generator = generator;
@@ -115,11 +115,6 @@ public class ViewWorldScreen<
     }
 
     @Override
-    public boolean shouldCloseOnEsc() {
-        return false;
-    }
-
-    @Override
     public void onClose() {
         super.onClose();
         state.close();
@@ -135,7 +130,7 @@ public class ViewWorldScreen<
         final int leftPreview = (width - previewPixels) / 2;
         options.setRectangle(
                 leftPreview - 6,
-                height - 6,
+                height - 64,
                 0,
                 32
         );

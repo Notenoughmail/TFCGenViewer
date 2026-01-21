@@ -20,14 +20,14 @@ import java.util.function.Function;
 
 /**
  * A visualizer type is tied to a single {@link IGeneratorVisualizer} and must be stateless. It is responsible for
- * drawing on an {@link MutableImage image} to visualize a feature about the chunk generatorVisualizer type it handles
+ * drawing on an {@link MutableImage image} to visualize a feature about the chunk generator type it handles
  * <p>
  * The order of operations proceeds as follows
  * <ul>
  *     <li>
  *         If the player is attempting to visualize in-world
  *         <ul>
- *             <li>{@link #isPermitted(ServerPlayer) isPermitted} if the generatorVisualizer visualizer makes use of it</li>
+ *             <li>{@link #isPermitted(ServerPlayer) isPermitted} if the generator visualizer makes use of it</li>
  *             <li>{@link #additionalSynchronization(SynchronizationRequest) additionalSynchronization} if the visualizer type is permitted</li>
  *         </ul>
  *     </li>

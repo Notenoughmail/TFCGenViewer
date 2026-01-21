@@ -77,7 +77,7 @@ public class EN_US extends LangProvider {
                                 .add("title", "Viewing %s with %s")
                         )
                 )
-                .branch("generatorVisualizer", gen -> gen
+                    .branch("generator", gen -> gen
                         .branch("tfc_overworld", tfc -> tfc
                                 .add("region", "TFC (Grid Scale)"))
                 )

@@ -1,6 +1,5 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
-import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
@@ -22,24 +21,24 @@ public interface IGeneratorVisualizer<
         > {
 
     /**
-     * The id of the generatorVisualizer visualizer
+     * The id of the generator visualizer
      */
     ResourceLocation id();
 
     /**
-     * All {@link IVisualizerType}s this generatorVisualizer visualizer possesses
+     * All {@link IVisualizerType}s this generator visualizer possesses
      */
     Stream<V> visualzierStream();
 
     /**
-     * All {@link IVisualizerType}s this generatorVisualizer visualizer possesses
+     * All {@link IVisualizerType}s this generator visualizer possesses
      */
     default List<V> allVisualizers() {
         return visualzierStream().toList();
     };
 
     /**
-     * The {@link IScale scale} of the generatorVisualizer visualizer
+     * The {@link IScale scale} of the generator visualizer
      */
     S scale();
 
@@ -56,32 +55,32 @@ public interface IGeneratorVisualizer<
     }
 
     /**
-     * The formatted name of the generatorVisualizer visualizer
+     * The formatted name of the generator visualizer
      */
     Component name();
 
     /**
-     * The {@link ChunkGeneratorExtension} class this generatorVisualizer visualizer is for
+     * The {@link ChunkGeneratorExtension} class this generator visualizer is for
      */
     Class<? extends G> generatorType();
 
     /**
-     * If the generatorVisualizer and visualizer support rock editing
+     * If the generator and visualizer support rock editing
      */
     boolean supportsRockEditing();
 
     /**
-     * Synchronize server-only registry information so that is available to all {@link IVisualizerType}s handled by this generatorVisualizer visualizer
+     * Synchronize server-only registry information so that is available to all {@link IVisualizerType}s handled by this generator visualizer
      */
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
 
     /**
-     * Recreate the generatorVisualizer, will error if simply {@code return generatorVisualizer;}
+     * Recreate the generatorVisualizer, will error if simply {@code return generator;}
      */
     G recreateGenerator(G generator);
 
     /**
-     * A codec to serialize the generatorVisualizer over-the-network to recreate it on the client
+     * A codec to serialize the generator over-the-network to recreate it on the client
      */
     StreamCodec<RegistryFriendlyByteBuf, G> generatorNetworkCodec();
 }

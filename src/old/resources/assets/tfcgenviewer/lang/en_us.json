@@ -73,29 +73,5 @@
 
   "tfcgenviewer.rock_editor.no_spike": "No Spike Block",
   "tfcgenviewer.rock_editor.no_loose": "No Loose Block",
-  "tfcgenviewer.rock_editor.no_mossy_loose": "No Mossy Loose Block",
-
-  "tfcgenviewer.rock_type.land": "Land",
-  "tfcgenviewer.rock_type.oceanic": "Oceanic",
-  "tfcgenviewer.rock_type.volcanic": "Volcanic",
-  "tfcgenviewer.rock_type.uplift": "Uplift",
-
-  "tfcgenviewer.key.open_viewer": "Open World Viewer",
-
-  "tfcgenviewer.message.viewing_disallowed": "You do not have permission to visualize the world!",
-  "tfcgenviewer.message.non_tfc_world": "This is not a TFC-like world! Cannot be visualized",
-
-  "tfcgenviewer.view_world.title": "View World",
-
-  "tfcgenviewer.commands.set.success": "Set %s to %s",
-  "tfcgenviewer.commands.set.fail": "\"%s\" is not a valid setting for %s",
-  "tfcgenviewer.commands.get": "%s is set to %s",
-  "tfcgenviewer.commands.add.success": "Added %s to %s filter",
-  "tfcgenviewer.commands.add.fail": "Player already in %s filter",
-  "tfcgenviewer.commands.remove.success": "Removed %s from %s filter",
-  "tfcgenviewer.commands.remove.fail": "Player is not in %s filter",
-
-  "tfcgenviewer.could_not_parse.color": "Error encountered while parsing '%s' color definition",
-  "tfcgenviewer.could_not_parse.gradient": "Error encountered while parsing '%s' gradient definition",
-  "tfcgenviewer.could_not_parse.biome": "Error encountered while parsing '%s' biome color definition"
+  "tfcgenviewer.rock_editor.no_mossy_loose": "No Mossy Loose Block"
 }

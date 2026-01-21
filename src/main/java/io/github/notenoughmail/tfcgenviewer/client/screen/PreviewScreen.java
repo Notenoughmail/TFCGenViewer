@@ -37,7 +37,6 @@ import net.neoforged.neoforge.common.extensions.ILevelExtension;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 
 public class PreviewScreen<
         G extends ChunkGeneratorExtension,

@@ -6,36 +6,63 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
+import io.github.notenoughmail.tfcgenviewer.api.network.NetworkHolder;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.placement.ClimatePlacement;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class ClimateFeatureCache<C> {
 
     public static final DataManager.Reference<ColorDefinition> LAND = Colors.MISC_COLORS.getReference(TFCGenViewer.id("visualizable_feature_land"));
     public static final RegistryLinkedColorManager<PlacedFeature> FEATURES = new RegistryLinkedColorManager<>(TFCGenViewer.id("visualizable_feature_color"), Registries.PLACED_FEATURE);
     public static final TagKey<PlacedFeature> VISUALIZABLE_FEATURES = TagKey.create(Registries.PLACED_FEATURE, TFCGenViewer.id("visualizable_features"));
-    public static final Codec<PlacedFeature> FEATURE_CODEC =
+    public static final Codec<PlacedFeature> MINIMAL_FEATURE_CODEC =
             ClimatePlacement.CODEC.codec().xmap(
                     p -> new PlacedFeature(null, List.of(p)),
                     f -> findFirst(f.placement()).orElseThrow()
             );
+
+    public static final Predicate<Holder<PlacedFeature>> CAN_PIPE = h -> h.is(VISUALIZABLE_FEATURES) && findFirst(h.value().placement()).isPresent();
+
+    public static final Codec<Biome> MINIMAL_BIOME_CODEC =
+            NetworkHolder.codec(
+                    Registries.PLACED_FEATURE,
+                    MINIMAL_FEATURE_CODEC,
+                    CAN_PIPE,
+                    new PlacedFeature(null, List.of())
+            )
+            .listOf()
+            .xmap(l -> new BiomeGenerationSettings(
+                            Map.of(),
+                            List.of(HolderSet.direct(l))
+                    ),
+                    bgs -> bgs.features()
+                            .stream()
+                            .flatMap(HolderSet::stream)
+                            .filter(CAN_PIPE)
+                            .toList()
+            )
+            .xmap(bgs -> new Biome(
+                    null,
+                    null,
+                    bgs,
+                    null
+            ), Biome::getGenerationSettings);
 
     private final Map<ResourceKey<Biome>, Set<ClimateSpace>> climates;
     public final C innerCache;

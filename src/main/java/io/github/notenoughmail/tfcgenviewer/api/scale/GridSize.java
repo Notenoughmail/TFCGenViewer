@@ -27,7 +27,7 @@ public enum GridSize implements ImageSize {
 
     GridSize() {
         size = 2 << (ordinal() + 4); // == Math.pow(x, scale + 5)
-        lineWidth = size >> 9;
+        lineWidth = size >> 8;
         display = Component.translatable("tfcgenviewer.unit.kilometer", "%.1f".formatted(size * 128 / 1000F));
     }
 

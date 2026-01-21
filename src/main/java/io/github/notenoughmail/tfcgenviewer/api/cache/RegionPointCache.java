@@ -74,7 +74,7 @@ public class RegionPointCache {
     }
 
     /**
-     * @return The underlying generatorVisualizer from which this cache derives region points
+     * @return The underlying generator from which this cache derives region points
      */
     public RegionGenerator getGenerator() {
         return generator;

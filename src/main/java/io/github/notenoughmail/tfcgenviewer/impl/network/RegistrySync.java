@@ -45,7 +45,7 @@ public class RegistrySync implements SynchronizationRequest {
         });
     }
 
-    public List<RegistryContents<?>> toSync() {
+    public List<RegistryContents<?>> contents() {
         return List.copyOf(requestContents.values());
     }
 }

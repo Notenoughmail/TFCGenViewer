@@ -49,7 +49,7 @@
   "tfcgenviewer.climate_features.list_entry": "\n- %s",
   "tfcgenviewer.climate_features.multiple_present": "Multiple Features:",
   "tfcgenviewer.color_key_template": "%s: %s",
-  "tfcgenviewer.generatorVisualizer.tfc_overworld.region": "TFC (Grid Scale)",
+  "tfcgenviewer.generator.tfc_overworld.region": "TFC (Grid Scale)",
   "tfcgenviewer.gradient.ocean": "Ocean",
   "tfcgenviewer.gradient.rainfall": "Rainfall, 0 mm -> 500 mm",
   "tfcgenviewer.gradient.rainfall.0": "0 to 100 mm",

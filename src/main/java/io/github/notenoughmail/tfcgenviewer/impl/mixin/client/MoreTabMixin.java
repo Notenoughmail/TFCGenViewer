@@ -1,7 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.mixin.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;

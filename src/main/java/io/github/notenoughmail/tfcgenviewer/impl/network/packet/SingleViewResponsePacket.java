@@ -10,6 +10,7 @@ import io.github.notenoughmail.tfcgenviewer.impl.network.RegistryContents;
 import io.netty.buffer.ByteBuf;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -17,17 +18,18 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.connection.ConnectionType;
 
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record SingleViewResponsePacket(
         IGeneratorVisualizer<?, ?, ?, ?> generatorVisualizer,
         ChunkGeneratorExtension generator,
         List<IVisualizerType<?, ?, ?, ?>> visualizerTypes,
         List<RegistryContents<?>> registries,
+        RegistryAccess registryAccess,
         boolean allowSpawnDraw,
         boolean allowExport,
         boolean allowCoordinates,
@@ -46,9 +48,9 @@ public record SingleViewResponsePacket(
     public static final StreamCodec<RegistryFriendlyByteBuf, SingleViewResponsePacket> STREAM_CODEC = StreamCodec.of(
             (buf, p) -> {
                 ImplAPI.GENERATOR_VISUALIZER_STREAM_CODEC.encode(buf, p.generatorVisualizer);
-                p.generatorVisualizer.generatorNetworkCodec().encode(buf, TFCGenViewer.cast(p.generator));
                 VISUALIZER_TYPE_CODEC.encode(buf, p.visualizerTypes);
                 registriesFromVisualizers(p.visualizerTypes).encode(buf, p.registries);
+                p.generatorVisualizer.generatorNetworkCodec().encode(buf, TFCGenViewer.cast(p.generator));
                 buf.writeBoolean(p.allowSpawnDraw);
                 buf.writeBoolean(p.allowExport);
                 buf.writeBoolean(p.allowCoordinates);
@@ -58,15 +60,28 @@ public record SingleViewResponsePacket(
             },
             buf -> {
                 final IGeneratorVisualizer<?, ?, ?, ?> generatorVisualizer = ImplAPI.GENERATOR_VISUALIZER_STREAM_CODEC.decode(buf);
-                final ChunkGeneratorExtension ext = generatorVisualizer.generatorNetworkCodec().decode(buf);
                 final List<IVisualizerType<?, ?, ?, ?>> visualizerTypes = VISUALIZER_TYPE_CODEC.decode(buf);
                 final List<RegistryContents<?>> registries = registriesFromVisualizers(visualizerTypes).decode(buf);
+                final Set<ResourceKey<? extends Registry<?>>> syncedRegistries =
+                        registries.stream()
+                                .map(RegistryContents::registry)
+                                .collect(Collectors.toSet());
+
+                final RegistryAccess combinedRegistryAccess = new RegistryAccess.ImmutableRegistryAccess(Stream.concat(
+                        buf.registryAccess().registries().filter(e -> !syncedRegistries.contains(e.key())), // Synced registries overwrite real registries in the screen
+                        registries.stream().map(RegistryContents::asRegistry)
+                )).freeze();
+
+                buf = new RegistryFriendlyByteBuf(buf, combinedRegistryAccess, ConnectionType.NEOFORGE);
+
+                final ChunkGeneratorExtension ext = generatorVisualizer.generatorNetworkCodec().decode(buf);
 
                 return new SingleViewResponsePacket(
                         generatorVisualizer,
                         ext,
                         visualizerTypes,
                         registries,
+                        combinedRegistryAccess,
                         buf.readBoolean(),
                         buf.readBoolean(),
                         buf.readBoolean(),

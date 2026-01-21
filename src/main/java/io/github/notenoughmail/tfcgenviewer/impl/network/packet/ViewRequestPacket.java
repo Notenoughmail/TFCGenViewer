@@ -65,7 +65,8 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                                     generatorVisualizer,
                                     ext,
                                     visualizerTypes,
-                                    sync.toSync(),
+                                    sync.contents(),
+                                    player.serverLevel().registryAccess(), // Needed for the packet contract, not actually used
                                     // TODO: 1.21.1 | These need permission handlers
                                     true,
                                     true,
