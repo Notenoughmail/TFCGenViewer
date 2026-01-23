@@ -23,7 +23,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
@@ -31,7 +30,8 @@ import java.util.List;
 
 public class ClimateRestrictedVisualizer implements IRegionVisualizerType<ClimateFeatureCache<RegionPointCache>, IVisualizerType.NoneOpt> {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE);
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE);
 
     @Override
     public NoneOpt createOptions(RegistryAccess registryAccess) {
@@ -123,8 +123,8 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     }
 
     @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
+    public Component description() {
+        return DESC;
     }
 
     @Override

@@ -58,20 +58,21 @@ public class InfoPane extends AbstractScrollWidget {
 
     @Override
     public void setMessage(Component message) {
-        lines = font.get().split(message, getWidth() - 8 - 4);
-        updateLengthOfContent();
-        setScrollAmount(0);
+        super.setMessage(message);
+        refreshMessageLength();
         showCompass = true;
+    }
+
+    private void refreshMessageLength() {
+        lines = font.get().split(getMessage(), getWidth() - 8 - 4);
+        maxLengthOfContent = lines.size() * font.get().lineHeight + getWidth() + 13;
+        setScrollAmount(0);
     }
 
     @Override
     public void setRectangle(int width, int height, int x, int y) {
         super.setRectangle(width, height, x, y);
-        updateLengthOfContent();
-    }
-
-    private void updateLengthOfContent() {
-        maxLengthOfContent = lines.size() * font.get().lineHeight + getWidth() + 13;
+        refreshMessageLength();
     }
 
     @Override

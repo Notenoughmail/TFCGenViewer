@@ -1,9 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.impl;
 
-import com.google.common.base.Suppliers;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
-import io.github.notenoughmail.tfcgenviewer.api.network.Universal;
+import io.github.notenoughmail.tfcgenviewer.api.registry.Universal;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
@@ -22,7 +21,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.NoiseSettings;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -54,12 +52,7 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     public static final ResourceLocation ID = TFCGenViewer.id("tfc_region");
 
-    private final Supplier<List<IRegionVisualizerType<?, ?>>> validVisualizers =
-            Suppliers.memoize(() -> GenViewerAPI.VISUALIZER_REGISTRY.stream()
-                    .filter(IRegionVisualizerType.class::isInstance)
-                    .<IRegionVisualizerType<?, ?>>map(IRegionVisualizerType.class::cast)
-                    .sorted(Comparator.comparing(IRegionVisualizerType::sort))
-                    .toList());
+    private final Supplier<Stream<IRegionVisualizerType<?, ?>>> validVisualizers = GenViewerAPI.cachedOfTypeForced(IRegionVisualizerType.class);
 
     private TFCRegionVisualizer() {}
 
@@ -70,7 +63,7 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     @Override
     public Stream<IRegionVisualizerType<?, ?>> visualzierStream() {
-        return validVisualizers.get().stream();
+        return validVisualizers.get();
     }
 
     @Override

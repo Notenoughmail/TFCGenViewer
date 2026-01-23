@@ -20,6 +20,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
@@ -75,7 +76,8 @@ public class Preview {
             PreviewPane previewPane,
             InfoPane infoPane,
             SpawnInfo spawnInfo,
-            RegistryAccess registryAccess
+            RegistryAccess registryAccess,
+            boolean showCenterCoords
     ) {
         return CompletableFuture.supplyAsync(() -> {
             infoPane.setGenerating(viz);
@@ -141,10 +143,11 @@ public class Preview {
                     Util.make(
                             Component.translatable("tfcgenviewer.preview_info.base", viz.name(), drawParams.scale().formatSize(imageSize), formatMillis(millis)),
                             c -> {
-                                c.append(CommonComponents.NEW_LINE)
-                                        .append(Component.translatable("tfcgenviewer.preview_info.centered_on", xCenterBlocks, zCenterBlocks))
-                                        .append(CommonComponents.NEW_LINE)
-                                        .append(CommonComponents.NEW_LINE);
+                                if (showCenterCoords) {
+                                    c.append(CommonComponents.NEW_LINE)
+                                            .append(Component.translatable("tfcgenviewer.preview_info.centered_on", xCenterBlocks, zCenterBlocks));
+                                }
+                                c.append(CommonComponents.NEW_LINE).append(CommonComponents.NEW_LINE);
                                 final Component additional = viz.additionalPreviewInfo(drawParams);
                                 if (additional != null) {
                                     c.append(Component.translatable("tfcgenviewer.preview_info.additional_from_visualizer", additional))
@@ -237,10 +240,10 @@ public class Preview {
 
     private static final Codec<IVisualizerType<?, ?, ?, ?>> VIZ_CODEC = GenViewerAPI.VISUALIZER_REGISTRY.byNameCodec();
 
-    public static <V extends IVisualizerType<?, ?, ?, ?>> OptionInstance<V> visualizerTypeOption(IGeneratorVisualizer<?, ?, ?, V> visualizer, List<V> visualziers, Consumer<V> onChange) {
+    public static <V extends IVisualizerType<?, ?, ?, ?>> OptionInstance<V> visualizerTypeOption(List<V> visualziers, Consumer<V> onChange) {
         return new OptionInstance<>(
                 "tfcgenviewer.option.visualizer_type",
-                OptionInstance.noTooltip(),
+                viz -> Tooltip.create(viz.description()),
                 (caption, viz) -> viz.name(),
                 new OptionInstance.Enum<>(visualziers, VIZ_CODEC.xmap(TFCGenViewer::<V>cast, Function.identity())),
                 visualziers.getFirst(),

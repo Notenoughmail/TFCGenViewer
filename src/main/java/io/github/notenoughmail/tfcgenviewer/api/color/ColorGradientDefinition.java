@@ -3,7 +3,7 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -36,7 +36,7 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
         if (!end) text.append(CommonComponents.NEW_LINE);
     }
 
-    public int color(double value, Int2ObjectOpenHashMap<Component> tooltips) {
+    public int color(double value, ColorTooltips tooltips) {
         value = Math.clamp(value, 0D, 1D);
         final int color = gradient.applyAsAbgr(value);
         if (!tooltips.containsKey(color)) {

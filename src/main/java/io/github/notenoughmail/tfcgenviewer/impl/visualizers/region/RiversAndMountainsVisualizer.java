@@ -18,12 +18,12 @@ import net.dries007.tfc.world.region.Units;
 import net.dries007.tfc.world.river.MidpointFractal;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 
 public class RiversAndMountainsVisualizer implements RegionVisualizerType<RiversAndMountainsVisualizer.Options> {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_RIVERS_AND_MOUNTAINS);
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_RIVERS_AND_MOUNTAINS);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_RIVERS_AND_MOUNTAINS);
 
     public static final DataManager.Reference<ColorDefinition> RIVER = color("river");
     public static final DataManager.Reference<ColorDefinition> INLAND_MOUNTAIN = color("inland_mountain");
@@ -46,11 +46,6 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
         Colors.OCEAN.get().appendTo(key, true);
 
     });
-
-    @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
-    }
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, Options> info) {
@@ -119,6 +114,11 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public Component description() {
+        return DESC;
     }
 
     public static boolean riverEdgeEncapsulates(RiverEdge edge, int gridX, int gridZ) {

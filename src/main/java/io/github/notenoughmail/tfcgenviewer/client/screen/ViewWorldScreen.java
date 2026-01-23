@@ -43,7 +43,7 @@ public class ViewWorldScreen<
     private final RegistryAccess registryAccess;
     private final long worldSeed;
     private final int xOrigin, zOrigin;
-    private final boolean allowSpawnDraw, allowExport;
+    private final boolean allowSpawnDraw, allowExport, allowCoords;
 
     private final OptionInstance<V> visualizerType;
     private final OptionInstance<I> imageSize;
@@ -65,7 +65,7 @@ public class ViewWorldScreen<
             RegistryAccess registryAccess,
             boolean allowSpawnDraw,
             boolean allowExport,
-            boolean allowCoordinates,
+            boolean allowCoords,
             long worldSeed,
             int xOrigin,
             int zOrigin
@@ -84,9 +84,10 @@ public class ViewWorldScreen<
         this.zOrigin = zOrigin;
         this.allowSpawnDraw = allowSpawnDraw;
         this.allowExport = allowExport;
+        this.allowCoords = allowCoords;
 
         final int offset = visualizer.scale().blocksPerPixel() * visualizer.maximumPreviewOffset();
-        visualizerType = Preview.visualizerTypeOption(generatorVisualizer, visualizers, v -> onVisualizerChange());
+        visualizerType = Preview.visualizerTypeOption(visualizers, v -> onVisualizerChange());
         imageSize = Preview.imageSizeOption(visualizer.scale());
         spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {});
         xOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0);
@@ -102,7 +103,7 @@ public class ViewWorldScreen<
             }
         });
 
-        previewPane = new PreviewPane(0, 0, () -> font, allowCoordinates);
+        previewPane = new PreviewPane(0, 0, () -> font, allowCoords);
         infoPane = new InfoPane(0, 0, 10, 10, () -> font);
         state.createVizOptions(true);
 
@@ -207,7 +208,8 @@ public class ViewWorldScreen<
                         spawnOverlay,
                         gen.settings()
                 ),
-                registryAccess
+                registryAccess,
+                allowCoords
         );
     }
 

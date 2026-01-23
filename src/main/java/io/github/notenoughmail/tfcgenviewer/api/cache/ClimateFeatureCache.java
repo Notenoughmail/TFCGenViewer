@@ -6,7 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
-import io.github.notenoughmail.tfcgenviewer.api.network.NetworkHolder;
+import io.github.notenoughmail.tfcgenviewer.api.registry.NetworkHolder;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.placement.ClimatePlacement;
 import net.minecraft.core.Holder;
@@ -40,21 +40,17 @@ public class ClimateFeatureCache<C> {
     public static final Predicate<Holder<PlacedFeature>> CAN_PIPE = h -> h.is(VISUALIZABLE_FEATURES) && findFirst(h.value().placement()).isPresent();
 
     public static final Codec<Biome> MINIMAL_BIOME_CODEC =
-            NetworkHolder.codec(
-                    Registries.PLACED_FEATURE,
-                    MINIMAL_FEATURE_CODEC,
-                    CAN_PIPE,
-                    new PlacedFeature(null, List.of())
-            )
+            ResourceKey.codec(Registries.PLACED_FEATURE)
             .listOf()
             .xmap(l -> new BiomeGenerationSettings(
                             Map.of(),
-                            List.of(HolderSet.direct(l))
+                            List.of(HolderSet.direct(NetworkHolder::of, l))
                     ),
                     bgs -> bgs.features()
                             .stream()
                             .flatMap(HolderSet::stream)
                             .filter(CAN_PIPE)
+                            .map(Holder::getKey)
                             .toList()
             )
             .xmap(bgs -> new Biome(

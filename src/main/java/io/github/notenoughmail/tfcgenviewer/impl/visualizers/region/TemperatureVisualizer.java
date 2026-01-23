@@ -12,12 +12,12 @@ import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 
 public class TemperatureVisualizer implements RegionVisualizerType.Simple {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_TEMPERATURE);
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_TEMPERATURE);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_TEMPERATURE);
 
     public static final DataManager.Reference<ColorGradientDefinition> TEMPERATURE = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("temperature"));
 
@@ -25,11 +25,6 @@ public class TemperatureVisualizer implements RegionVisualizerType.Simple {
         TEMPERATURE.get().appendTo(m);
         Colors.OCEAN.get().appendTo(m, true);
     });
-
-    @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
-    }
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, NoneOpt> info) {
@@ -64,6 +59,11 @@ public class TemperatureVisualizer implements RegionVisualizerType.Simple {
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public Component description() {
+        return DESC;
     }
 
     @Override

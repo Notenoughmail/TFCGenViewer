@@ -11,16 +11,11 @@ import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 
 public class KoppenVisualizer implements RegionVisualizerType.Simple {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_KOPPEN);
-
-    @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
-    }
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_KOPPEN);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_KOPPEN);
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, NoneOpt> info) {
@@ -48,6 +43,11 @@ public class KoppenVisualizer implements RegionVisualizerType.Simple {
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public Component description() {
+        return DESC;
     }
 
     @Override

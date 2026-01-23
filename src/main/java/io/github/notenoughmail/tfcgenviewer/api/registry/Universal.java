@@ -1,4 +1,4 @@
-package io.github.notenoughmail.tfcgenviewer.api.network;
+package io.github.notenoughmail.tfcgenviewer.api.registry;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import net.minecraft.core.Holder;

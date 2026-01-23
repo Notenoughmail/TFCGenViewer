@@ -13,13 +13,13 @@ import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Random;
 
 public class RockTypeVisualizer implements RegionVisualizerType.Simple {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_ROCK_TYPE);
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_ROCK_TYPE);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_ROCK_TYPE);
 
     public static final DataManager.Reference<ColorGradientDefinition> UPLIFT = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("rock_type/uplift"));
     public static final DataManager.Reference<ColorGradientDefinition> LAND = Colors.MISC_GRADIENTS.getReference(TFCGenViewer.id("rock_type/land"));
@@ -32,11 +32,6 @@ public class RockTypeVisualizer implements RegionVisualizerType.Simple {
         VOLCANIC.get().appendTo(key);
         UPLIFT.get().appendTo(key, true);
     });
-
-    @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
-    }
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, NoneOpt> info) {
@@ -63,6 +58,11 @@ public class RockTypeVisualizer implements RegionVisualizerType.Simple {
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public Component description() {
+        return DESC;
     }
 
     @Override

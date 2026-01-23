@@ -12,7 +12,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -27,7 +26,6 @@ import java.util.function.Function;
  *     <li>
  *         If the player is attempting to visualize in-world
  *         <ul>
- *             <li>{@link #isPermitted(ServerPlayer) isPermitted} if the generator visualizer makes use of it</li>
  *             <li>{@link #additionalSynchronization(SynchronizationRequest) additionalSynchronization} if the visualizer type is permitted</li>
  *         </ul>
  *     </li>
@@ -142,9 +140,9 @@ public interface IVisualizerType<
     Component name();
 
     /**
-     * If the player may view this visualizer type
+     * A brief, formatted description of what this visualizer type displays
      */
-    boolean isPermitted(ServerPlayer player);
+    Component description();
 
     /**
      * A collection of relevant objects which are provided during drawing of a preview image

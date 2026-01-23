@@ -28,12 +28,16 @@ public class TFCGenViewerRegistration {
     private static final DeferredRegister<IVisualizerType<?, ?, ?, ?>> REGION_VISUALIZERS = DeferredRegister.create(GenViewerAPI.VISUALIZER_REGISTRY, TFCGenViewer.ID);
     private static final DeferredRegister<Gradient.Preset> GRADIENTS = DeferredRegister.create(GenViewerAPI.GRADIENT_REGISTRY, TFCGenViewer.ID);
 
-    public static <T> Component visualizerName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
+    public static <T> Component idName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
         return Component.translatable(TFCGenViewer.ID + "." + regKey.location().getPath().replace("/", ".") + "." + viz.id().getPath().replace("/", "."));
     }
 
-    public static Component regionVisualizerName(Id<? extends IRegionVisualizerType<?, ?>> viz) {
-        return visualizerName(GenViewerAPI.VISUALIZER, viz);
+    public static Component visualizerName(Id<? extends IVisualizerType<?, ?, ?, ?>> viz) {
+        return idName(GenViewerAPI.VISUALIZER, viz);
+    }
+
+    public static Component visualizerDescription(Id<? extends IVisualizerType<?, ?, ?, ?>> viz) {
+        return Component.translatable(TFCGenViewer.ID + "." + GenViewerAPI.VISUALIZER.location().getPath() + "." + viz.id().getPath().replace("/", ".") + ".description");
     }
 
     public static final Id<BiomeVisualizer> VIZ_BIOME = regionVisualizer("biome", BiomeVisualizer::new);
@@ -83,7 +87,11 @@ public class TFCGenViewerRegistration {
     });
 
     private static <T extends IRegionVisualizerType<?, ?>> Id<T> regionVisualizer(String name, Supplier<T> supplier) {
-        return register(REGION_VISUALIZERS, "region/" + name, supplier);
+        return visualizer("region/" + name, supplier);
+    }
+
+    private static <T extends IVisualizerType<?, ?, ?, ?>> Id<T> visualizer(String name, Supplier<T> supplier) {
+        return register(REGION_VISUALIZERS, name, supplier);
     }
 
     private static Id<Gradient.Preset> gradient(String name, DoubleToIntFunction gradient) {

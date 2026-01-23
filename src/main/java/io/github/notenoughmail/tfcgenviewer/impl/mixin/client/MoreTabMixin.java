@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.impl.mixin.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
@@ -44,8 +45,8 @@ public abstract class MoreTabMixin {
                                                 viz.name()
                                         ),
                                         b -> parent.getMinecraft().setScreen(new PreviewScreen<>(
-                                                (G) ext,
-                                                (IGeneratorVisualizer<G, I, S, V>) viz,
+                                                TFCGenViewer.<G>cast(ext),
+                                                TFCGenViewer.<IGeneratorVisualizer<G, I, S, V>>cast(viz),
                                                 parent,
                                                 key
                                         ))

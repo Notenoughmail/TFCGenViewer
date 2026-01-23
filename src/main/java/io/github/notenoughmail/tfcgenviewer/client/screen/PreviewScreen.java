@@ -131,7 +131,7 @@ public class PreviewScreen<
                 continentalness = pctOption("tfc.create_world.continentalness", settings.continentalness()),
                 grassDensity = pctOption("tfc.create_world.grass_density", settings.continentalness()),
                 finiteContinents = OptionInstance.createBoolean("tfc.create_world.finite_continents", settings.finiteContinents(), b -> {}),
-                visualizerType = Preview.visualizerTypeOption(visualizer, visualizer.allVisualizers(), v -> onVisualizerChange())
+                visualizerType = Preview.visualizerTypeOption(visualizer.allVisualizers(), v -> onVisualizerChange())
         };
         intransientOptionsAfter = new OptionInstance[] {
                 imageSize = Preview.imageSizeOption(visualizer.scale()),
@@ -304,7 +304,8 @@ public class PreviewScreen<
                         spawnCenterZ,
                         spawnDist
                 ),
-                registryAccess
+                registryAccess,
+                true
         );
     }
 

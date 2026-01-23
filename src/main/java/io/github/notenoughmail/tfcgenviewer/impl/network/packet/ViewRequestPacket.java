@@ -5,6 +5,7 @@ import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
+import io.github.notenoughmail.tfcgenviewer.impl.VisualizerPermissions;
 import io.github.notenoughmail.tfcgenviewer.impl.network.RegistrySync;
 import io.netty.buffer.ByteBuf;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
@@ -42,9 +43,10 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
     public void handleOnServerMainThread(IPayloadContext ctx) {
         if (ctx.player() instanceof ServerPlayer player) {
             if (player.serverLevel().getChunkSource().getGenerator() instanceof ChunkGeneratorExtension ext) {
+                final VisualizerPermissions.ForPlayer playerPermission = VisualizerPermissions.forPlayer(player);
                 final Set<ResourceLocation> serverGenerators = ImplAPI.getVisualizersFor(ext)
                         .stream()
-                        .filter(gv -> gv.allowedVisualizers(player).findAny().isPresent())
+                        .filter(gv -> gv.visualzierStream().anyMatch(playerPermission))
                         .map(IGeneratorVisualizer::id)
                         .collect(Collectors.toSet());
                 final Set<ResourceLocation> ids = Sets.intersection(clientGeneratorVisualizers, serverGenerators);
@@ -52,7 +54,8 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                     case 0 -> player.sendSystemMessage(EMPTY);
                     case 1 -> {
                         final IGeneratorVisualizer<?, ?, ?, ?> generatorVisualizer = ImplAPI.GEN_IDS.get(ids.iterator().next());
-                        final List<IVisualizerType<?, ?, ?, ?>> visualizerTypes = generatorVisualizer.allowedVisualizers(player)
+                        final List<IVisualizerType<?, ?, ?, ?>> visualizerTypes = generatorVisualizer.visualzierStream()
+                                .filter(playerPermission)
                                 .<IVisualizerType<?, ?, ?, ?>>map(IVisualizerType.class::cast)
                                 .toList();
                         if (visualizerTypes.isEmpty()) {
@@ -67,10 +70,9 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                                     visualizerTypes,
                                     sync.contents(),
                                     player.serverLevel().registryAccess(), // Needed for the packet contract, not actually used
-                                    // TODO: 1.21.1 | These need permission handlers
-                                    true,
-                                    true,
-                                    true,
+                                    playerPermission.mayDrawSpawn(),
+                                    playerPermission.mayExport(),
+                                    playerPermission.maySeeCoords(),
                                     player.serverLevel().getSeed(),
                                     player.getBlockX(),
                                     player.getBlockZ()
@@ -79,6 +81,7 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                         }
                     }
                     case 2 -> {
+                        // TODO: 1.21.1 | Implement
                     }
                 }
             } else {

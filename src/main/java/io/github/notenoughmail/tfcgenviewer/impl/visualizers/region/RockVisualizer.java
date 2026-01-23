@@ -14,18 +14,13 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
 public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Options> {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_ROCK);
-
-    @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
-    }
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_ROCK);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_ROCK);
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RegionPointCache, GridScale, Options> info) {
@@ -81,6 +76,11 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public Component description() {
+        return DESC;
     }
 
     @Nullable

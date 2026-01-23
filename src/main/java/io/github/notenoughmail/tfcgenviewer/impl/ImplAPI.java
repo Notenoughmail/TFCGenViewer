@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.impl;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.netty.buffer.ByteBuf;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,7 +17,7 @@ public class ImplAPI {
         GEN_IDS.put(generatorVisualizer.id(), generatorVisualizer);
     }
 
-    public static <G extends ChunkGeneratorExtension> List<IGeneratorVisualizer<G, ?, ?, ?>> getVisualizersFor(G gen) {
+    public static <G extends ChunkGeneratorExtension, V extends IVisualizerType<G, ?, ?, ?>> List<IGeneratorVisualizer<G, ?, ?, V>> getVisualizersFor(G gen) {
         return TFCGenViewer.cast(GENS.get(gen.getClass()));
     }
 

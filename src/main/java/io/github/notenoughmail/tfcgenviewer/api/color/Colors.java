@@ -5,6 +5,7 @@ import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.ColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.climate.KoppenClimateClassification;
@@ -33,7 +34,7 @@ public interface Colors {
     DataManager<ColorGradientDefinition> MISC_GRADIENTS = new DataManager<>(TFCGenViewer.id("gradients"), ColorGradientDefinition.CODEC);
     Reference<ColorGradientDefinition> OCEAN = MISC_GRADIENTS.getReference(TFCGenViewer.id("ocean"));
 
-    static void fillOcean(double value, int x, int y, MutableImage image, Int2ObjectOpenHashMap<Component> colorDescriptors) {
+    static void fillOcean(double value, int x, int y, MutableImage image, ColorTooltips colorDescriptors) {
         image.setPixel(
                 x, y,
                 OCEAN.get().color(

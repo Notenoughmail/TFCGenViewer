@@ -48,13 +48,6 @@ public interface IGeneratorVisualizer<
     int maximumPreviewOffset();
 
     /**
-     * Which visualizers the player may view the world with
-     */
-    default Stream<V> allowedVisualizers(ServerPlayer player) {
-        return visualzierStream().filter(v -> v.isPermitted(player));
-    }
-
-    /**
      * The formatted name of the generator visualizer
      */
     Component name();
@@ -75,7 +68,7 @@ public interface IGeneratorVisualizer<
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
 
     /**
-     * Recreate the generatorVisualizer, will error if simply {@code return generator;}
+     * Recreate the generator, will error if simply {@code return generator;}
      */
     G recreateGenerator(G generator);
 

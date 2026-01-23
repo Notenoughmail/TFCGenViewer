@@ -16,11 +16,11 @@ import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 
 public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Cache, IVisualizerType.NoneOpt> {
 
-    public static final Component NAME = TFCGenViewerRegistration.regionVisualizerName(TFCGenViewerRegistration.VIZ_BIOME);
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_BIOME);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_BIOME);
 
     public static final ColorKey COLOR_KEY = ColorKey.of(key -> {
         Colors.BIOME_COLORS.getValues()
@@ -31,11 +31,6 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
                 .forEach(c -> c.appendTo(key));
         Colors.UNKNOWN_BIOME.get().color().appendTo(key, true);
     });
-
-    @Override
-    public boolean isPermitted(ServerPlayer player) {
-        return true;
-    }
 
     @Override
     public NoneOpt createOptions(RegistryAccess registryAccess) {
@@ -62,6 +57,11 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     @Override
     public Component name() {
         return NAME;
+    }
+
+    @Override
+    public Component description() {
+        return DESC;
     }
 
     @Override

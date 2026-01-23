@@ -93,15 +93,42 @@ public class EN_US extends LangProvider {
                 )
                 .branch("visualizers", type -> type
                         .branch("region", region -> region
-                                .add("biome", "Biomes")
-                                .add("rock_type", "Surface Rock Types")
-                                .add("rainfall", "Rainfall")
-                                .add("temperature", "Temperature")
-                                .add("rock", "Rocks")
-                                .add("koppen", "Köppen Climate Classification")
-                                .add("climate_restricted", "Climate Restricted Generation")
-                                .add("biome_altitude", "Biome Altitude")
-                                .add("rivers_and_mountains", "Rivers and Mountains")
+                                .branch("biome", biome -> biome
+                                        .add("", "Biomes")
+                                        .add("description", "Shows a biome map")
+                                )
+                                .branch("rock_type", rockType -> rockType
+                                        .add("", "Surface Rock Types")
+                                        .add("description", "Shows a view of rock type that will generate at the surface")
+                                )
+                                .branch("rainfall", rain -> rain
+                                        .add("", "Rainfall")
+                                        .add("description", "Shows the average rainfall over land")
+                                )
+                                .branch("temperature", temp -> temp
+                                        .add("", "Temperature")
+                                        .add("description", "Shows the average temperature over land")
+                                )
+                                .branch("rock", rock -> rock
+                                        .add("", "Rocks")
+                                        .add("description", "Shows the rock that is likely to generate at a location")
+                                )
+                                .branch("koppen", koppen -> koppen
+                                        .add("", "Köppen Climate Classification")
+                                        .add("description", "Shows the Köppen climate classification of the world")
+                                )
+                                .branch("climate_restricted", climate -> climate
+                                        .add("", "Climate Restricted Generation")
+                                        .add("description", "Shows the regions where climate-restricted features could spawn")
+                                )
+                                .branch("biome_altitude", alt -> alt
+                                        .add("", "Biome Altitude")
+                                        .add("description", "Shows the base biome altitude of the world")
+                                )
+                                .branch("rivers_and_mountains", river -> river
+                                        .add("", "Rivers and Mountains")
+                                        .add("description", "Shows the locations of hotspots, inland & coastal mountains, and rivers")
+                                )
                         )
                 )
                 .branch("gradient", gradient -> gradient
@@ -147,12 +174,28 @@ public class EN_US extends LangProvider {
                                 .branch("response", response -> response
                                         .add("absent", "TFCGenViewer is not present on the server")
                                         .add("fail", "Cannot visualize this world as it is not TFC like")
-                                        .add("empty", "There are no know ways to visualize this world")
+                                        .add("empty", "There are no known ways to visualize this world")
                                 )
                         )
                 )
                 .branch("key", key -> key
                         .add("open_viewer", "Open World Viewer")
+                )
+                .branch("narration", narration -> narration
+                        .branch("info_pane", infoPane -> infoPane
+                                .add("title", "Info Pane")
+                        )
+                )
+                .branch("command", command -> command
+                        .add("deny_ancillary", "Unconditionally disabled %s for all players")
+                        .add("allow_ancillary", "Conditionally enabled %s for players")
+                        .add("set_ancillary", "Set %s to %s")
+                        .add("individual_ancillary", "Set spawn drawing to %s, image exporting to %s, and coordinate viewing to %s for %s")
+                        .add("deny_visualizer_type", "Unconditionally disabled %s for all players")
+                        .add("allow_visualizer_type", "Conditionally enabled %s for players")
+                        .add("set_visualizer_type", "Set %s to %s")
+                        .add("individual_visualizer_type", "Set %s to %s for %s")
+                        .add("describe_visualizer_type", "Description of %s [%s] visualizer type:")
                 )
         );
         branch("color", color -> color

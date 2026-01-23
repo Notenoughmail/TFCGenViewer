@@ -97,6 +97,14 @@ public interface OptionProvider {
         Order<T> withTooltip(TooltipFactory<T> tooltipFactory);
 
         /**
+         * Add a constant tooltip to the option
+         * @return this
+         */
+        default Order<T> withContantTooltip(Component text) {
+            return withTooltip(t -> text);
+        }
+
+        /**
          * Override the default display of the option
          * @return this
          */
