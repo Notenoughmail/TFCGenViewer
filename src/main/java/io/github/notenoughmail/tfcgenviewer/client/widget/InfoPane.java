@@ -15,7 +15,6 @@ import net.minecraft.util.FormattedCharSequence;
 import java.util.List;
 import java.util.function.Supplier;
 
-// TODO: 1.21.1 | The compass is wonky with very wide panes
 // For all intents and purposes, a holder for a scrollable view of a wrapped text component
 public class InfoPane extends AbstractScrollWidget {
 
@@ -25,7 +24,7 @@ public class InfoPane extends AbstractScrollWidget {
     public static final ResourceLocation COMPASS = TFCGenViewer.id("compass");
 
     private List<FormattedCharSequence> lines;
-    private int maxLengthOfContent;
+    private int maxLengthOfContent, compassSize;
     private final Supplier<Font> font;
     private boolean fontAvailable, showCompass;
 
@@ -34,6 +33,7 @@ public class InfoPane extends AbstractScrollWidget {
         this.font = font;
         lines = List.of();
         maxLengthOfContent = height;
+        compassSize = width;
     }
 
     // Ugly hack, but eh
@@ -65,7 +65,8 @@ public class InfoPane extends AbstractScrollWidget {
 
     private void refreshMessageLength() {
         lines = font.get().split(getMessage(), getWidth() - 8 - 4);
-        maxLengthOfContent = lines.size() * font.get().lineHeight + getWidth() + 13;
+        compassSize = Math.min(getWidth() - 4, getHeight() / 2);
+        maxLengthOfContent = lines.size() * font.get().lineHeight + compassSize + 17;
         setScrollAmount(0);
     }
 
@@ -79,7 +80,6 @@ public class InfoPane extends AbstractScrollWidget {
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(graphics, mouseX, mouseY, partialTick);
         if (!scrollbarVisible() && showCompass) {
-            final int compassSize = getWidth() - 4;
             graphics.blitSprite(
                     COMPASS,
                     getX() + 2,
@@ -109,7 +109,6 @@ public class InfoPane extends AbstractScrollWidget {
         }
         if (scrollbarVisible() && showCompass) {
             elementY += 9;
-            final int compassSize = getWidth() - 4;
             graphics.blitSprite(
                     COMPASS,
                     getX() + 2,

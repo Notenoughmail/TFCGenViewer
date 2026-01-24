@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.impl.network.packet;
 
 import com.google.common.collect.Sets;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers) implements CustomPacketPayload {
+public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers, Set<ResourceLocation> clientVisualizerTypes) implements CustomPacketPayload {
 
     public static final Component FAIL = Component.translatable("tfcgenviewer.network.view_request.response.fail").withStyle(ChatFormatting.YELLOW);
     public static final Component EMPTY = Component.translatable("tfcgenviewer.network.view_request.response.empty").withStyle(ChatFormatting.DARK_AQUA);
@@ -32,8 +33,11 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
     public static final Type<ViewRequestPacket> TYPE = new Type<>(TFCGenViewer.id("view_request"));
 
     public static final StreamCodec<ByteBuf, ViewRequestPacket> STREAM_CODEC =
-            ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.<ByteBuf, ResourceLocation, Set<ResourceLocation>>collection(HashSet::new))
-                    .map(ViewRequestPacket::new, ViewRequestPacket::clientGeneratorVisualizers);
+            StreamCodec.composite(
+                    ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new)), ViewRequestPacket::clientGeneratorVisualizers,
+                    ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new)), ViewRequestPacket::clientVisualizerTypes,
+                    ViewRequestPacket::new
+            );
 
     @Override
     public Type<ViewRequestPacket> type() {
@@ -55,6 +59,7 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                     case 1 -> {
                         final IGeneratorVisualizer<?, ?, ?, ?> generatorVisualizer = ImplAPI.GEN_IDS.get(ids.iterator().next());
                         final List<IVisualizerType<?, ?, ?, ?>> visualizerTypes = generatorVisualizer.visualzierStream()
+                                .filter(v -> clientVisualizerTypes.contains(GenViewerAPI.VISUALIZER_REGISTRY.getKey(v)))
                                 .filter(playerPermission)
                                 .<IVisualizerType<?, ?, ?, ?>>map(IVisualizerType.class::cast)
                                 .toList();
@@ -80,9 +85,7 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                             PacketDistributor.sendToPlayer(player, response);
                         }
                     }
-                    case 2 -> {
-                        // TODO: 1.21.1 | Implement
-                    }
+                    case 2 -> PacketDistributor.sendToPlayer(player, new MultiViewResponsePacket(ids));
                 }
             } else {
                 player.sendSystemMessage(FAIL);

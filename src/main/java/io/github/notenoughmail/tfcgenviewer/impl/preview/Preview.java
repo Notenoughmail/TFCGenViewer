@@ -8,7 +8,6 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;

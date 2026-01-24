@@ -6,13 +6,11 @@ import io.github.notenoughmail.tfcgenviewer.api.color.manager.ColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.climate.KoppenClimateClassification;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.util.data.DataManager.Reference;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 

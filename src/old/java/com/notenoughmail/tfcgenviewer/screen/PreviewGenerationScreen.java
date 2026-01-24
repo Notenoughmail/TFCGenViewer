@@ -58,7 +58,6 @@ public class PreviewGenerationScreen extends Screen {
     private InfoPane infoPane;
     private PreviewPane previewPane;
 
-    // TODO: 1.21.1 | Rework to support registering other subclasses of CGEs
     public PreviewGenerationScreen(CreateWorldScreen parent) {
         super(TITLE);
         this.parent = parent;

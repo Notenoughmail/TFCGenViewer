@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
@@ -102,7 +103,7 @@ public class TFCGenViewerClient {
         final ClientPacketListener clientPacketListener = Minecraft.getInstance().getConnection();
         if (openViewer.isDown() && clientPacketListener != null) {
             if (clientPacketListener.hasChannel(ViewRequestPacket.TYPE)) {
-                PacketDistributor.sendToServer(new ViewRequestPacket(ImplAPI.GEN_IDS.keySet()));
+                PacketDistributor.sendToServer(new ViewRequestPacket(ImplAPI.GEN_IDS.keySet(), GenViewerAPI.VISUALIZER_REGISTRY.keySet()));
             } else {
                 Minecraft.getInstance().getChatListener().handleSystemMessage(TFCGV_ABSENT, false);
             }

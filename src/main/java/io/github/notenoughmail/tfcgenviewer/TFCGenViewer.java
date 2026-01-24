@@ -6,6 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.client.ClientPacketHandler;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGVCommands;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
+import io.github.notenoughmail.tfcgenviewer.impl.network.packet.MultiViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -77,6 +78,11 @@ public class TFCGenViewer {
                 SingleViewResponsePacket.TYPE,
                 SingleViewResponsePacket.STREAM_CODEC,
                 ClientPacketHandler::onViewResponse
+        );
+        registrar.playToClient(
+                MultiViewResponsePacket.TYPE,
+                MultiViewResponsePacket.STREAM_CODEC,
+                ClientPacketHandler::onMultiViewResponse
         );
     }
 }

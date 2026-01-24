@@ -5,7 +5,9 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.client.screen.MultipleVisualizerScreen;
 import io.github.notenoughmail.tfcgenviewer.client.screen.ViewWorldScreen;
+import io.github.notenoughmail.tfcgenviewer.impl.network.packet.MultiViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewResponsePacket;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.client.Minecraft;
@@ -35,5 +37,9 @@ public class ClientPacketHandler {
                 response.xOrigin(),
                 response.zOrigin()
         ));
+    }
+
+    public static void onMultiViewResponse(MultiViewResponsePacket response, IPayloadContext ctx) {
+        Minecraft.getInstance().setScreen(new MultipleVisualizerScreen(response.generatorVisualizers()));
     }
 }
