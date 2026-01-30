@@ -1,12 +1,13 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
+import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
-import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -15,7 +16,6 @@ import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * A visualizer type is tied to a single {@link IGeneratorVisualizer} and must be stateless. It is responsible for
@@ -146,7 +146,8 @@ public interface IVisualizerType<
 
     /**
      * A collection of relevant objects which are provided during drawing of a preview image
-     * @param colorTooltips The tooltip cache, see {@link io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition#addTooltip(ColorTooltips) ColorDefinition.addTooltip}
+     * @param colorTooltips The tooltip cache. Use {@link #addTooltip(ColorDefinition)} or {@link io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition#color(double, DrawInfo) ColorGradientDefinition#color}
+     *                      to add tooltips
      * @param cache The cache, as created in {@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long) createCache}
      * @param size The image size, guaranteed to be {@link IScale#sizes() possessed} by the scale
      */
@@ -158,7 +159,12 @@ public interface IVisualizerType<
             ImageSize size,
             S scale,
             O options
-    ) {}
+    ) {
+
+        public void addTooltip(ColorDefinition color) {
+            colorTooltips.addColorTooltip(color);
+        }
+    }
 
     /**
      * A noop {@link Options} instance. Visualizer types with no options <strong>must</strong> use this
@@ -173,10 +179,6 @@ public interface IVisualizerType<
     }
 
     interface Options<O extends Options<O>> {
-
-        static <T> OptionProvider.DisplayFactory<T> genericDisplay(Function<T, Component> formatter) {
-            return (c, t) -> Component.translatable("options.generic_value", c, formatter.apply(t));
-        }
 
         /**
          * Create a deep copy of this options object. The copy will be available in {@link DrawInfo} params and is

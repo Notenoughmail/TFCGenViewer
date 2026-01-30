@@ -62,7 +62,8 @@ public interface IGeneratorVisualizer<
     boolean supportsRockEditing();
 
     /**
-     * Synchronize server-only registry information so that is available to all {@link IVisualizerType}s handled by this generator visualizer
+     * Synchronize server-only registry information so that is available to all {@link IVisualizerType}s handled by this
+     * generator visualizer and while deserializing the generator while visualizing in-world
      */
     default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
 

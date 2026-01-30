@@ -11,6 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A {@link ColorDefinition} which is associated with elements in a registry. If using a {@link io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager RegistryLinkedColorManager}
+ * colors will automatically be linked to their keys
+ * @param <T> The registry type
+ */
 public record RegistryLinkedColor<T>(List<ResourceKey<T>> keys, ColorDefinition color, boolean overwrite) implements Comparable<RegistryLinkedColor<T>> {
 
     public RegistryLinkedColor(List<ResourceKey<T>> instances, ColorDefinition color) {

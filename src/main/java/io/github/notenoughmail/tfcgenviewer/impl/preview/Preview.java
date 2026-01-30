@@ -110,8 +110,8 @@ public class Preview {
 
                 final ColorDefinition border = SPAWN_BORDER.get();
                 final ColorDefinition reticule = SPAWN_RETICULE.get();
-                border.addTooltip(drawParams);
-                reticule.addTooltip(drawParams);
+                drawParams.addTooltip(border);
+                drawParams.addTooltip(reticule);
 
                 final int lineWidth = drawParams.size().lineWidth();
 

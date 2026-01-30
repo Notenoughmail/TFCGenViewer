@@ -52,7 +52,7 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     public static final ResourceLocation ID = TFCGenViewer.id("tfc_region");
 
-    private final Supplier<Stream<IRegionVisualizerType<?, ?>>> validVisualizers = GenViewerAPI.cachedOfTypeForced(IRegionVisualizerType.class);
+    private final Supplier<Stream<IRegionVisualizerType<?, ?>>> validVisualizers = GenViewerAPI.cachedOfTypeForced(IRegionVisualizerType.class, Stream::sorted);
 
     private TFCRegionVisualizer() {}
 

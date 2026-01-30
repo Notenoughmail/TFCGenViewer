@@ -50,7 +50,7 @@ public class RockVisualizer implements RegionVisualizerType<RockVisualizer.Optio
                     .raw();
         }
         final ColorDefinition color = Colors.ROCK_COLORS.getOrUnknown(BuiltInRegistries.BLOCK.getKey(raw));
-        color.addTooltip(info);
+        info.addTooltip(color);
         image.setPixel(imageX, imageY, color.abgr());
     }
 

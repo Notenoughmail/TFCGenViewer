@@ -6,6 +6,9 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
+/**
+ * A scale of 1 pixel = 1 grid (128 blocks). See {@link Units}
+ */
 public enum GridScale implements IScale<GridSize> {
     INSTANCE;
 

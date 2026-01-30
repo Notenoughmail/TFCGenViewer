@@ -14,6 +14,9 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * A manager for {@link ColorDefinition}s. Has an in-built color key and reference to a {@code tfcgenviewer:unknown} color
+ */
 public class ColorManager extends DataManager<ColorDefinition> implements CachedColorKey {
 
     private final Function<ColorManager, Component> colorKeySource;
@@ -52,7 +55,7 @@ public class ColorManager extends DataManager<ColorDefinition> implements Cached
         return colorKey;
     }
 
-    private Component createColorKey() {
+    protected Component createColorKey() {
         final MutableComponent key = Component.empty();
         getValues().stream()
                 .distinct()

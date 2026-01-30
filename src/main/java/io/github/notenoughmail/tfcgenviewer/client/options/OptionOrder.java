@@ -1,7 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.client.options;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.doubles.DoubleConsumer;
@@ -86,7 +85,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
             Consumer<OptionInstance<?>> onFinalize
     ) implements OptionOrder<Boolean> {
 
-        static final OptionInstance.CaptionBasedToString<Boolean> DEFAULT = IVisualizerType.Options.<Boolean>genericDisplay(b -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)::make;
+        static final OptionInstance.CaptionBasedToString<Boolean> DEFAULT = OptionProvider.<Boolean>convertToFactory(b -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)::make;
 
         @Override
         public void finish() {

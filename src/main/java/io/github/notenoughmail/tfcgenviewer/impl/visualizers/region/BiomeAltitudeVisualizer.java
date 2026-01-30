@@ -53,7 +53,7 @@ public class BiomeAltitudeVisualizer implements RegionVisualizerType.Simple {
                         point.baseOceanDepth < 8 ?
                                 DEEP :
                                 VERY_DEEP).get();
-        color.addTooltip(info);
+        info.addTooltip(color);
         image.setPixel(
                 imageX,
                 imageY,

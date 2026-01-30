@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.impl.RGB;
 import net.minecraft.util.FastColor.ARGB32;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;

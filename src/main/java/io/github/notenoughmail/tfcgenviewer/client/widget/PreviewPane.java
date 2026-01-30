@@ -1,9 +1,9 @@
 package io.github.notenoughmail.tfcgenviewer.client.widget;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
-import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

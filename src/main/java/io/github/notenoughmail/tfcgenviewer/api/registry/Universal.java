@@ -10,6 +10,9 @@ import net.minecraft.tags.TagKey;
 
 import java.util.Optional;
 
+/**
+ * Helpers for dealing with holders when lacking some or all registry capabilities
+ */
 public final class Universal {
     public static <T> HolderGetter<T> getter() {
         return TFCGenViewer.cast(GETTER);

@@ -1,11 +1,11 @@
 package io.github.notenoughmail.tfcgenviewer.api.widget;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.doubles.DoubleConsumer;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -81,7 +81,7 @@ public interface OptionProvider {
     Order<Double> orderDouble(String name, double initial, double min, double max, DoubleConsumer onChange);
 
     default <T> DisplayFactory<T> genericDisplay(Function<T, Component> formatter) {
-        return IVisualizerType.Options.genericDisplay(formatter);
+        return convertToFactory(formatter);
     }
 
     /**
@@ -100,7 +100,7 @@ public interface OptionProvider {
          * Add a constant tooltip to the option
          * @return this
          */
-        default Order<T> withContantTooltip(Component text) {
+        default Order<T> withConstantTooltip(Component text) {
             return withTooltip(t -> text);
         }
 
@@ -114,6 +114,11 @@ public interface OptionProvider {
          * Create and add the option to the list of options available to the player
          */
         void finish();
+    }
+
+    @ApiStatus.Internal
+    static <T> DisplayFactory<T> convertToFactory(Function<T, Component> formatter) {
+        return (c, t) -> Component.translatable("options.generic_value", c, formatter.apply(t));
     }
 
     @FunctionalInterface

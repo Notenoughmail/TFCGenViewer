@@ -1,4 +1,23 @@
-# 1.5.1 (W.I.P.)
+# 2.0.0
+
+- Update to 1.21.1!
+- Complete rework to the underlying functionality; TFCGenViewer now has an API! Expect more on it in the docs at some point
+- Several reworks to certain visualizer types
+  - By default, The *Biomes* VT now shows a lot more biomes to match TFC's expanded biome palette
+  - The *Inland Height* VT has been merged with *Biome Altitude*, which now shows 7 discrete altitudes from very deep ocean to mountain elevation
+  - The *Rivers and Mountains* VT now has a flat land color, shows hot spot ages, and has a 'sensitivity' option for river positions
+  - The *Rocks* VT now has two options
+    - 'At surface': If the preview should be created for the surface rock layer
+    - 'Elevation': The y-level the preview should be created for if 'at surface' is turned off
+- Add the *Köppen Climate Classification* visualizer type, which colors land according to its [Köppen climate classification](https://en.wikipedia.org/wiki/K%C3%B6ppen_climate_classification)
+- The mod is now properly server optional! Players can join servers without TFCGV without any issues, though naturally they will not be able to use the visualizer features
+- The permissions system has received an overhaul allowing for more fine-grained control of visualizer permissions
+- For the moment, the rock editor sub-screen is unimplemented
+- The seed button now also puts the seed into the seed text box when clicked
+
+**Note**: Currently the wiki is pretty barren and only has pages on using the new permission system and the json types used to define colors. More will be added as I have the time
+
+# 1.5.1
 
 - Add *Climate Restricted Features* visualizer
   - By default shows Kaolin Clay and Coral spawn locations

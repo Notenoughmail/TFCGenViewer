@@ -15,6 +15,11 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+/**
+ * A manager for {@link RegistryLinkedColor}s. Automatically flattens the links to a map which can be queried via
+ * {@link #getInstanceColor(ResourceKey)}
+ * @param <T> The registry type
+ */
 public class RegistryLinkedColorManager<T> extends DataManager<RegistryLinkedColor<T>> {
 
     private Map<ResourceKey<T>, ColorDefinition> flattened = Map.of();

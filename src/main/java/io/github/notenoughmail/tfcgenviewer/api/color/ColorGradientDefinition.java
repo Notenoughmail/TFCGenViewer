@@ -2,8 +2,8 @@ package io.github.notenoughmail.tfcgenviewer.api.color;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -39,9 +39,9 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
     public int color(double value, ColorTooltips tooltips) {
         value = Math.clamp(value, 0D, 1D);
         final int color = gradient.applyAsAbgr(value);
-        if (!tooltips.containsKey(color)) {
+        if (!tooltips.hasColor(color)) {
             final double v = value;
-            tooltips.put(color, this.tooltips.map(l -> switch (l.size()) {
+            tooltips.addTooltip(color, this.tooltips.map(l -> switch (l.size()) {
                 case 0 -> null;
                 case 1 -> l.getFirst();
                 case 2 -> v > 0.5D ? l.getLast() : l.getFirst();

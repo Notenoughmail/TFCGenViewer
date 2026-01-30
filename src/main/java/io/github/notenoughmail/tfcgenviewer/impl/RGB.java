@@ -1,15 +1,13 @@
-package io.github.notenoughmail.tfcgenviewer.api.color;
+package io.github.notenoughmail.tfcgenviewer.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.VisibleForDebug;
-import org.jetbrains.annotations.ApiStatus;
 
-@ApiStatus.Internal
 public record RGB(int[] storage) {
 
-    static final Codec<RGB> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<RGB> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.intRange(0, 255).fieldOf("r").forGetter(RGB::r),
             Codec.intRange(0, 255).fieldOf("g").forGetter(RGB::g),
             Codec.intRange(0, 255).fieldOf("b").forGetter(RGB::b)

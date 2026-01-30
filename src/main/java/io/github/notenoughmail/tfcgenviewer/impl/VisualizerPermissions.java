@@ -161,10 +161,14 @@ public class VisualizerPermissions extends SavedData {
     }
 
     public boolean isAllowed(ServerPlayer player, IVisualizerType<?, ?, ?, ?> visualizerType) {
+        return isAllowed(player.getGameProfile(), visualizerType);
+    }
+
+    public boolean isAllowed(GameProfile profile, IVisualizerType<?, ?, ?, ?> visualizerType) {
         if (globalDeny.contains(visualizerType)) {
             return false;
         }
-        final Map<IVisualizerType<?, ?, ?, ?>, Boolean> individual = individualPermissions.get(player.getGameProfile());
+        final Map<IVisualizerType<?, ?, ?, ?>, Boolean> individual = individualPermissions.get(profile);
         if (individual != null && individual.containsKey(visualizerType)) {
             return individual.get(visualizerType);
         }
@@ -172,11 +176,15 @@ public class VisualizerPermissions extends SavedData {
     }
 
     public boolean isAllowed(ServerPlayer player, AncillaryPermission ancillary) {
-        if (AncillaryPermission.test(globalAncillaryDeny, ancillary)) {
+        return isAllowed(player.getGameProfile(), ancillary);
+    }
+
+    public boolean isAllowed(GameProfile profile, AncillaryPermission ancillary) {
+        if (ancillary.test(globalAncillaryDeny)) {
             return false;
         }
-        final byte permission = individualAncillaries.getOrDefault(player.getGameProfile(), globalAncillary);
-        return AncillaryPermission.test(permission, ancillary);
+        final byte permission = individualAncillaries.getOrDefault(profile, globalAncillary);
+        return ancillary.test(permission);
     }
 
     public void unconditionallyDeny(IVisualizerType<?, ?, ?, ?> visualizerType) {
@@ -219,6 +227,14 @@ public class VisualizerPermissions extends SavedData {
         setDirty();
     }
 
+    public void removeIndividual(GameProfile profile, IVisualizerType<?, ?, ?, ?> visualizerType) {
+        final Map<IVisualizerType<?, ?, ?, ?>, Boolean> individual = individualPermissions.get(profile);
+        if (individual != null) {
+            individual.remove(visualizerType);
+            setDirty();
+        }
+    }
+
     public void overrideIndividual(GameProfile profile, boolean spawn, boolean export, boolean coords) {
         byte permission = 0;
         if (spawn) {
@@ -232,6 +248,10 @@ public class VisualizerPermissions extends SavedData {
         }
         individualAncillaries.put(profile, permission);
         setDirty();
+    }
+
+    public void removeIndividual(GameProfile profile) {
+        if (individualAncillaries.remove(profile) != null) setDirty();
     }
 
     private final Set<IVisualizerType<?, ?, ?, ?>> globalDeny = new HashSet<>();
@@ -271,8 +291,8 @@ public class VisualizerPermissions extends SavedData {
 
         final byte key = (byte) (1 << ordinal());
 
-        public static boolean test(byte store, AncillaryPermission query) {
-            return (store & query.key) != 0;
+        public boolean test(byte store) {
+            return (store & key) != 0;
         }
     }
 }

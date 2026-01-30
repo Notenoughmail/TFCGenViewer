@@ -1,5 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.api.scale;
 
+/**
+ * The size of image
+ */
 public interface ImageSize {
 
     /**

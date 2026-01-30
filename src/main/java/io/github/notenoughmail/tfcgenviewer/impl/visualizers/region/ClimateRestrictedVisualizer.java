@@ -58,7 +58,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
             case 0 -> {
                 if (point.land()) {
                     final ColorDefinition color = ClimateFeatureCache.LAND.get();
-                    color.addTooltip(info);
+                    info.addTooltip(color);
                     image.setPixel(
                             imageX,
                             imageY,
@@ -76,7 +76,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
             }
             case 1 -> {
                 final ColorDefinition color = colors.getFirst();
-                color.addTooltip(info);
+                info.addTooltip(color);
                 image.setPixel(
                         imageX,
                         imageY,
@@ -98,7 +98,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
                     tooltip.append(Component.translatable("tfcgenviewer.climate_features.list_entry", color.getTooltip()));
                 }
 
-                info.colorTooltips().putIfAbsent(
+                info.colorTooltips().addTooltip(
                         image.getABGRColor(imageX, imageY),
                         tooltip
                 );

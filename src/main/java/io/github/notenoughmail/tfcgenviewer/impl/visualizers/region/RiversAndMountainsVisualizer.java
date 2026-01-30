@@ -59,14 +59,14 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
                             point.mountain() ?
                                     INLAND_MOUNTAIN :
                                     LAND).get();
-            color.addTooltip(info);
+            info.addTooltip(color);
             image.setPixel(imageX, imageY, color.abgr());
 
             for (RiverEdge edge : pair.region().rivers()) {
                 if (riverEdgeEncapsulates(edge, xPos, zPos)) {
                     final MidpointFractal fractal = edge.fractal();
                     if (fractal.maybeIntersect(xPos, zPos, 0.1) && fractal.intersect(xPos, zPos, info.options().sensitivity)) {
-                        RIVER.get().addTooltip(info);
+                        info.addTooltip(RIVER.get());
                         image.setPixel(
                                 imageX,
                                 imageY,
@@ -78,7 +78,7 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
             }
         } else if (point.hotSpotAge > 0) {
             final ColorDefinition color = hotSpot(point).get();
-            color.addTooltip(info);
+            info.addTooltip(color);
             image.setPixel(imageX, imageY, color.abgr());
         } else {
             Colors.fillOcean(

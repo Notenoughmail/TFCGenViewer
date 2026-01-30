@@ -1,7 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.cache;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
-import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
@@ -13,8 +12,8 @@ import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
 
 /**
- * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link GenViewerAPI#VISUALIZER_REGISTRY region visualizers}
- * as the cache of {@link RegionGenerator} is generally too small for the scales often encountered by visualizers
+ * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType region visualizers}
+ * as the cache of {@link RegionGenerator} is often too small for the scales often encountered by visualizers
  */
 public class RegionPointCache {
 
@@ -25,7 +24,8 @@ public class RegionPointCache {
     /**
      * @param neighborRetentionDistance When {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType#draw(int, int, MutableImage, int, int, IVisualizerType.DrawInfo) drawing},
      *                                  the maximum distance away from the current position the visualizer will query. Points beyond this distance
-     *                                  that have already been queried from will be discarded from the cache to free memory
+     *                                  that have already been queried from will be discarded from the cache to free memory.
+     *                                  Negative values will completely disable cache clearing
      */
     public static RegionPointCache of(TFCChunkGenerator generator, ImageSize scale, long worldSeed, int neighborRetentionDistance) {
         return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), scale, neighborRetentionDistance);

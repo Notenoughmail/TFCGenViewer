@@ -15,6 +15,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * A simple cached color key. The cached value will be cleared automatically during resource reload
+ */
 public final class ColorKey implements CachedColorKey {
 
     public static ColorKey of(Consumer<MutableComponent> appender) {

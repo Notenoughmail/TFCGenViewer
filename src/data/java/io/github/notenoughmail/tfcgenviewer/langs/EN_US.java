@@ -191,11 +191,21 @@ public class EN_US extends LangProvider {
                         .add("allow_ancillary", "Conditionally enabled %s for players")
                         .add("set_ancillary", "Set %s to %s")
                         .add("individual_ancillary", "Set spawn drawing to %s, image exporting to %s, and coordinate viewing to %s for %s")
+                        .add("remove_individual_ancillary", "Removed ancillary overrides for %s")
                         .add("deny_visualizer_type", "Unconditionally disabled %s for all players")
                         .add("allow_visualizer_type", "Conditionally enabled %s for players")
                         .add("set_visualizer_type", "Set %s to %s")
                         .add("individual_visualizer_type", "Set %s to %s for %s")
+                        .add("remove_individual_visualizer_type", "Removed %s override for %s")
                         .add("describe_visualizer_type", "Description of %s [%s] visualizer type:")
+                        .branch("query_permissions", query -> query
+                                .add("base", "%s has the following permissions")
+                                .add("ancillaries", "- May draw spawn: %s\n- May export preview images: %s\n- May see coordinates in preview: %s")
+                                .add("no_visualizers", "- May not view any visualizers")
+                                .add("visualizer_heading", "Allowed visualizer types:")
+                                .add("visualizer_entry", "- %s [%s]")
+                                .add("click_to_describe", "Click to describe %s")
+                        )
                 )
         );
         branch("color", color -> color

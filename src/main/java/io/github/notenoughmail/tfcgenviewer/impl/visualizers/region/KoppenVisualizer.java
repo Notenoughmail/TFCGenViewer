@@ -31,7 +31,7 @@ public class KoppenVisualizer implements RegionVisualizerType.Simple {
         } else {
             color = Colors.KOPPEN_COLORS.unknown();
         }
-        color.addTooltip(info);
+        info.addTooltip(color);
         image.setPixel(imageX, imageY, color.abgr());
     }
 

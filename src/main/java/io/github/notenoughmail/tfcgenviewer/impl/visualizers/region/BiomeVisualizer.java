@@ -45,7 +45,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, Cache, GridScale, NoneOpt> info) {
         final ColorDefinition color = info.cache().getColor(imageX, imageY, xPos, zPos);
-        color.addTooltip(info);
+        info.addTooltip(color);
         image.setPixel(imageX, imageY, color.abgr());
     }
 

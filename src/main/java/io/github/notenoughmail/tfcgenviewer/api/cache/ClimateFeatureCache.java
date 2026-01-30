@@ -26,6 +26,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
+/**
+ * A cache type which wraps another and provides helpers for getting hte colors of features in the {@code tfcgenviewer:visualizable_features} placed feature tag
+ * @param <C> The wrapped cache type
+ */
 public class ClimateFeatureCache<C> {
 
     public static final DataManager.Reference<ColorDefinition> LAND = Colors.MISC_COLORS.getReference(TFCGenViewer.id("visualizable_feature_land"));

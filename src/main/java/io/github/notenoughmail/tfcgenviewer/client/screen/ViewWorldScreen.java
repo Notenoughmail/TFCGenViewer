@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.client.screen;
 
+import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
@@ -10,7 +11,6 @@ import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.SingleColumnOptionsList;
-import io.github.notenoughmail.tfcgenviewer.impl.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Preview;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
