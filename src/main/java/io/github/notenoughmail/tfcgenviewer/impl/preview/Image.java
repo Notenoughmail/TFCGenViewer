@@ -7,20 +7,11 @@ import io.github.notenoughmail.tfcgenviewer.impl.mixin.accessor.NativeImageAcces
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
 import net.neoforged.fml.loading.FMLPaths;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
 
 public class Image implements MutableImage {
-
-    /**
-     * Gets the internal {@link NativeImage} of the image. Preserves the nullness of the passed image
-     */
-    @Nullable
-    public static NativeImage getNative(@Nullable Image image) {
-        return image == null ? null : image.image;
-    }
 
     private final NativeImage image;
     private final int maxPixel;

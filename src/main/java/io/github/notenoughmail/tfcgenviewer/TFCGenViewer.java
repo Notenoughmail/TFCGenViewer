@@ -63,6 +63,7 @@ public class TFCGenViewer {
     private void newRegistries(NewRegistryEvent event) {
         event.register(GenViewerAPI.VISUALIZER_REGISTRY);
         event.register(GenViewerAPI.GRADIENT_REGISTRY);
+        event.register(GenViewerAPI.DISPATCH_GRADIENT_REGISTRY);
     }
 
     private void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {

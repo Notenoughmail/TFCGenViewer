@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
-import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.registry.NetworkHolder;
 import net.dries007.tfc.util.data.DataManager;
@@ -66,10 +65,12 @@ public class ClimateFeatureCache<C> {
 
     private final Map<ResourceKey<Biome>, Set<ClimateSpace>> climates;
     public final C innerCache;
+    private final Set<ColorDefinition> encounteredFeatures;
 
     public ClimateFeatureCache(RegistryAccess access, C innerCache) {
         this.innerCache = innerCache;
         climates = new IdentityHashMap<>();
+        encounteredFeatures = new HashSet<>();
 
         final Map<ResourceKey<PlacedFeature>, ClimateSpace> featureClimates = new IdentityHashMap<>();
 
@@ -116,15 +117,15 @@ public class ClimateFeatureCache<C> {
                 .stream()
                 .filter(climateSpace -> climateSpace.check(temperature, rainfall, rainfallVariance))
                 .map(ClimateSpace::color)
+                .peek(encounteredFeatures::add)
                 .toList();
     }
 
     public Component colorKey() {
         final MutableComponent key = Component.empty();
-        FEATURES.getValues()
+        encounteredFeatures
                 .stream()
                 .sorted()
-                .map(RegistryLinkedColor::color)
                 .forEach(color -> color.appendTo(key));
         LAND.get().appendTo(key);
         Colors.OCEAN.get().appendTo(key, true);

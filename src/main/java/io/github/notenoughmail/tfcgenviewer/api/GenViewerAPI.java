@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api;
 
 import com.google.common.base.Suppliers;
+import com.mojang.serialization.MapCodec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.color.Gradient;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
@@ -29,6 +30,10 @@ public interface GenViewerAPI {
      */
     ResourceKey<Registry<Gradient.Preset>> GRADIENT = ResourceKey.createRegistryKey(TFCGenViewer.id("gradient"));
     /**
+     * The key for the dispatched gradient registry
+     */
+    ResourceKey<Registry<MapCodec<? extends Gradient.Dispatch>>> DISPATCH_GRADIENT = ResourceKey.createRegistryKey(TFCGenViewer.id("dispatch_gradient"));
+    /**
      * The visualizer type registry. <strong>All</strong> visualizer types must be registered to this registry to be used
      */
     Registry<IVisualizerType<?, ?, ?, ?>> VISUALIZER_REGISTRY = new RegistryBuilder<>(VISUALIZER).create();
@@ -36,6 +41,10 @@ public interface GenViewerAPI {
      * The preset gradient registry
      */
     Registry<Gradient.Preset> GRADIENT_REGISTRY = new RegistryBuilder<>(GRADIENT).create();
+    /**
+     * The dispatch gradient registry
+     */
+    Registry<MapCodec<? extends Gradient.Dispatch>> DISPATCH_GRADIENT_REGISTRY = new RegistryBuilder<>(DISPATCH_GRADIENT).create();
 
     /**
      * 

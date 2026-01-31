@@ -25,8 +25,12 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
     @Override
     public void appendTo(MutableComponent text, boolean end) {
         final MutableComponent colors = Component.empty();
-        for (double d : SAMPLES) {
-            colors.append(colorBlock(gradient.applyAsArgb(d)));
+        if (gradient.type() == Gradient.Type.STATIC) {
+            colors.append(colorBlock(gradient.applyAsArgb(0)));
+        } else {
+            for (double d : SAMPLES) {
+                colors.append(colorBlock(gradient.applyAsArgb(d)));
+            }
         }
         text.append(Component.translatable(
                 "tfcgenviewer.color_key_template",

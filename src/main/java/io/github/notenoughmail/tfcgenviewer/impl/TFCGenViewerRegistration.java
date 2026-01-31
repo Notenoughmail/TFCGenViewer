@@ -1,5 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.impl;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.color.Gradient;
@@ -11,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -21,12 +25,14 @@ import java.util.function.Supplier;
 public class TFCGenViewerRegistration {
 
     public static void init(IEventBus modBus) {
-        REGION_VISUALIZERS.register(modBus);
+        VISUALIZERS.register(modBus);
         GRADIENTS.register(modBus);
+        DISPATCH_GRADIENTS.register(modBus);
     }
 
-    private static final DeferredRegister<IVisualizerType<?, ?, ?, ?>> REGION_VISUALIZERS = DeferredRegister.create(GenViewerAPI.VISUALIZER_REGISTRY, TFCGenViewer.ID);
+    private static final DeferredRegister<IVisualizerType<?, ?, ?, ?>> VISUALIZERS = DeferredRegister.create(GenViewerAPI.VISUALIZER_REGISTRY, TFCGenViewer.ID);
     private static final DeferredRegister<Gradient.Preset> GRADIENTS = DeferredRegister.create(GenViewerAPI.GRADIENT_REGISTRY, TFCGenViewer.ID);
+    private static final DeferredRegister<MapCodec<? extends Gradient.Dispatch>> DISPATCH_GRADIENTS = DeferredRegister.create(GenViewerAPI.DISPATCH_GRADIENT_REGISTRY, TFCGenViewer.ID);
 
     public static <T> Component idName(ResourceKey<Registry<T>> regKey, Id<? extends T> viz) {
         return Component.translatable(TFCGenViewer.ID + "." + regKey.location().getPath().replace("/", ".") + "." + viz.id().getPath().replace("/", "."));
@@ -86,12 +92,14 @@ public class TFCGenViewerRegistration {
         return FastColor.ABGR32.color(0xFF, c, c, c);
     });
 
+    public static final Id<MapCodec<HueWheel>> HUE_WHEEL = register(DISPATCH_GRADIENTS, "hue_wheel", () -> HueWheel.CODEC);
+
     private static <T extends IRegionVisualizerType<?, ?>> Id<T> regionVisualizer(String name, Supplier<T> supplier) {
         return visualizer("region/" + name, supplier);
     }
 
     private static <T extends IVisualizerType<?, ?, ?, ?>> Id<T> visualizer(String name, Supplier<T> supplier) {
-        return register(REGION_VISUALIZERS, name, supplier);
+        return register(VISUALIZERS, name, supplier);
     }
 
     private static Id<Gradient.Preset> gradient(String name, DoubleToIntFunction gradient) {
@@ -107,6 +115,40 @@ public class TFCGenViewerRegistration {
         @Override
         public T get() {
             return val.get();
+        }
+    }
+
+    public record HueWheel(double offset, boolean reverse, float saturation, float value) implements Gradient.Dispatch {
+
+        public static final MapCodec<HueWheel> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                Codec.doubleRange(-1F, 1F).optionalFieldOf("offset", 0D).forGetter(HueWheel::offset),
+                Codec.BOOL.optionalFieldOf("reverse", false).forGetter(HueWheel::reverse),
+                Codec.floatRange(0F, 1F).fieldOf("saturation").forGetter(HueWheel::saturation),
+                Codec.floatRange(0F, 1F).fieldOf("value").forGetter(HueWheel::value)
+        ).apply(i, HueWheel::new));
+
+        @Override
+        public MapCodec<HueWheel> codec() {
+            return CODEC;
+        }
+
+        @Override
+        public int applyAsAbgr(double value) {
+            final int rgb = applyAsArgb(value);
+            return FastColor.ABGR32.color(
+                    255,
+                    FastColor.ARGB32.blue(rgb),
+                    FastColor.ARGB32.green(rgb),
+                    FastColor.ARGB32.red(rgb)
+            );
+        }
+
+        @Override
+        public int applyAsArgb(double h) {
+            h += offset;
+            if (reverse) h = 1D - h;
+            h = Mth.positiveModulo(h, 1D);
+            return Mth.hsvToArgb((float) h, saturation, value, 255);
         }
     }
 }

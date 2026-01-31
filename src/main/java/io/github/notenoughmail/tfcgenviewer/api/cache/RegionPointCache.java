@@ -17,8 +17,8 @@ import net.dries007.tfc.world.region.RegionGenerator;
  */
 public class RegionPointCache {
 
-    public static RegionPointCache of(TFCChunkGenerator generator, ImageSize scale, long worldSeed) {
-        return of (generator, scale, worldSeed, 0);
+    public static RegionPointCache of(TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+        return of (generator, size, worldSeed, 0);
     }
 
     /**
@@ -27,8 +27,8 @@ public class RegionPointCache {
      *                                  that have already been queried from will be discarded from the cache to free memory.
      *                                  Negative values will completely disable cache clearing
      */
-    public static RegionPointCache of(TFCChunkGenerator generator, ImageSize scale, long worldSeed, int neighborRetentionDistance) {
-        return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), scale, neighborRetentionDistance);
+    public static RegionPointCache of(TFCChunkGenerator generator, ImageSize size, long worldSeed, int neighborRetentionDistance) {
+        return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), size, neighborRetentionDistance);
     }
 
     protected final RegionPoint[] pointCache;

@@ -35,12 +35,12 @@ public class GradientProvider extends DataManagerProvider {
             colors.accept(RainfallVisualizer.RAINFALL, new ColorGradientDefinition(
                     TFCGenViewerRegistration.GRAD_RAINFALL.get(),
                     name("rainfall"),
-                    tooltips(5, i -> "tfcgenviewer.gradient.rainfall." + i)
+                    tooltips(10, i -> "tfcgenviewer.gradient.rainfall." + i)
             ));
             colors.accept(TemperatureVisualizer.TEMPERATURE, new ColorGradientDefinition(
                     TFCGenViewerRegistration.GRAD_TEMPERATURE.get(),
                     name("temperature"),
-                    tooltips(5, i -> "tfcgenviewer.gradient.temperature." + i)
+                    tooltips(12, i -> "tfcgenviewer.gradient.temperature." + i)
             ));
             colors.accept(RockTypeVisualizer.UPLIFT, simple(
                     TFCGenViewerRegistration.GRAD_UPLIFT,

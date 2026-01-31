@@ -18,7 +18,7 @@ import java.util.function.Function;
 
 import static net.minecraft.util.FastColor.ABGR32.*;
 
-public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradient.Static, Gradient.FromTo {
+public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradient.Static, Gradient.FromTo, Gradient.Dispatch {
 
     Codec<Gradient> CODEC = Codec.either(
             Preset.CODEC,
@@ -121,6 +121,16 @@ public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradien
         }
     }
 
+    non-sealed interface Dispatch extends Gradient {
+
+        MapCodec<? extends Dispatch> codec();
+
+        @Override
+        default Type type() {
+            return Type.DISPATCH;
+        }
+    }
+
     record Static(RGB color) implements Gradient {
 
         @Override
@@ -163,7 +173,10 @@ public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradien
         FROM_TO(RecordCodecBuilder.<FromTo>mapCodec(i -> i.group(
                 RGB.CODEC.fieldOf("from").forGetter(FromTo::from),
                 RGB.CODEC.fieldOf("to").forGetter(FromTo::to)
-        ).apply(i, FromTo::new)))
+        ).apply(i, FromTo::new))),
+        DISPATCH(GenViewerAPI.DISPATCH_GRADIENT_REGISTRY.byNameCodec()
+                .dispatchMap("dispatch_type", Dispatch::codec, Function.identity())
+        )
         ;
 
         static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);

@@ -3,9 +3,7 @@ package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
-import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
-import io.github.notenoughmail.tfcgenviewer.api.color.RegistryLinkedColor;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
@@ -16,21 +14,16 @@ import net.dries007.tfc.world.biome.BiomeExtension;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Objects;
 
 public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Cache, IVisualizerType.NoneOpt> {
 
     public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_BIOME);
     public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_BIOME);
-
-    public static final ColorKey COLOR_KEY = ColorKey.of(key -> {
-        Colors.BIOME_COLORS.getValues()
-                .stream()
-                .map(RegistryLinkedColor::color)
-                .filter(c -> c != Colors.UNKNOWN_BIOME.get().color())
-                .sorted()
-                .forEach(c -> c.appendTo(key));
-        Colors.UNKNOWN_BIOME.get().color().appendTo(key, true);
-    });
 
     @Override
     public NoneOpt createOptions(RegistryAccess registryAccess) {
@@ -51,7 +44,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
 
     @Override
     public Component colorKey(RegistryAccess registryAccess, Cache cache) {
-        return COLOR_KEY.colorKey();
+        return cache.colorKey();
     }
 
     @Override
@@ -73,6 +66,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
 
         private final RegionPointCache pointCache;
         private final ColorDefinition[] biomeColors;
+        private boolean unknownEncountered;
 
         Cache(RegionPointCache pointCache) {
             this.pointCache = pointCache;
@@ -89,5 +83,29 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
             return biomeColors[biome];
         }
 
+        public Component colorKey() {
+            final MutableComponent key = Component.empty();
+            final ColorDefinition unknown = Colors.UNKNOWN_BIOME.get().color();
+            final Iterator<ColorDefinition> iter = Arrays.stream(biomeColors)
+                    .filter(Objects::nonNull)
+                    .filter(c -> {
+                        if (c == unknown) {
+                            unknownEncountered = true;
+                            return false;
+                        }
+                        return true;
+                    })
+                    .distinct()
+                    .sorted()
+                    .iterator();
+            while (iter.hasNext()) {
+                iter.next()
+                        .appendTo(key, !unknownEncountered && !iter.hasNext());
+            }
+            if (unknownEncountered) {
+                unknown.appendTo(key, true);
+            }
+            return key;
+        }
     }
 }
