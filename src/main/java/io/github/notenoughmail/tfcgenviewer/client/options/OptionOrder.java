@@ -246,6 +246,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
         public Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> tooltipSupplier, Options options, int x, int y, int width, Consumer<T> onValueChanged) {
             return instance -> CycleButton.builder(instance.toString)
                     .withValues(values)
+                    .withTooltip(tooltipSupplier)
                     .withInitialValue(instance.get())
                     .displayOnlyValue() // <-- Effectively the only change
                     .create(x, y, width, 20, instance.caption, (button, value) -> {

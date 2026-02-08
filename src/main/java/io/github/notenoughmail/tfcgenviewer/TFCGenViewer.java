@@ -9,6 +9,7 @@ import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.MultiViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -31,6 +32,9 @@ public class TFCGenViewer {
     public static final String ID = "tfcgenviewer";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final String NETWORK_VERSION = ModList.get().getModFileById(ID).versionString();
+
+    public static final Component TRUE = Component.translatable("tfcgenviewer.option.true");
+    public static final Component FALSE = Component.translatable("tfcgenviewer.option.false");
 
     public TFCGenViewer(IEventBus modBus) {
         TFCGenViewerRegistration.init(modBus);

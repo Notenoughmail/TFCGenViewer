@@ -1,3 +1,10 @@
+# 2.0.1 (W.I.P.)
+- Add dispatch gradient type
+  - Only one dispatch type, `tfcgenviewer:hue_wheel`, is registered
+- The *Temperature* visualizer type now has tooltips in increments of 5°C, instead of 12°C
+- The *Rainfall* visualizer type now has tooltips in increments of 50mm, instead of 100mm
+- The *Biomes*, *Rocks*, and *Climate Restricted Features* visualizer types now have dynamic color keys, being limited to only values encountered during generation 
+
 # 2.0.0
 
 - Update to 1.21.1!

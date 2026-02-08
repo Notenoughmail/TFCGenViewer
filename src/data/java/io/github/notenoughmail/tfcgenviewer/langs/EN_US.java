@@ -18,16 +18,25 @@ public class EN_US extends LangProvider {
     protected void addTranslations() {
         branch(TFCGenViewer.ID, mod -> mod
                 .branch("option", option -> option
+                        .add("true", "True")
+                        .add("false", "False")
                         .branch("region_visualizer", region -> region
                                 .branch("rivers_and_mountains", rivers -> rivers
                                         .branch("sensitivity", sensitivity -> sensitivity
                                                 .add("", "Sensitivity")
                                                 .add("value", "Sensitivity: %s%%")
+                                                .add("tooltip", "The sensitivity of river location calculations, a higher value is fuzzier")
                                         )
                                 )
                                 .branch("rock", rock -> rock
-                                        .add("surface", "At Surface")
-                                        .add("elevation", "Elevation")
+                                        .branch("surface", surface -> surface
+                                                .add("", "At Surface")
+                                                .add("tooltip", "If the preview should generate the surface rock, or at a specific y-level")
+                                        )
+                                        .branch("elevation", elev -> elev
+                                                .add("", "Elevation")
+                                                .add("tooltip", "The y-level to preview at, only used if 'At Surface' is false")
+                                        )
                                 )
                         )
                         .add("preview_size", "Size")

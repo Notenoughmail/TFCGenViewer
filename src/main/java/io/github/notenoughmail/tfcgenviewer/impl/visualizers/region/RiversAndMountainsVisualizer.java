@@ -24,6 +24,7 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
 
     public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_RIVERS_AND_MOUNTAINS);
     public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_RIVERS_AND_MOUNTAINS);
+    public static final Component SENSITIVITY_EXP = Component.translatable("tfcgenviewer.option.region_visualizer.rivers_and_mountains.sensitivity.tooltip");
 
     public static final DataManager.Reference<ColorDefinition> RIVER = color("river");
     public static final DataManager.Reference<ColorDefinition> INLAND_MOUNTAIN = color("inland_mountain");
@@ -103,6 +104,7 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
                         "tfcgenviewer.option.region_visualizer.rivers_and_mountains.sensitivity.value",
                         Math.round(Mth.map(d, 0.01D, 0.75D, 0D, 1D) * 100)
                 ))
+                .withConstantTooltip(SENSITIVITY_EXP)
                 .finish();
     }
 
