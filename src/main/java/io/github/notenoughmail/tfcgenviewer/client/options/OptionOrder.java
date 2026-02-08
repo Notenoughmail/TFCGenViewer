@@ -20,23 +20,23 @@ import java.util.function.*;
 
 public interface OptionOrder<T> extends OptionProvider.Order<T> {
 
-    static B bool(String name, boolean initial, BooleanConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
+    static B bool(String name, boolean initial, BooleanConsumer onChange, BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize) {
         return new B(name, initial, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static I integer(String name, int initial, int min, int max, IntConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
+    static I integer(String name, int initial, int min, int max, IntConsumer onChange, BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize) {
         return new I(name, initial, min, max, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static D doub(String name, double initial, double min, double max, DoubleConsumer onChange, Consumer<OptionInstance<?>> onFinalize) {
+    static D doub(String name, double initial, double min, double max, DoubleConsumer onChange, BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize) {
         return new D(name, initial, min, max, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static <T> L<T> list(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange, Consumer<OptionInstance<?>> onFinalize) {
+    static <T> L<T> list(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange, BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize) {
         return new L<>(name, initial, values, codec, onChange, new Mut<>(), new Mut<>(), onFinalize);
     }
 
-    static <T extends Comparable<T>> C<T> comparable(String name, T initial, T min, T max, Codec<T> codec, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Consumer<T> onChange, Consumer<OptionInstance<?>> onFinalize) {
+    static <T extends Comparable<T>> C<T> comparable(String name, T initial, T min, T max, Codec<T> codec, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Consumer<T> onChange, BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize) {
         return new C<>(name, codec, initial, min, max, onChange, toSlider, fromSlider, new Mut<>(), new Mut<>(), onFinalize);
     }
 
@@ -82,13 +82,13 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
             BooleanConsumer onChange,
             Mut<OptionProvider.TooltipFactory<Boolean>> tooltip,
             Mut<OptionProvider.DisplayFactory<Boolean>> caption,
-            Consumer<OptionInstance<?>> onFinalize
+            BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize
     ) implements OptionOrder<Boolean> {
 
         static final OptionInstance.CaptionBasedToString<Boolean> DEFAULT = OptionProvider.<Boolean>convertToFactory(b -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)::make;
 
         @Override
-        public void finish() {
+        public void finish(BooleanSupplier active) {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -96,7 +96,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     ImprovedEnumValueSet.BOOL,
                     initialValue,
                     onChange
-            ));
+            ), active);
         }
     }
 
@@ -108,10 +108,10 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
             IntConsumer onChange,
             Mut<OptionProvider.TooltipFactory<Integer>> tooltip,
             Mut<OptionProvider.DisplayFactory<Integer>> caption,
-            Consumer<OptionInstance<?>> onFinalize
+            BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize
     ) implements OptionOrder<Integer> {
         @Override
-        public void finish() {
+        public void finish(BooleanSupplier active) {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -119,7 +119,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     new OptionInstance.IntRange(min, max),
                     initial,
                     onChange
-            ));
+            ), active);
         }
     }
 
@@ -131,10 +131,10 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
             DoubleConsumer onChange,
             Mut<OptionProvider.TooltipFactory<Double>> tooltip,
             Mut<OptionProvider.DisplayFactory<Double>> caption,
-            Consumer<OptionInstance<?>> onFinalize
+            BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize
     ) implements OptionOrder<Double> {
         @Override
-        public void finish() {
+        public void finish(BooleanSupplier active) {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -149,7 +149,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     ),
                     initial,
                     onChange
-            ));
+            ), active);
         }
     }
 
@@ -164,10 +164,10 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
             DoubleFunction<T> fromSlider,
             Mut<OptionProvider.TooltipFactory<T>> tooltip,
             Mut<OptionProvider.DisplayFactory<T>> caption,
-            Consumer<OptionInstance<?>> onFinalize
+            BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize
     ) implements OptionOrder<T> {
         @Override
-        public void finish() {
+        public void finish(BooleanSupplier active) {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -182,7 +182,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     ),
                     initial,
                     onChange
-            ));
+            ), active);
         }
     }
 
@@ -194,10 +194,10 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
             Consumer<T> onChange,
             Mut<OptionProvider.TooltipFactory<T>> tooltip,
             Mut<OptionProvider.DisplayFactory<T>> caption,
-            Consumer<OptionInstance<?>> onFinalize
+            BiConsumer<OptionInstance<?>, BooleanSupplier> onFinalize
     ) implements OptionOrder<T> {
         @Override
-        public void finish() {
+        public void finish(BooleanSupplier active) {
             onFinalize.accept(new OptionInstance<>(
                     name,
                     getTooltip(),
@@ -208,7 +208,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     ),
                     initial,
                     onChange
-            ));
+            ), active);
         }
     }
 

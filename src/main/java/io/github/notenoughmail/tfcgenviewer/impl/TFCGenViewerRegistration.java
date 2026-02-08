@@ -146,8 +146,8 @@ public class TFCGenViewerRegistration {
         @Override
         public int applyAsArgb(double h) {
             h += offset;
-            if (reverse) h = 1D - h;
             h = Mth.positiveModulo(h, 1D);
+            if (reverse) h = 1D - h;
             return Mth.hsvToArgb((float) h, saturation, value, 255);
         }
     }

@@ -220,7 +220,7 @@ public class ViewWorldScreen<
     private void populateOptions() {
         options.children().clear();
         options.add(visualizerType);
-        visualizerType.get().addOptions(new OptionOrders(options::add), state.vizOptions);
+        visualizerType.get().addOptions(new OptionOrders(options::addDynamic), state.vizOptions);
         options.add(imageSize);
         if (allowSpawnDraw) options.add(spawnOverlay);
         options.add(apply);

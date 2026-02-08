@@ -8,10 +8,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.DoubleFunction;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
+import java.util.function.*;
 
 public interface OptionProvider {
 
@@ -113,7 +110,11 @@ public interface OptionProvider {
         /**
          * Create and add the option to the list of options available to the player
          */
-        void finish();
+        default void finish() {
+            finish(() -> true);
+        }
+
+        void finish(BooleanSupplier active);
     }
 
     @ApiStatus.Internal

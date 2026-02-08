@@ -1,6 +1,5 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
-import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RockCache;
@@ -22,7 +21,9 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
 
     public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_ROCK);
     public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_ROCK);
-    public static final Component SURFACE_EXP = Component.translatable("tfcgenviewer.option.region_visualizer.rock.surface.tooltip");
+    public static final Component MODE_EXP = Component.translatable("tfcgenviewer.option.region_visualizer.rock.mode.tooltip");
+    public static final Component MODE_SURFACE = Component.translatable("tfcgenviewer.option.region_visualizer.rock.mode.surface");
+    public static final Component MODE_ELEVATION = Component.translatable("tfcgenviewer.option.region_visualizer.rock.mode.elevation");
     public static final Component ELEVATION_EXP = Component.translatable("tfcgenviewer.option.region_visualizer.rock.elevation.tooltip");
 
     @Override
@@ -65,13 +66,13 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
 
     @Override
     public void addOptions(OptionProvider optionProvider, Options options) {
-        optionProvider.orderBool("tfcgenviewer.option.region_visualizer.rock.surface", options.surface, b -> options.surface = b)
-                .withDisplay(optionProvider.genericDisplay(b -> b ? TFCGenViewer.TRUE : TFCGenViewer.FALSE))
-                .withConstantTooltip(SURFACE_EXP)
+        optionProvider.orderBool("tfcgenviewer.option.region_visualizer.rock.mode", options.surface, b -> options.surface = b)
+                .withDisplay(optionProvider.genericDisplay(b -> b ? MODE_SURFACE : MODE_ELEVATION))
+                .withConstantTooltip(MODE_EXP)
                 .finish();
         optionProvider.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", options.elevation, -64, 320, i -> options.elevation = i)
                 .withConstantTooltip(ELEVATION_EXP)
-                .finish();
+                .finish(() -> !options.surface);
     }
 
     @Override

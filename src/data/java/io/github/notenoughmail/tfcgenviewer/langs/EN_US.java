@@ -17,9 +17,12 @@ public class EN_US extends LangProvider {
     @Override
     protected void addTranslations() {
         branch(TFCGenViewer.ID, mod -> mod
+                .branch("configuration", config -> config
+                        .add("dingWhenGenerated", "Ding When Complete")
+                        .add("displayGenerationProgress", "Display Progress")
+                        .add("maxPreviewWidth", "Max Preview Width")
+                )
                 .branch("option", option -> option
-                        .add("true", "True")
-                        .add("false", "False")
                         .branch("region_visualizer", region -> region
                                 .branch("rivers_and_mountains", rivers -> rivers
                                         .branch("sensitivity", sensitivity -> sensitivity
@@ -29,9 +32,11 @@ public class EN_US extends LangProvider {
                                         )
                                 )
                                 .branch("rock", rock -> rock
-                                        .branch("surface", surface -> surface
-                                                .add("", "At Surface")
-                                                .add("tooltip", "If the preview should generate the surface rock, or at a specific y-level")
+                                        .branch("mode", surface -> surface
+                                                .add("", "Mode")
+                                                .add("tooltip", "If the preview should generate the surface rock, or the rock at the specified elevation")
+                                                .add("surface", "At Surface")
+                                                .add("elevation", "At Elevation")
                                         )
                                         .branch("elevation", elev -> elev
                                                 .add("", "Elevation")
@@ -143,7 +148,7 @@ public class EN_US extends LangProvider {
                 .branch("gradient", gradient -> gradient
                         .branch("rainfall", rain -> rain
                                 .add("", "Rainfall, 0 mm -> 500 mm")
-                                .add("0", "0 to 100 mm")
+                                .add("0", "0 to 50 mm")
                                 .add("1", "50 to 100 mm")
                                 .add("2", "100 to 150 mm")
                                 .add("3", "150 to 200 mm")

@@ -14,7 +14,8 @@ public enum ChunkSize implements ImageSize {
     _2,
     _3,
     _4,
-    _5
+    _5,
+    _6
     ;
 
     public static final List<ChunkSize> SIZES = List.of(values());

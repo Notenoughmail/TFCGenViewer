@@ -1,9 +1,25 @@
-# 2.0.1 (W.I.P.)
+# 2.0.1
+
 - Add dispatch gradient type
-  - Only one dispatch type, `tfcgenviewer:hue_wheel`, is registered
+  - Only one dispatch type, `tfcgenviewer:hue_wheel`, currently exists
 - The *Temperature* visualizer type now has tooltips in increments of 5°C, instead of 12°C
-- The *Rainfall* visualizer type now has tooltips in increments of 50mm, instead of 100mm
-- The *Biomes*, *Rocks*, and *Climate Restricted Features* visualizer types now have dynamic color keys, being limited to only values encountered during generation 
+- The *Rainfall* VT now has tooltips in increments of 50mm, instead of 100mm
+- The *Biomes*, *Rocks*, and *Climate Restricted Features* VTs now have dynamic color keys, only showing values encountered during generation
+- VT specific options now have a teal border
+- Tweaked the *Rocks* VT options
+  - Changed 'at surface' to 'mode'; functionality is unchanged, but the wording should be more clear/descriptive
+  - The 'elevation' option is now disabled if 'mode' is set to 'at surface'
+- Add tooltips to all current VT options
+- The configs now have lang entries
+- [API]
+  - VT specific options can now be dynamically disabled by passing a `BooleanSupplier` to `OptionProvider$Order#finish`
+  - Add dispatch gradient registry, used by the above-mentioned dispatch gradient type
+  - Add `RockCache`, a cache which
+    - Wraps an inner cache, like `ClimateFeatureCache`
+    - Keeps track of the colors in the rock color manager which have been encountered
+    - Provides a color key describing the encountered colors
+  - Add `ChunkSize` and `ChunkScale` for general use
+- A new [demo video](https://youtu.be/RUc4P2T-jIs) for this update/2.0.0 in general
 
 # 2.0.0
 

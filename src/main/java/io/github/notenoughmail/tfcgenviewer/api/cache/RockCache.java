@@ -38,8 +38,7 @@ public class RockCache<T> {
                 .sorted()
                 .iterator();
         while (iter.hasNext()) {
-            iter.next()
-                    .appendTo(key, !unknownEncountered && !iter.hasNext());
+            iter.next().appendTo(key, !unknownEncountered && !iter.hasNext());
         }
         if (unknownEncountered) {
             Colors.ROCK_COLORS.unknown().appendTo(key, true);

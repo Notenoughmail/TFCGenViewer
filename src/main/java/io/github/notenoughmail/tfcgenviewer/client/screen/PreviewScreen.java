@@ -367,7 +367,7 @@ public class PreviewScreen<
     private void populateOptions() {
         options.children().clear();
         options.add(intransientOptionsBefore);
-        visualizerType.get().addOptions(new OptionOrders(options::addWithBackground), state.vizOptions);
+        visualizerType.get().addOptions(new OptionOrders(options::addDynamic), state.vizOptions);
         options.add(intransientOptionsAfter);
     }
 

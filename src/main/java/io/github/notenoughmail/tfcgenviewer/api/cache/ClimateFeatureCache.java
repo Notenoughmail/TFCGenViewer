@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 /**
- * A cache type which wraps another and provides helpers for getting hte colors of features in the {@code tfcgenviewer:visualizable_features} placed feature tag
+ * A cache which wraps another and provides helpers for getting the colors of features in the {@code tfcgenviewer:visualizable_features} placed feature tag
  * @param <C> The wrapped cache type
  */
 public class ClimateFeatureCache<C> {

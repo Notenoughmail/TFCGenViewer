@@ -8,11 +8,9 @@ import it.unimi.dsi.fastutil.ints.IntConsumer;
 import net.minecraft.client.OptionInstance;
 
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.DoubleFunction;
-import java.util.function.ToDoubleFunction;
+import java.util.function.*;
 
-public record OptionOrders(Consumer<OptionInstance<?>> order) implements OptionProvider {
+public record OptionOrders(BiConsumer<OptionInstance<?>, BooleanSupplier> order) implements OptionProvider {
 
     @Override
     public <T> Order<T> order(String name, T initial, List<T> values, Codec<T> codec, Consumer<T> onChange) {
