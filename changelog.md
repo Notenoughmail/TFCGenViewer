@@ -1,3 +1,6 @@
+# 2.0.2
+- Fix classloading issue on servers
+
 # 2.0.1
 
 - Add dispatch gradient type

@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer;
 
 import com.mojang.logging.LogUtils;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.client.ClientBridge;
 import io.github.notenoughmail.tfcgenviewer.client.ClientPacketHandler;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGVCommands;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
@@ -30,7 +31,7 @@ public class TFCGenViewer {
 
     public static final String ID = "tfcgenviewer";
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static final String NETWORK_VERSION = ModList.get().getModFileById(ID).versionString();
+    public static final String NETWORK_VERSION = "2.0.1";
 
     public TFCGenViewer(IEventBus modBus) {
         TFCGenViewerRegistration.init(modBus);
@@ -78,12 +79,12 @@ public class TFCGenViewer {
         registrar.playToClient(
                 SingleViewResponsePacket.TYPE,
                 SingleViewResponsePacket.STREAM_CODEC,
-                ClientPacketHandler::onViewResponse
+                ClientBridge::singleViewResponse
         );
         registrar.playToClient(
                 MultiViewResponsePacket.TYPE,
                 MultiViewResponsePacket.STREAM_CODEC,
-                ClientPacketHandler::onMultiViewResponse
+                ClientBridge::multiViewResponse
         );
     }
 }
