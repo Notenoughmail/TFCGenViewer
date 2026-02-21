@@ -1,5 +1,13 @@
+# 2.0.3
+- Fix incompatibility with Sodium's `BiomeMixin`
+- Add the ability to disable (and re-enable) the permissions system outright, allowing full access when disabled
+  - This can be done using the `/tfcgenviewer disable_permissions` and `/tfcgenviewer enable_permissions` commands
+- The permissions system for integrated servers (single player worlds) will now default to allowing players to see all visualizer types
+- This version is network compatible with 2.0.1 and 2.0.2
+
 # 2.0.2
 - Fix classloading issue on servers
+- This version is network compatible with 2.0.1
 
 # 2.0.1
 

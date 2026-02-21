@@ -3,7 +3,6 @@ package io.github.notenoughmail.tfcgenviewer;
 import com.mojang.logging.LogUtils;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.client.ClientBridge;
-import io.github.notenoughmail.tfcgenviewer.client.ClientPacketHandler;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGVCommands;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
@@ -12,7 +11,6 @@ import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewRespon
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -22,6 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,6 +59,10 @@ public class TFCGenViewer {
                 (e1, e2) -> e1,
                 origin
         ));
+    }
+
+    public static <T, I> Consumer<T> transformConsumer(Function<T, I> mapper, Consumer<I> consumer) {
+        return t -> consumer.accept(mapper.apply(t));
     }
 
     private void newRegistries(NewRegistryEvent event) {

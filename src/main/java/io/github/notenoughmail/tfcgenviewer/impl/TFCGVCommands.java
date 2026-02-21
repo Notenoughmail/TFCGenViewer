@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl;
 
+import com.google.common.base.Suppliers;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -15,11 +16,13 @@ import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.*;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.server.command.EnumArgument;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static net.minecraft.commands.Commands.argument;
@@ -28,6 +31,12 @@ import static net.minecraft.commands.Commands.literal;
 public class TFCGVCommands {
 
     private static final Class<VisualizerPermissions.AncillaryPermission> ANCILLARY = VisualizerPermissions.AncillaryPermission.class;
+
+    private static final Supplier<Component>
+            ENABLE_PERMISSIONS = Suppliers.memoize(() -> Component.translatable("tfcgenviewer.command.toggle_permissions_system.enable")),
+            DISABLE_PERMISSIONS = Suppliers.memoize(() -> Component.translatable("tfcgenviewer.command.toggle_permissions_system.disable")),
+            ALREADY_ENABLE_PERMISSIONS = Suppliers.memoize(() -> Component.translatable("tfcgenviewer.command.toggle_permissions_system.already_enabled")),
+            ALREADY_DISABLE_PERMISSIONS = Suppliers.memoize(() -> Component.translatable("tfcgenviewer.command.toggle_permissions_system.already_disabled"));
 
     public static void registerCommands(RegisterCommandsEvent event) {
         final CommandBuildContext buildCtx = event.getBuildContext();
@@ -145,7 +154,7 @@ public class TFCGVCommands {
                                                             final VisualizerPermissions permissions = VisualizerPermissions.get(ctx.getSource().getLevel());
                                                             profiles.forEach(p -> {
                                                                 permissions.overrideIndividual(p, viz.value(), allowed);
-                                                                ctx.getSource().sendSuccess(() -> Component.translatable("tfcgenviewer.command.individual_visualizer_type", id(viz), allowed, p.getName()), true);
+                                                                ctx.getSource().sendSuccess(() -> Component.translatable("tfcgenviewer.command.individual_visualizer_type", id(viz), String.valueOf(allowed), p.getName()), true);
                                                             });
                                                             return profiles.size();
                                                         })
@@ -184,9 +193,10 @@ public class TFCGVCommands {
                                         .executes(ctx -> {
                                             final Collection<GameProfile> profiles = GameProfileArgument.getGameProfiles(ctx, "player");
                                             final VisualizerPermissions permissions = VisualizerPermissions.get(ctx.getSource().getLevel());
+                                            final boolean isIntegratedServer = !(ctx.getSource().getServer() instanceof DedicatedServer);
                                             profiles.forEach(p -> {
                                                 final Set<IVisualizerType<?, ?, ?, ?>> visualizers = GenViewerAPI.VISUALIZER_REGISTRY.stream()
-                                                        .filter(v -> permissions.isAllowed(p, v))
+                                                        .filter(v -> permissions.isAllowed(p, v, isIntegratedServer))
                                                         .collect(Collectors.toSet());
                                                 final MutableComponent response = Component.translatable("tfcgenviewer.command.query_permissions.base", p.getName())
                                                         .append(CommonComponents.NEW_LINE)
@@ -226,6 +236,33 @@ public class TFCGVCommands {
                                             return profiles.size();
                                         })
                                 )
+                        )
+                        .then(literal("disable_permissions")
+                                .executes(ctx -> {
+                                    final VisualizerPermissions perms = VisualizerPermissions.get(ctx.getSource().getLevel());
+                                    if (perms.disabled()) {
+                                        ctx.getSource().sendSuccess(ALREADY_DISABLE_PERMISSIONS, true);
+                                        return 0;
+                                    } else {
+                                        perms.disable();
+                                        ctx.getSource().sendSuccess(DISABLE_PERMISSIONS, true);
+                                        return 1;
+                                    }
+                                })
+                        )
+                        .then(literal("enable_permissions")
+                                .executes(ctx -> {
+                                    final VisualizerPermissions perms = VisualizerPermissions.get(ctx.getSource().getLevel());
+                                    if (perms.disabled()) {
+                                        perms.enable();
+                                        ctx.getSource().sendSuccess(ENABLE_PERMISSIONS, true);
+                                        return 1;
+                                    } else {
+                                        ctx.getSource().sendSuccess(ALREADY_ENABLE_PERMISSIONS, true);
+                                        return 0;
+                                    }
+                                })
+
                         )
         );
     }

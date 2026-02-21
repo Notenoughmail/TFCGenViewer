@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.cache;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
@@ -18,12 +19,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A cache which wraps another and provides helpers for getting the colors of features in the {@code tfcgenviewer:visualizable_features} placed feature tag
@@ -42,6 +46,10 @@ public class ClimateFeatureCache<C> {
 
     public static final Predicate<Holder<PlacedFeature>> CAN_PIPE = h -> h.is(VISUALIZABLE_FEATURES) && findFirst(h.value().placement()).isPresent();
 
+    private static final Supplier<Biome.ClimateSettings> BIOME_CLIMATE_SETTINGS_UNIT = Suppliers.memoize(() -> new Biome.ClimateSettings(false, 0, Biome.TemperatureModifier.NONE, 0));
+    private static final Supplier<BiomeSpecialEffects> BIOME_SPECIAL_EFFECTS_UNIT = Suppliers.memoize(() -> new BiomeSpecialEffects.Builder().skyColor(0).waterColor(0).waterFogColor(0).fogColor(0).build());
+    private static final Supplier<MobSpawnSettings> BIOME_MOB_SETTINGS_UNIT = Suppliers.memoize(() -> new MobSpawnSettings.Builder().build());
+
     public static final Codec<Biome> MINIMAL_BIOME_CODEC =
             ResourceKey.codec(Registries.PLACED_FEATURE)
             .listOf()
@@ -57,10 +65,10 @@ public class ClimateFeatureCache<C> {
                             .toList()
             )
             .xmap(bgs -> new Biome(
-                    null,
-                    null,
+                    BIOME_CLIMATE_SETTINGS_UNIT.get(),
+                    BIOME_SPECIAL_EFFECTS_UNIT.get(),
                     bgs,
-                    null
+                    BIOME_MOB_SETTINGS_UNIT.get()
             ), Biome::getGenerationSettings);
 
     private final Map<ResourceKey<Biome>, Set<ClimateSpace>> climates;

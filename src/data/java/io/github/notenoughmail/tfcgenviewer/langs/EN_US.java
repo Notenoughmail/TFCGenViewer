@@ -233,6 +233,12 @@ public class EN_US extends LangProvider {
                                 .add("visualizer_entry", "- %s [%s]")
                                 .add("click_to_describe", "Click to describe %s")
                         )
+                        .branch("toggle_permissions_system", toggle -> toggle
+                                .add("enable", "Enabled the permissions system")
+                                .add("already_enabled", "The permissions system is already enabled")
+                                .add("disable", "Disabled the permissions system")
+                                .add("already_disabled", "The permissions system is already disabled")
+                        )
                 )
         );
         branch("color", color -> color

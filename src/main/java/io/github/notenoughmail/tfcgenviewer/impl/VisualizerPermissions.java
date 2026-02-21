@@ -10,6 +10,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -55,12 +56,8 @@ public class VisualizerPermissions extends SavedData {
         return c;
     };
 
-    private static <T, I> Consumer<T> transform(Function<T, I> mapper, Consumer<I> consumer) {
-        return t -> consumer.accept(mapper.apply(t));
-    }
-
     public static ForPlayer forPlayer(ServerPlayer player) {
-        return new ForPlayer(player, get(player.serverLevel()));
+        return new ForPlayer(player, get(player.serverLevel()), !(player.getServer() instanceof DedicatedServer));
     }
 
     public static VisualizerPermissions get(ServerLevel level) {
@@ -69,6 +66,8 @@ public class VisualizerPermissions extends SavedData {
 
     private static VisualizerPermissions load(CompoundTag nbt, HolderLookup.Provider provider) {
         final VisualizerPermissions permissions = new VisualizerPermissions();
+
+        if (nbt.contains("disabled") && nbt.getBoolean("disabled")) permissions.disabled = true;
 
         if (nbt.contains(GLOBAL_DENY)) {
             final ListTag list = nbt.getList(GLOBAL_DENY, Tag.TAG_STRING);
@@ -121,9 +120,10 @@ public class VisualizerPermissions extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+        tag.putBoolean("disabled", disabled);
         if (!globalDeny.isEmpty()) {
             final ListTag list = new ListTag(globalDeny.size());
-            globalDeny.forEach(v -> VIZ_SERIALIZER.accept(v, transform(StringTag::valueOf, list::add)));
+            globalDeny.forEach(v -> VIZ_SERIALIZER.accept(v, TFCGenViewer.transformConsumer(StringTag::valueOf, list::add)));
             tag.put(GLOBAL_DENY, list);
         }
         if (!globalPermissions.isEmpty()) {
@@ -160,11 +160,12 @@ public class VisualizerPermissions extends SavedData {
         return tag;
     }
 
-    public boolean isAllowed(ServerPlayer player, IVisualizerType<?, ?, ?, ?> visualizerType) {
-        return isAllowed(player.getGameProfile(), visualizerType);
+    public boolean isAllowed(ServerPlayer player, IVisualizerType<?, ?, ?, ?> visualizerType, boolean isIntegratedServer) {
+        return isAllowed(player.getGameProfile(), visualizerType, isIntegratedServer);
     }
 
-    public boolean isAllowed(GameProfile profile, IVisualizerType<?, ?, ?, ?> visualizerType) {
+    public boolean isAllowed(GameProfile profile, IVisualizerType<?, ?, ?, ?> visualizerType, boolean isIntegratedServer) {
+        if (disabled) return true;
         if (globalDeny.contains(visualizerType)) {
             return false;
         }
@@ -172,7 +173,7 @@ public class VisualizerPermissions extends SavedData {
         if (individual != null && individual.containsKey(visualizerType)) {
             return individual.get(visualizerType);
         }
-        return globalPermissions.getOrDefault(visualizerType, false);
+        return globalPermissions.getOrDefault(visualizerType, isIntegratedServer);
     }
 
     public boolean isAllowed(ServerPlayer player, AncillaryPermission ancillary) {
@@ -180,6 +181,7 @@ public class VisualizerPermissions extends SavedData {
     }
 
     public boolean isAllowed(GameProfile profile, AncillaryPermission ancillary) {
+        if (disabled) return true;
         if (ancillary.test(globalAncillaryDeny)) {
             return false;
         }
@@ -254,6 +256,20 @@ public class VisualizerPermissions extends SavedData {
         if (individualAncillaries.remove(profile) != null) setDirty();
     }
 
+    public void disable() {
+        if (!disabled) setDirty();
+        disabled = true;
+    }
+
+    public void enable() {
+        if (disabled) setDirty();
+        disabled = false;
+    }
+
+    public boolean disabled() {
+        return disabled;
+    }
+
     private final Set<IVisualizerType<?, ?, ?, ?>> globalDeny = new HashSet<>();
     private byte globalAncillaryDeny = 0;
 
@@ -263,11 +279,13 @@ public class VisualizerPermissions extends SavedData {
     private final Map<GameProfile, Map<IVisualizerType<?, ?, ?, ?>, Boolean>> individualPermissions = new HashMap<>();
     private final Map<GameProfile, Byte> individualAncillaries = new HashMap<>();
 
-    public record ForPlayer(ServerPlayer player, VisualizerPermissions permissions) implements Predicate<IVisualizerType<?, ?, ?, ?>> {
+    private boolean disabled = false;
+
+    public record ForPlayer(ServerPlayer player, VisualizerPermissions permissions, boolean isIntegratedServer) implements Predicate<IVisualizerType<?, ?, ?, ?>> {
 
         @Override
         public boolean test(IVisualizerType<?, ?, ?, ?> visualizerType) {
-            return permissions.isAllowed(player, visualizerType);
+            return permissions.isAllowed(player, visualizerType, isIntegratedServer);
         }
 
         public boolean mayDrawSpawn() {

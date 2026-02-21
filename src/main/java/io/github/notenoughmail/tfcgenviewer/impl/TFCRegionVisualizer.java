@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl;
 
+import com.google.common.base.Suppliers;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.registry.Universal;
@@ -29,8 +30,8 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     public static final TFCRegionVisualizer INSTANCE = new TFCRegionVisualizer();
 
-    private static final BiomeSourceExtension BIOME_UNIT = new RegionBiomeSource(Universal.getter());
-    private static final Holder<NoiseGeneratorSettings> NOISE_UNIT = Holder.direct(new NoiseGeneratorSettings(
+    private static final Supplier<BiomeSourceExtension> BIOME_UNIT = Suppliers.memoize(() -> new RegionBiomeSource(Universal.getter()));
+    private static final Supplier<Holder<NoiseGeneratorSettings>> NOISE_UNIT = Suppliers.memoize(() -> Holder.direct(new NoiseGeneratorSettings(
             new NoiseSettings(-64, 320, 0, 0),
             Blocks.AIR.defaultBlockState(),
             Blocks.WATER.defaultBlockState(),
@@ -42,11 +43,11 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
             false,
             false,
             false
-    ));
+    )));
 
     static final StreamCodec<RegistryFriendlyByteBuf, TFCChunkGenerator> GENERATOR_NETWORK_CODEC =
             ByteBufCodecs.fromCodecWithRegistriesTrusted(Settings.CODEC.codec())
-                    .map(s -> new TFCChunkGenerator(BIOME_UNIT, NOISE_UNIT, s), TFCChunkGenerator::settings);
+                    .map(s -> new TFCChunkGenerator(BIOME_UNIT.get(), NOISE_UNIT.get(), s), TFCChunkGenerator::settings);
 
     public static final Component NAME = Component.translatable("tfcgenviewer.generator.tfc_overworld.region");
 
