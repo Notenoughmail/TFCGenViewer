@@ -7,11 +7,15 @@ import io.github.notenoughmail.tfcgenviewer.impl.mixin.accessor.NativeImageAcces
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public class Image implements MutableImage {
+
+    private static final Supplier<File> EXPORT_DIR = Lazy.of(() -> FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile());
 
     private final NativeImage image;
     private final int maxPixel;
@@ -160,7 +164,7 @@ public class Image implements MutableImage {
     public void export(String name) {
         synchronized (image) {
             try {
-                image.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), name));
+                image.writeToFile(new File(EXPORT_DIR.get(), name));
             } catch (Exception e) {
                 TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(name), e);
             }

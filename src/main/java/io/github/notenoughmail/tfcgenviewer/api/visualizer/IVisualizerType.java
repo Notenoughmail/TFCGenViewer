@@ -39,8 +39,8 @@ import java.util.function.Consumer;
  *     <li>
  *         Upon the preview screen first opening or the <i>Apply</i> button being clicked
  *         <ul>
- *             <li>{@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long) createCache}</li>
  *             <li>{@link Options#copy()}</li>
+ *             <li>{@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O) createCache}</li>
  *             <li>{@link #draw(int, int, MutableImage, int, int, DrawInfo) draw}</li>
  *             <li>{@link #afterComplete(MutableImage, DrawInfo) afterComplete}</li>
  *             <li>{@link #appendToFileName(Consumer, Options) appendToFileName}</li>
@@ -86,9 +86,19 @@ public interface IVisualizerType<
     }
 
     /**
+     * Create the cache object which will be available during drawing via {@link DrawInfo}, without options context
+     */
+    @Deprecated(forRemoval = true, since = "2.1.0")
+    default C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed) {
+        throw new IllegalArgumentException("#createCache without the options parameter is deprecated and should not be called!");
+    }
+
+    /**
      * Create the cache object which will be available during drawing via {@link DrawInfo}
      */
-    C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed);
+    default C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed, O options) {
+        return createCache(registryAccess, generator, size, worldSeed);
+    }
 
     /**
      * Set the color of a pixel on the image. May set/modify pixels not at the given pixel. Called for <strong>every</strong>
@@ -148,7 +158,7 @@ public interface IVisualizerType<
      * A collection of relevant objects which are provided during drawing of a preview image
      * @param colorTooltips The tooltip cache. Use {@link #addTooltip(ColorDefinition)} or {@link io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition#color(double, DrawInfo) ColorGradientDefinition#color}
      *                      to add tooltips
-     * @param cache The cache, as created in {@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long) createCache}
+     * @param cache The cache, as created in {@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O) createCache}
      * @param size The image size, guaranteed to be {@link IScale#sizes() possessed} by the scale
      */
     record DrawInfo<G extends ChunkGeneratorExtension, C, S extends IScale<?>, O extends Options<O>>(

@@ -12,6 +12,7 @@ import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
+import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.settings.Settings;
@@ -44,14 +45,13 @@ public class Preview {
 
     public static final Component ON_ERROR = Component.translatable("tfcgenviewer.preview_info.error");
 
-    private static final AtomicInteger THREAD_POOL_COUNTER = new AtomicInteger(0);
-
     private static final ForkJoinPool GEN_THREAD_POOL = Util.make(() -> {
+        final AtomicInteger counter = new AtomicInteger(0);
         final ClassLoader classLoader = TFCGenViewer.class.getClassLoader();
-        return new ForkJoinPool(Math.max(2, Runtime.getRuntime().availableProcessors()) - 2, fjp -> {
+        return new ForkJoinPool(Math.min(4, Runtime.getRuntime().availableProcessors()), fjp -> {
             final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
             thread.setContextClassLoader(classLoader);
-            thread.setName("TFCGenViewer Draw Thread #%s".formatted(THREAD_POOL_COUNTER.getAndIncrement()));
+            thread.setName("TFCGenViewer Draw Thread #%s".formatted(counter.getAndIncrement()));
             return thread;
         }, null, true, 0, 0x7FFF, 1, null, 5L, TimeUnit.SECONDS);
     });
@@ -127,6 +127,14 @@ public class Preview {
 
             timer.stop();
             final long millis = timer.elapsed(TimeUnit.MILLISECONDS);
+            if (drawParams.cache() instanceof AutoCloseable closeable) {
+                try {
+                    closeable.close();
+                } catch (Exception e) {
+                    TFCGenViewer.LOGGER.error("Could not close cache!", e);
+                    return Helpers.throwAsUnchecked(e);
+                }
+            }
             return new ImageReturn(
                     image,
                     millis,
