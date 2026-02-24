@@ -3,7 +3,6 @@ package io.github.notenoughmail.tfcgenviewer;
 import com.mojang.logging.LogUtils;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.client.ClientBridge;
-import io.github.notenoughmail.tfcgenviewer.client.ClientPacketHandler;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGVCommands;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
@@ -12,7 +11,6 @@ import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewRespon
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;

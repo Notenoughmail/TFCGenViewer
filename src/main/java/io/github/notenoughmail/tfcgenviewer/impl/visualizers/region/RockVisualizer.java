@@ -76,7 +76,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
     }
 
     @Override
-    public RockCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+    public RockCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, Options options) {
         return new RockCache<>(RegionPointCache.of(generator, size, worldSeed));
     }
 

@@ -272,7 +272,8 @@ public class PreviewScreen<
 
         final G gen = visualizer.recreateGenerator(generator);
         final V viz = visualizerType.get();
-        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), state.genSeed);
+        final O options = IVisualizerType.Options.copy(state.vizOptions);
+        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), state.genSeed, options);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
@@ -282,7 +283,7 @@ public class PreviewScreen<
                 new ColorTooltips(),
                 imageSize,
                 scale,
-                IVisualizerType.Options.copy(state.vizOptions)
+                options
         );
 
         final Image image = new Image(imageSize.sizeInPixels());

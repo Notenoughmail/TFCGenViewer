@@ -31,7 +31,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     }
 
     @Override
-    public Cache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+    public Cache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
         return new Cache(RegionPointCache.of(generator, size, worldSeed));
     }
 

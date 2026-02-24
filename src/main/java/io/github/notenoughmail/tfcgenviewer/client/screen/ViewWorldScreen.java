@@ -178,7 +178,8 @@ public class ViewWorldScreen<
 
         final G gen = visualizer.recreateGenerator(generator);
         final V viz = visualizerType.get();
-        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), worldSeed);
+        final O options = IVisualizerType.Options.copy(state.vizOptions);
+        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), worldSeed, options);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
@@ -188,7 +189,7 @@ public class ViewWorldScreen<
                 new ColorTooltips(),
                 imageSize,
                 scale,
-                IVisualizerType.Options.copy(state.vizOptions)
+                options
         );
 
         final Image image = new Image(imageSize.sizeInPixels());
