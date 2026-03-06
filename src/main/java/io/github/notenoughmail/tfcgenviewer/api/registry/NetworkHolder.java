@@ -1,6 +1,9 @@
 package io.github.notenoughmail.tfcgenviewer.api.registry;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +20,14 @@ public class NetworkHolder<T> extends Holder.Reference<T> {
 
     public static <T> NetworkHolder<T> of(ResourceKey<T> key) {
         return of(key, null);
+    }
+
+    public static <B extends ByteBuf, C> StreamCodec<B, Holder<C>> streamCodec(StreamCodec<B, C> codec, ResourceKey<? extends Registry<C>> registry) {
+        return StreamCodec.composite(
+                ResourceKey.streamCodec(registry), Holder::getKey,
+                codec, Holder::value,
+                NetworkHolder::new
+        );
     }
 
     protected NetworkHolder(ResourceKey<T> key, @Nullable T value) {

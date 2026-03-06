@@ -14,6 +14,8 @@ import net.dries007.tfc.world.region.RegionGenerator;
 /**
  * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType region visualizers}
  * as the cache of {@link RegionGenerator} is often too small for the scales often encountered by visualizers
+ * <p>
+ * This cache is <strong>not</strong> thread safe
  */
 public class RegionPointCache {
 
@@ -89,8 +91,9 @@ public class RegionPointCache {
     }
 
     /**
-     * @return If the z position is in the Northern hemisphere
+     * Deprecated, please use {@link IVisualizerType.DrawInfo#isNorthernHemisphere(int)}
      */
+    @Deprecated(forRemoval = true, since = "2.1.0")
     public boolean isNorthernHemisphere(int gridZ, IScale<?> scale) {
         return SolarCalculator.getInNorthernHemisphere(scale.pixelResolutionToBlock(gridZ, false), generator.settings.temperatureScale());
     }

@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.impl.preview;
 
 import com.google.common.base.Stopwatch;
+import com.machinezoo.noexception.throwing.ThrowingRunnable;
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
@@ -23,20 +24,23 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.data.models.blockstates.PropertyDispatch;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 
 public class Preview {
 
@@ -45,12 +49,13 @@ public class Preview {
 
     public static final Component ON_ERROR = Component.translatable("tfcgenviewer.preview_info.error");
 
+    private static final ClassLoader CLASS_LOADER = TFCGenViewer.class.getClassLoader();
+
     private static final ForkJoinPool GEN_THREAD_POOL = Util.make(() -> {
         final AtomicInteger counter = new AtomicInteger(0);
-        final ClassLoader classLoader = TFCGenViewer.class.getClassLoader();
-        return new ForkJoinPool(Math.min(4, Runtime.getRuntime().availableProcessors()), fjp -> {
+        return new ForkJoinPool(2, fjp -> {
             final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
-            thread.setContextClassLoader(classLoader);
+            thread.setContextClassLoader(CLASS_LOADER);
             thread.setName("TFCGenViewer Draw Thread #%s".formatted(counter.getAndIncrement()));
             return thread;
         }, null, true, 0, 0x7FFF, 1, null, 5L, TimeUnit.SECONDS);
@@ -60,7 +65,6 @@ public class Preview {
             G extends ChunkGeneratorExtension,
             I extends ImageSize,
             S extends IScale<I>,
-            V extends IVisualizerType<G, C, S, O>,
             C,
             O extends IVisualizerType.Options<O>
             >
@@ -68,7 +72,7 @@ public class Preview {
             Image image,
             I imageSize,
             IVisualizerType.DrawInfo<G, C, S, O> drawParams,
-            V viz,
+            IVisualizerType<G, C, S, O> viz,
             int xCenterBlocks,
             int zCenterBlocks,
             ResourceLocation visualizerId,
@@ -88,17 +92,30 @@ public class Preview {
             final int xDrawOffsetPixels = (xCenterBlocks / blocksPerPixel) - halfPreviewPixels;
             final int zDrawOffsetPixels = (zCenterBlocks / blocksPerPixel) - halfPreviewPixels;
 
-            for (int x = 0 ; x < previewPixels ; x++) {
-                if (!image.isAllocated()) break;
-                if (TFCGenViewerClient.displayGenerationProgress.getAsBoolean()) {
-                    previewPane.updateProgress(x, imageSize);
-                }
-                for (int y = 0 ; y < previewPixels ; y++) {
-                    if (!image.isAllocated()) break;
-                    final int xPos = x + xDrawOffsetPixels;
-                    final int zPos = y + zDrawOffsetPixels;
-                    viz.draw(x, y, image, xPos, zPos, drawParams);
-                }
+            final IntConsumer progressReturn = TFCGenViewerClient.displayGenerationProgress.getAsBoolean() ?
+                    i -> previewPane.updateProgress(i, imageSize) :
+                    i -> {};
+
+            if (viz.supportsParallelProcessing()) {
+                handleParallelDraw(
+                        image,
+                        viz,
+                        drawParams,
+                        previewPixels,
+                        progressReturn,
+                        xDrawOffsetPixels,
+                        zDrawOffsetPixels
+                );
+            } else {
+                handleDraw(
+                        image,
+                        viz,
+                        drawParams,
+                        previewPixels,
+                        progressReturn,
+                        xDrawOffsetPixels,
+                        zDrawOffsetPixels
+                );
             }
 
             viz.afterComplete(image, drawParams);
@@ -191,6 +208,114 @@ public class Preview {
         });
     }
 
+    private static <
+            G extends ChunkGeneratorExtension,
+            C,
+            S extends IScale<?>,
+            O extends IVisualizerType.Options<O>
+            > void handleParallelDraw(
+                    Image image,
+                    IVisualizerType<G, C, S, O> viz,
+                    IVisualizerType.DrawInfo<G, C, S, O> drawParams,
+                    int previewPixels,
+                    IntConsumer progressReturn,
+                    int xDrawOffsetPixels,
+                    int zDrawOffsetPixels
+    ) {
+        final PropertyDispatch.QuadFunction<Integer, Integer, Integer, Integer, ThrowingRunnable> callerFactory =
+                (x, y, xPos, zPos) ->
+                        () -> {
+                            final FutureTask<?> task = drawTask(viz, x, y, image, xPos, zPos, drawParams);
+                            task.run();
+                            task.get(viz.timeoutMillis(), TimeUnit.MILLISECONDS);
+                        };
+
+        try (final FutureBlockingQueue queue = new FutureBlockingQueue()) {
+            for (int x = 0 ; x < previewPixels ; x++) {
+                if (!image.isAllocated()) return;
+                progressReturn.accept(x);
+                final int xPos = x + xDrawOffsetPixels;
+                for (int y = 0 ; y < previewPixels ; y++) {
+                    if (!image.isAllocated()) return;
+                    final int zPos = y + zDrawOffsetPixels;
+                    final int fx = x, fy = y;
+                    queue.add(
+                            callerFactory.apply(x, y, xPos, zPos),
+                            () -> "Visualizer type %s timed out while drawing %d %d (%d %d)".formatted(
+                                    GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz),
+                                    fx,
+                                    fy,
+                                    xPos,
+                                    zPos
+                            )
+                    );
+                }
+            }
+        } catch (Throwable e) {
+            Helpers.throwAsUnchecked(e);
+        }
+    }
+
+    private static <
+            G extends ChunkGeneratorExtension,
+            C,
+            S extends IScale<?>,
+            O extends IVisualizerType.Options<O>
+            > void handleDraw(
+                    Image image,
+                    IVisualizerType<G, C, S, O> viz,
+                    IVisualizerType.DrawInfo<G, C, S, O> drawParams,
+                    int previewPixels,
+                    IntConsumer progressReturn,
+                    int xDrawOffsetPixels,
+                    int zDrawOffsetPixels
+    ) {
+        for (int x = 0 ; x < previewPixels ; x++) {
+            if (!image.isAllocated()) return;
+            progressReturn.accept(x);
+            final int xPos = x + xDrawOffsetPixels;
+            for (int y = 0 ; y < previewPixels ; y++) {
+                if (!image.isAllocated()) return;
+                final int zPos = y + zDrawOffsetPixels;
+                final FutureTask<?> task = drawTask(viz, x, y, image, xPos, zPos, drawParams);
+                try {
+                    task.run();
+                    task.get(viz.timeoutMillis(), TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    TFCGenViewer.LOGGER.error(
+                            "Visualizer type {} timed out while drawing {} {} ({} {})",
+                            GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz),
+                            x,
+                            y,
+                            xPos,
+                            zPos
+                    );
+                    image.setPixel(x, y, 0xFF000000);
+                    if (!FMLEnvironment.production) Helpers.throwAsUnchecked(e);
+                } catch (Exception e) {
+                    Helpers.throwAsUnchecked(e);
+                }
+            }
+        }
+    }
+
+    private static <
+            G extends ChunkGeneratorExtension,
+            C,
+            S extends IScale<?>,
+            O extends IVisualizerType.Options<O>
+            > FutureTask<?> drawTask(
+                    IVisualizerType<G, C, S, O> viz,
+                    int imageX,
+                    int imageY,
+                    Image image,
+                    int xPos,
+                    int zPos,
+                    IVisualizerType.DrawInfo<G, C, S, O> drawParams
+    ) {
+        return new FutureTask<>(() -> viz.draw(imageX, imageY, image, xPos, zPos, drawParams), null);
+    }
+
     private static String formatMillis(long millis) {
         final double seconds = (double) millis / 1000L;
         if (millis < 1000) {
@@ -271,5 +396,86 @@ public class Preview {
                 defaultValue,
                 i -> {}
         );
+    }
+
+    private static class FutureBlockingQueue implements AutoCloseable {
+
+        private final Future<?>[] values;
+        private final ExecutorService service;
+
+        private final ReentrantLock lock;
+        private final Condition notFull;
+
+        int count;
+        int index;
+
+        private volatile Throwable exception;
+
+        FutureBlockingQueue() {
+            lock = new ReentrantLock(false);
+            notFull = lock.newCondition();
+
+            final int parallelism = Math.min(5, Runtime.getRuntime().availableProcessors() - 4);
+            final String threadName = Thread.currentThread().getName();
+            final AtomicInteger count = new AtomicInteger();
+
+            values = new Future[parallelism];
+            service = new ForkJoinPool(parallelism, fjp -> {
+                final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
+                thread.setContextClassLoader(CLASS_LOADER);
+                thread.setName(threadName + "-" + count.getAndIncrement());
+                return thread;
+            }, null, true, 0, 0x7FFF, 1, null, 1L, TimeUnit.SECONDS);
+        }
+
+        public void add(ThrowingRunnable drawTask, Supplier<String> timeOutString) throws Throwable {
+            lock.lockInterruptibly();
+            try {
+                while (count == values.length) notFull.await();
+                if (exception != null) throw exception;
+                queue(drawTask, timeOutString);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        private void queue(ThrowingRunnable drawTask, Supplier<String> timeOutString) {
+            final int i = index;
+            values[i] = CompletableFuture.<Throwable>supplyAsync(() -> {
+                Helpers.uncheck(drawTask);
+                return null;
+            }, service)
+                    .exceptionally(t -> {
+                        if (t instanceof TimeoutException e) {
+                            TFCGenViewer.LOGGER.error(timeOutString.get());
+                            return FMLEnvironment.production ? null : e;
+                        }
+                        return t;
+                    })
+                    .thenAccept(t -> {
+                        Helpers.uncheck(lock::lockInterruptibly);
+                        try {
+                            remove(i);
+                        } finally {
+                            lock.unlock();
+                        }
+                        if (t != null) exception = t;
+                    });
+            count++;
+        }
+
+        private void remove(int i) {
+            values[i] = null;
+            count--;
+            index = i;
+            notFull.signal();
+        }
+
+        public void close() {
+            for (Future<?> task : values) {
+                if (task != null) task.cancel(true);
+            }
+            service.shutdownNow();
+        }
     }
 }

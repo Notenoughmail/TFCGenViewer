@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 85,
+      "g": 220,
+      "r": 250
+    },
+    "name": {
+      "translate": "biome.tfc.sea_stacks"
+    },
+    "sort": 321
+  },
+  "keys": [
+    "tfc:sea_stacks"
+  ]
+}

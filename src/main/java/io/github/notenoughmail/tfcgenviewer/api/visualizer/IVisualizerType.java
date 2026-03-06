@@ -8,6 +8,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
+import net.dries007.tfc.client.overworld.SolarCalculator;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -86,19 +87,9 @@ public interface IVisualizerType<
     }
 
     /**
-     * Create the cache object which will be available during drawing via {@link DrawInfo}, without options context
-     */
-    @Deprecated(forRemoval = true, since = "2.1.0")
-    default C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed) {
-        throw new IllegalArgumentException("#createCache without the options parameter is deprecated and should not be called!");
-    }
-
-    /**
      * Create the cache object which will be available during drawing via {@link DrawInfo}
      */
-    default C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed, O options) {
-        return createCache(registryAccess, generator, size, worldSeed);
-    }
+    C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed, O options);
 
     /**
      * Set the color of a pixel on the image. May set/modify pixels not at the given pixel. Called for <strong>every</strong>
@@ -155,6 +146,22 @@ public interface IVisualizerType<
     Component description();
 
     /**
+     * The maximum period of time, in milliseconds, a single pixel will be allowed to process for before being skipped.
+     * This will immediately cause the preview generation to end exceptionally if in a dev environment
+     */
+    default int timeoutMillis() {
+        return 1000;
+    }
+
+    // TODO: 2.1.0 | Give this an options parameter
+    /**
+     * If the draw requests of this visualizer type can be lowly parallelized. A max of 4 draws will be processed simultaneously
+     */
+    default boolean supportsParallelProcessing() {
+        return false;
+    }
+
+    /**
      * A collection of relevant objects which are provided during drawing of a preview image
      * @param colorTooltips The tooltip cache. Use {@link #addTooltip(ColorDefinition)} or {@link io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition#color(double, DrawInfo) ColorGradientDefinition#color}
      *                      to add tooltips
@@ -173,6 +180,10 @@ public interface IVisualizerType<
 
         public void addTooltip(ColorDefinition color) {
             colorTooltips.addColorTooltip(color);
+        }
+
+        public boolean isNorthernHemisphere(int zPos) {
+            return SolarCalculator.getInNorthernHemisphere(scale.pixelResolutionToBlock(zPos, false), generator.settings().temperatureScale());
         }
     }
 

@@ -68,6 +68,10 @@ neoForge {
 
         client {
             client()
+            programArguments.addAll(
+                    '-XX:+UnlockDiagnosticVMOptions',
+                    '-XX:+DebugNonSafepoints'
+            )
         }
 
         server {

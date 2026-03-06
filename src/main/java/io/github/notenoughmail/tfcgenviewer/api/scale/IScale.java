@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * A group of {@link ImageSize}s
@@ -24,6 +25,19 @@ public interface IScale<S extends ImageSize> {
         int blockRes = pixelResolutionPosition * blocksPerPixel();
         if (center) blockRes += blocksPerPixel() / 2;
         return blockRes;
+    }
+
+    /**
+     * Evaluate a function using block-scale coordinates
+     * @param center
+     * @param pixelResolutionX
+     * @param pixelResolutionZ
+     * @param function
+     * @return
+     * @param <T>
+     */
+    default <T> T evaluateAtPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BiFunction<Integer, Integer, T> function) {
+        return function.apply(pixelResolutionToBlock(pixelResolutionX, center), pixelResolutionToBlock(pixelResolutionZ, center));
     }
 
     /**
