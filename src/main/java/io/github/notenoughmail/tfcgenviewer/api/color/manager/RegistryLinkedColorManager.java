@@ -47,6 +47,9 @@ public class RegistryLinkedColorManager<T> extends DataManager<RegistryLinkedCol
 
     public ColorDefinition getInstanceColor(ResourceKey<T> key, Reference<RegistryLinkedColor<T>> fallback) {
         final ColorDefinition color = getInstanceColor(key);
-        return color == null ? fallback.get().color() : color;
+        if (color == null) {
+            return fallback.get().color();
+        }
+        return color;
     }
 }

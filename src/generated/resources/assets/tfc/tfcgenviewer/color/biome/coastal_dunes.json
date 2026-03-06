@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 40,
+      "g": 120,
+      "r": 90
+    },
+    "name": {
+      "translate": "biome.tfc.coastal_dunes"
+    },
+    "sort": 361
+  },
+  "keys": [
+    "tfc:coastal_dunes"
+  ]
+}

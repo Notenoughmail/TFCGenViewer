@@ -180,9 +180,9 @@ public class PreviewScreen<
                 .build();
         saveButton = Button.builder(SAVE, b -> {
             applySettings();
-            getMinecraft().setScreen(this.parent);
+            onClose();
         }).build();
-        cancelButton = Button.builder(CommonComponents.GUI_CANCEL, b -> getMinecraft().setScreen(this.parent)).build();
+        cancelButton = Button.builder(CommonComponents.GUI_CANCEL, b -> onClose()).build();
 
         visualize();
     }
@@ -280,7 +280,7 @@ public class PreviewScreen<
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(),
+                new ColorTooltips(viz.supportsParallelProcessing()),
                 imageSize,
                 scale,
                 options

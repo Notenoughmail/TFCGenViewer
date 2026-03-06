@@ -94,7 +94,7 @@ public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerat
 
     @Override
     public TFCChunkGenerator recreateGenerator(TFCChunkGenerator generator) {
-        return new TFCChunkGenerator(generator.customBiomeSource.copy(), generator.noiseSettings, generator.settings());
+        return new TFCChunkGenerator(generator.customBiomeSource, generator.noiseSettings, generator.settings());
     }
 
     @Override

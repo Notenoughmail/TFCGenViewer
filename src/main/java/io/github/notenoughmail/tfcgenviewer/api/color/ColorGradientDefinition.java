@@ -20,7 +20,7 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
             ComponentSerialization.CODEC.listOf().optionalFieldOf("tooltips").forGetter(ColorGradientDefinition::tooltips)
     ).apply(i, ColorGradientDefinition::new));
 
-    private static final double[] SAMPLES = { 0D, 0.2D, 0.4D, 0.6D, 0.8D, 1D };
+    private static final double[] SAMPLES = { 0D, 0.2D, 0.4D, 0.6D, 0.8D, 0.999D };
 
     @Override
     public void appendTo(MutableComponent text, boolean end) {
@@ -43,19 +43,20 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
     public int color(double value, ColorTooltips tooltips) {
         value = Math.clamp(value, 0D, 1D);
         final int color = gradient.applyAsAbgr(value);
-        if (!tooltips.hasColor(color)) {
-            final double v = value;
-            tooltips.addTooltip(color, this.tooltips.map(l -> switch (l.size()) {
-                case 0 -> null;
-                case 1 -> l.getFirst();
-                case 2 -> v > 0.5D ? l.getLast() : l.getFirst();
-                default -> l.get(Gradient.index(v, l.size()));
-            }).orElse(name));
-        }
+        if (!tooltips.hasColor(color)) tooltips.addTooltip(color, tooltipTxt(value));
         return color;
     }
 
     public int color(double value, IVisualizerType.DrawInfo<?, ?, ?, ?> info) {
         return color(value, info.colorTooltips());
+    }
+
+    private Component tooltipTxt(double value) {
+        return this.tooltips.map(l -> switch (l.size()) {
+            case 0 -> null;
+            case 1 -> l.getFirst();
+            case 2 -> value > 0.5D ? l.getLast() : l.getFirst();
+            default -> l.get(Gradient.index(value, l.size()));
+        }).orElse(name);
     }
 }

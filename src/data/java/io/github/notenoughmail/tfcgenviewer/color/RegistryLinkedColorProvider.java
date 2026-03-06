@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.color;
 
 import io.github.notenoughmail.tfcgenviewer.DataManagerProvider;
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
@@ -22,6 +23,7 @@ import net.minecraft.util.FastColor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -70,35 +72,35 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                             Component.translatable("biome.tfcgenviewer.unknown")
                     )
             ));
-            // Mostly based on colors & biomes of RegionGeneratorTests, but some merging has occurred
+            // Colors & biomes of RegionGeneratorTests with some merging and additional biomes that are visible at finer scales
             biome(
                     biomes,
                     "ocean",
-                    0, 0, 220,
+                    new Color(0, 0, 220),
                     OCEAN
             );
             biome(
                     biomes,
                     "ocean_reef",
-                    70, 160, 250,
+                    new Color(70, 160, 250),
                     OCEAN_REEF
             );
             biome(
                     biomes,
                     "deep_ocean",
-                    0, 0, 160,
+                    new Color(0, 0, 160),
                     DEEP_OCEAN
             );
             biome(
                     biomes,
                     "deep_ocean_trench",
-                    0, 0, 80,
+                    new Color(0, 0, 80),
                     DEEP_OCEAN_TRENCH
             );
             biome(
                     biomes,
                     "mountain_lake",
-                    20, 180, 255,
+                    new Color(20, 180, 255),
                     MOUNTAIN_LAKE,
                     OCEANIC_MOUNTAIN_LAKE,
                     OLD_MOUNTAIN_LAKE,
@@ -109,27 +111,27 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "lake",
-                    30, 30, 255,
+                    new Color(30, 30, 255),
                     LAKE,
                     MELTWATER_LAKE
             );
             biome(
                     biomes,
                     "river",
-                    0, 200, 255,
+                    new Color(0, 200, 255),
                     RIVER
             );
             biome(
                     biomes,
                     "oceanic_mountains",
-                    255, 0, 255,
+                    new Color(255, 0, 255),
                     OCEANIC_MOUNTAINS,
                     VOLCANIC_OCEANIC_MOUNTAINS
             );
             biome(
                     biomes,
                     "canyons",
-                    180, 60, 255,
+                    new Color(180, 60, 255),
                     CANYONS,
                     TOWER_KARST_CANYONS,
                     SHILIN_CANYONS,
@@ -139,13 +141,13 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "low_canyons",
-                    200, 110, 255,
+                    new Color(200, 110, 255),
                     LOW_CANYONS
             );
             biome(
                     biomes,
                     "lowlands",
-                    220, 150, 230,
+                    new Color(220, 150, 230),
                     LOWLANDS,
                     TOWER_KARST_BAY,
                     SALT_MARSH,
@@ -154,21 +156,21 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "mountains",
-                    255, 50, 50,
+                    new Color(255, 50, 50),
                     MOUNTAINS,
                     VOLCANIC_MOUNTAINS
             );
             biome(
                     biomes,
                     "old_mountains",
-                    240, 100, 100,
+                    new Color(240, 100, 100),
                     OLD_MOUNTAINS,
                     EXTREME_DOLINE_MOUNTAINS
             );
             biome(
                     biomes,
                     "plateau",
-                    190, 120, 120,
+                    new Color(190, 120, 120),
                     PLATEAU,
                     EXTREME_DOLINE_PLATEAU,
                     CENOTE_PLATEAU,
@@ -180,7 +182,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "highlands",
-                    20, 80, 30,
+                    new Color(20, 80, 30),
                     HIGHLANDS,
                     SHILIN_HIGHLANDS,
                     TOWER_KARST_HIGHLANDS,
@@ -190,7 +192,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "rolling_hills",
-                    50, 100, 50,
+                    new Color(50, 100, 50),
                     ROLLING_HILLS,
                     DOLINE_ROLLING_HILLS,
                     CENOTE_ROLLING_HILLS
@@ -198,7 +200,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "hills",
-                    80, 130, 80,
+                    new Color(80, 130, 80),
                     HILLS,
                     SHILIN_HILLS,
                     TOWER_KARST_HILLS,
@@ -208,13 +210,13 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "grassy_dunes",
-                    90, 165, 90,
+                    new Color(90, 165, 90),
                     GRASSY_DUNES
             );
             biome(
                     biomes,
                     "plains",
-                    100, 200, 100,
+                    new Color(100, 200, 100),
                     PLAINS,
                     BURREN_PLAINS,
                     TOWER_KARST_PLAINS,
@@ -225,7 +227,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "badlands",
-                    205, 160, 50,
+                    new Color(205, 160, 50),
                     BADLANDS,
                     BURREN_BADLANDS,
                     BURREN_BADLANDS_TALL
@@ -233,117 +235,162 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "stair_step_canyons",
-                    250, 190, 0,
+                    new Color(250, 190, 0),
                     STAIR_STEP_CANYONS
             );
             biome(
                     biomes,
                     "hoodoos",
-                    230, 180, 0,
+                    new Color(230, 180, 0),
                     HOODOOS
             );
             biome(
                     biomes,
                     "mesas",
-                    150, 160, 0,
+                    new Color(150, 160, 0),
                     MESAS
             );
             biome(
                     biomes,
                     "buttes",
-                    190, 160, 0,
+                    new Color(190, 160, 0),
                     BUTTES
             );
             biome(
                     biomes,
                     "whorled_canyons",
-                    250, 215, 0,
+                    new Color(250, 215, 0),
                     WHORLED_CANYONS
             );
             biome(
                     biomes,
                     "rocky_plateau",
-                    180, 160, 110,
+                    new Color(180, 160, 110),
                     ROCKY_PLATEAU
             );
             biome(
                     biomes,
                     "dune_sea",
-                    250, 210, 140,
+                    new Color(250, 210, 140),
                     DUNE_SEA
             );
             biome(
                     biomes,
                     "salt_flats",
-                    190, 190, 190,
+                    new Color(190, 190, 190),
                     SALT_FLATS
             );
             biome(
                     biomes,
                     "mud_flats",
-                    190, 120, 100,
+                    new Color(190, 120, 100),
                     MUD_FLATS
             );
             biome(
                     biomes,
                     "shore",
-                    230, 210, 130,
-                    SHORE
+                    new Color(230, 210, 130),
+                    SHORE,
+                    TIDAL_FLATS
+            );
+            biome(
+                    biomes,
+                    "rocky_shores",
+                    new Color(140, 140, 120),
+                    ROCKY_SHORES,
+                    EMBAYMENTS // Rocky shores w/ some normal beaches mixed in
+            );
+            biome(
+                    biomes,
+                    "sea_stacks",
+                    new Color(250, 220, 85),
+                    SEA_STACKS
+            );
+            biome(
+                    biomes,
+                    "terrace_upper",
+                    new Color(110, 160, 155),
+                    TERRACE_UPPER
+            );
+            biome(
+                    biomes,
+                    "terrace_lower",
+                    new Color(80, 120, 120),
+                    TERRACE_LOWER
+            );
+            biome(
+                    biomes,
+                    "setback_cliffs",
+                    new Color(170, 230, 75),
+                    SETBACK_CLIFFS
+            );
+            biome(
+                    biomes,
+                    "coastal_dunes",
+                    new Color(90, 120, 40),
+                    COASTAL_DUNES
             );
             biome(
                     biomes,
                     "guano_island",
-                    120, 120, 50,
+                    new Color(120, 120, 50),
                     GUANO_ISLAND
             );
             biome(
                     biomes,
                     "active_shield_volcano",
-                    255, 85, 0,
+                    new Color(255, 85, 0),
                     ACTIVE_SHIELD_VOLCANO
             );
             biome(
                     biomes,
                     "dormant_shield_volcano",
-                    255, 105, 0,
+                    new Color(255, 105, 0),
                     DORMANT_SHIELD_VOLCANO
             );
             biome(
                     biomes,
                     "extinct_shield_volcano",
-                    255, 135, 0,
+                    new Color(255, 135, 0),
                     EXTINCT_SHIELD_VOLCANO
             );
             biome(
                     biomes,
                     "ancient_shield_volcano",
-                    255, 155, 0,
+                    new Color(255, 155, 0),
                     ANCIENT_SHIELD_VOLCANO,
                     SUNKEN_SHIELD_VOLCANO
             );
             biome(
                     biomes,
+                    "shield_volcano_shore",
+                    new Color(215, 180, 75),
+                    SHIELD_VOLCANO_SHORE,
+                    OLD_SHIELD_VOLCANO_SHORE
+            );
+            biome(
+                    biomes,
                     "tuyas",
-                    115, 145, 115,
+                    new Color(115, 145, 115),
                     TUYAS
             );
             biome(
                     biomes,
                     "drumlins",
-                    135, 165, 135,
+                    new Color(135, 165, 135),
                     DRUMLINS,
                     BURREN_ROCHE_MOUTONEE
             );
             biome(
                     biomes,
                     "knob_and_kettle",
-                    115, 115, 115,
+                    new Color(115, 115, 115),
                     KNOB_AND_KETTLE
             );
             biome(
                     biomes,
                     "patterned_ground",
-                    135, 135, 135,
+                    new Color(135, 135, 135),
                     PATTERNED_GROUND,
                     INVERTED_PATTERNED_GROUND,
                     STONE_CIRCLES
@@ -351,78 +398,78 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "ice_sheet_edge",
-                    165, 165, 165,
+                    new Color(165, 165, 165),
                     ICE_SHEET_EDGE,
                     ICE_SHEET_SHORE
             );
             biome(
                     biomes,
                     "ice_sheet",
-                    255, 255, 255,
+                    new Color(255, 255, 255),
                     ICE_SHEET,
                     SUBGLACIAL_LAKE
             );
             biome(
                     biomes,
                     "ice_sheet_oceanic",
-                    215, 215, 215,
+                    new Color(215, 215, 215),
                     ICE_SHEET_OCEANIC
             );
             biome(
                     biomes,
                     "ice_sheet_tuyas",
-                    235, 235, 235,
+                    new Color(235, 235, 235),
                     ICE_SHEET_TUYAS,
                     ICE_SHEET_TUYAS_EDGE
             );
             biome(
                     biomes,
                     "ice_sheet_mountains",
-                    255, 195, 195,
+                    new Color(255, 195, 195),
                     ICE_SHEET_MOUNTAINS,
                     ICE_SHEET_MOUNTAINS_EDGE
             );
             biome(
                     biomes,
                     "ice_sheet_oceanic_mountains",
-                    255, 195, 255,
+                    new Color(255, 195, 255),
                     ICE_SHEET_OCEANIC_MOUNTAINS,
                     ICE_SHEET_OCEANIC_MOUNTAINS_EDGE
             );
             biome(
                     biomes,
                     "ice_sheet_shield_volcano",
-                    255, 215, 185,
+                    new Color(255, 215, 185),
                     ICE_SHEET_SHIELD_VOLCANO
             );
             biome(
                     biomes,
                     "glaciated_mountains",
-                    255, 165, 165,
+                    new Color(255, 165, 165),
                     GLACIATED_MOUNTAINS
             );
             biome(
                     biomes,
                     "glaciated_oceanic_mountains",
-                    255, 165, 255,
+                    new Color(255, 165, 255),
                     GLACIATED_OCEANIC_MOUNTAINS
             );
             biome(
                     biomes,
                     "glaciated_shield_volcano",
-                    255, 185, 125,
+                    new Color(255, 185, 125),
                     GLACIATED_SHIELD_VOLCANO
             );
             biome(
                     biomes,
                     "glacially_carved_mountains",
-                    255, 135, 135,
+                    new Color(255, 135, 135),
                     GLACIALLY_CARVED_MOUNTAINS
             );
             biome(
                     biomes,
                     "glacially_carved_oceanic_mountains",
-                    255, 135, 255,
+                    new Color(255, 135, 255),
                     GLACIALLY_CARVED_OCEANIC_MOUNTAINS
             );
             verifyFuzzyUniqueness(biomeColors);
@@ -436,6 +483,10 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
         ));
     }
 
+    private static void biome(Provider<RegistryLinkedColor<Biome>> provider, String name, Color color, int... biomes) {
+        biome(provider, name, color.getRed(), color.getGreen(), color.getBlue(), biomes);
+    }
+
     private static void biome(Provider<RegistryLinkedColor<Biome>> provider, String name, int r, int g, int b, int... biomes) {
         biome(provider, name, color(r, g, b, "biome.tfc." + name, sort()), biomes);
     }
@@ -443,6 +494,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
     private static void biome(Provider<RegistryLinkedColor<Biome>> provider, String name, ColorDefinition color, int... biomes) {
         provider.accept(Helpers.identifier(name), biome(color, biomes));
         verifyUniqueColor(color.color(), biomeColors);
+        TFCGenViewer.LOGGER.info("(x-{})^2+(y-{})^2+(z-{})^2=100", color.color().storage()[0], color.color().storage()[1], color.color().storage()[2]);
     }
 
     private static RegistryLinkedColor<Biome> biome(ColorDefinition color, int... biomes) {

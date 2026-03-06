@@ -1,12 +1,9 @@
 package io.github.notenoughmail.tfcgenviewer.api.cache;
 
 import com.google.common.collect.ImmutableSet;
-import io.github.notenoughmail.tfcgenviewer.impl.mixin.accessor.TFCChunkGeneratorAccessor;
-import net.dries007.tfc.world.ChunkHeightFiller;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeExtension;
-import net.dries007.tfc.world.biome.BiomeNoise;
 import net.dries007.tfc.world.biome.BiomeSourceExtension;
 import net.dries007.tfc.world.biome.TFCBiomes;
 import net.dries007.tfc.world.chunkdata.ChunkData;
@@ -25,23 +22,12 @@ import java.util.function.Consumer;
 // TODO: Is there a good reason AND way to cache this?
 public class ChunkDataProvider {
 
-    public static Region tfcRegion(long worldSeed, TFCChunkGenerator generator, boolean full) {
-        final Region provider = new Region(generator, Seed.of(worldSeed), full);
-        if (full) {
-            provider.withPromotionToFull(c -> {
-                final ChunkPos pos = c.getPos();
-                final int minX = pos.getMinBlockX(), minZ = pos.getMinBlockZ();
-                final int[] surfaceElevation = new int[16 * 16];
-                final ChunkHeightFiller filler = generator.createHeightFillerForChunk(pos);
-                for (int x = 0 ; x < 16 ; x++) {
-                    for (int z = 0 ; z < 16 ; z++) {
-                        surfaceElevation[x + 16 * z] = (int) filler.sampleHeight(minX + x, minZ + z);
-                    }
-                }
-                c.generateFull(surfaceElevation, new int[0]);
-            });
-        }
-        return provider;
+    public static Region tfcRegion(long worldSeed, TFCChunkGenerator generator) {
+        return tfcRegion(Seed.of(worldSeed), generator);
+    }
+
+    public static Region tfcRegion(Seed seed, TFCChunkGenerator generator) {
+        return new Region(generator, seed);
     }
 
     public void withPromotionToFull(Consumer<ChunkData> onGenerate) {
@@ -54,6 +40,10 @@ public class ChunkDataProvider {
 
     public ChunkDataProvider(ChunkDataGenerator generator) {
         this.generator = generator;
+    }
+
+    public ChunkDataGenerator generator() {
+        return generator;
     }
 
     public ChunkData create(int chunkX, int chunkZ) {
@@ -85,32 +75,36 @@ public class ChunkDataProvider {
 
         private final BiomeSourceExtension biomeSource;
 
-        Region(TFCChunkGenerator chunkGenerator, Seed seed, boolean full) {
-            this(new RegionGenerator(chunkGenerator.settings(), seed), chunkGenerator, seed, full);
+        Region(TFCChunkGenerator chunkGenerator, Seed seed) {
+            this(new RegionGenerator(chunkGenerator.settings(), seed), chunkGenerator, seed);
         }
 
-        Region(RegionGenerator generator, TFCChunkGenerator chunkGenerator, Seed seed, boolean full) {
+        Region(RegionGenerator generator, TFCChunkGenerator chunkGenerator, Seed seed) {
             super(generator.chunkDataGenerator());
             biomeSource = ((BiomeSourceExtension) chunkGenerator.getBiomeSource());
             biomeSource.initRandomState(generator, new ConcurrentArea<>(TFCLayers.createRegionBiomeLayer(generator, seed), TFCLayers::getFromLayerId));
-            if (full) {
-                ((TFCChunkGeneratorAccessor) chunkGenerator).tfcgenviewer$SetSeed(seed);
-                ((TFCChunkGeneratorAccessor) chunkGenerator).tfcgenviewer$SetTideHeightNoise(BiomeNoise.shoreTideLevelNoise(seed));
-            }
         }
 
-        public boolean isWaterBiome(BiomeExtension biomeExtension) {
-            return WATER_BIOMES.contains(biomeExtension);
+        public boolean isWaterBiome(BiomeExtension ext) {
+            return WATER_BIOMES.contains(ext);
+        }
+
+        public boolean isOceanBiome(BiomeExtension ext) {
+            return ext == TFCBiomes.OCEAN || ext == TFCBiomes.DEEP_OCEAN || ext == TFCBiomes.DEEP_OCEAN_TRENCH || ext == TFCBiomes.OCEAN_REEF;
         }
 
         public boolean isWaterBiome(int chunkX, int chunkZ, boolean considerRivers) {
             return isWaterBiome(getBiome(chunkX, chunkZ, considerRivers));
         }
 
+        public boolean isOceanBiome(int chunkX, int chunkZ, boolean considerRivers) {
+            return isOceanBiome(getBiome(chunkX, chunkZ, considerRivers));
+        }
+
         public BiomeExtension getBiome(int chunkX, int chunkZ, boolean considerRivers) {
             return considerRivers ?
-                    biomeSource.getBiomeExtension(QuartPos.fromSection(chunkX), QuartPos.fromSection(chunkZ)) :
-                    biomeSource.getBiomeExtensionNoRiver(QuartPos.fromSection(chunkX), QuartPos.fromSection(chunkZ));
+                    biomeSource.getBiomeExtension(QuartPos.fromSection(chunkX) + 1, QuartPos.fromSection(chunkZ) + 1) :
+                    biomeSource.getBiomeExtensionNoRiver(QuartPos.fromSection(chunkX) + 1, QuartPos.fromSection(chunkZ) + 1);
         }
     }
 }

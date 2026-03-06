@@ -91,9 +91,11 @@ public class EN_US extends LangProvider {
                                 .add("title", "Viewing %s with %s")
                         )
                 )
-                    .branch("generator", gen -> gen
+                .branch("generator", gen -> gen
                         .branch("tfc_overworld", tfc -> tfc
-                                .add("region", "TFC (Grid Scale)"))
+                                .add("region", "TFC (Grid Scale)")
+                                .add("chunk", "TFC (Chunk Scale)")
+                        )
                 )
                 .branch("preview_info", info -> info
                         .add("base", "Visualizer used: %1$s\nSize: %2$s x %2$s\nTime elapsed: %3$s seconds")
@@ -101,6 +103,7 @@ public class EN_US extends LangProvider {
                         .add("additional_from_visualizer", "Additional information from visualizer:\n%s")
                         .add("generated_regions", "Generated %s regions")
                         .add("generated_rock", "Generated %s regions at y-level %s")
+                        .add("generated_rock_chunk", "Generated at y-level %s")
                         .add("color_key", "Color Key:\n%s")
                         .add("generating", "Generating with %s...")
                         .add("error", "An error occurred during generation\n\nPlease check the log and report the error")
@@ -142,6 +145,32 @@ public class EN_US extends LangProvider {
                                 .branch("rivers_and_mountains", river -> river
                                         .add("", "Rivers and Mountains")
                                         .add("description", "Shows the locations of hotspots, inland & coastal mountains, and rivers")
+                                )
+                        )
+                        .branch("chunk", chunk -> chunk
+                                .branch("elevation", el -> el
+                                        .add("", "Elevation")
+                                        .add("description", "The approximate surface elevation of the chunk")
+                                )
+                                .branch("biome", biome -> biome
+                                        .add("", "Biomes")
+                                        .add("description", "Shows a biome map")
+                                )
+                                .branch("koppen", koppen -> koppen
+                                        .add("", "Köppen Climate Classification")
+                                        .add("description", "Shows the Köppen climate classification of the world")
+                                )
+                                .branch("rainfall", rain -> rain
+                                        .add("", "Rainfall")
+                                        .add("description", "Shows the average rainfall over land")
+                                )
+                                .branch("temperature", temp -> temp
+                                        .add("", "Temperature")
+                                        .add("description", "Shows the average temperature over land")
+                                )
+                                .branch("rock", rock -> rock
+                                        .add("", "Rocks")
+                                        .add("description", "Shows the rock that is likely to generate at a location")
                                 )
                         )
                 )

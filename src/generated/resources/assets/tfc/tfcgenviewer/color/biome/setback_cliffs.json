@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 75,
+      "g": 230,
+      "r": 170
+    },
+    "name": {
+      "translate": "biome.tfc.setback_cliffs"
+    },
+    "sort": 351
+  },
+  "keys": [
+    "tfc:setback_cliffs"
+  ]
+}

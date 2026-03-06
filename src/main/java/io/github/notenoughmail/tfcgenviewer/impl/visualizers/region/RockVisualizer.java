@@ -114,8 +114,8 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
 
     public static final class Options implements IVisualizerType.Options<Options> {
 
-        boolean surface = true;
-        int elevation = 75; // Random guess for 'surface' y-level
+        public boolean surface = true;
+        public int elevation = 75; // Random guess for 'surface' y-level
 
         @Override
         public Options copy() {

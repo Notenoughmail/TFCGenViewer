@@ -186,7 +186,7 @@ public class ViewWorldScreen<
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(),
+                new ColorTooltips(viz.supportsParallelProcessing()),
                 imageSize,
                 scale,
                 options
