@@ -38,7 +38,7 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ChunkBiomeVisualizer.Cache, ChunkScale, NoneOpt> info) {
         final ColorDefinition color = info.cache().getColor(xPos, zPos);
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override

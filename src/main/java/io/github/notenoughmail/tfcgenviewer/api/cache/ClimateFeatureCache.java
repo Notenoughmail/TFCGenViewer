@@ -2,14 +2,17 @@ package io.github.notenoughmail.tfcgenviewer.api.cache;
 
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.registry.NetworkHolder;
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.placement.ClimatePlacement;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -62,6 +65,21 @@ public class ClimateFeatureCache<C> {
                     bgs,
                     null
             ), Biome::getGenerationSettings);
+
+    @Nullable
+    public static <T> Codec<T> codecForRegistry(ResourceKey<? extends Registry<T>> registry) {
+        if (Registries.PLACED_FEATURE.equals(registry)) {
+            return TFCGenViewer.cast(MINIMAL_FEATURE_CODEC);
+        } else if (Registries.BIOME.equals(registry)) {
+            return TFCGenViewer.cast(MINIMAL_BIOME_CODEC);
+        }
+        return null;
+    }
+
+    public static void syncRequest(SynchronizationRequest synchronizationRequest, @Nullable Predicate<Holder<Biome>> biomeFilter) {
+        synchronizationRequest.request(VISUALIZABLE_FEATURES);
+        synchronizationRequest.request(Registries.BIOME, biomeFilter == null ? h -> h.is(k -> k.location().getNamespace().equals(TerraFirmaCraft.MOD_ID)) : biomeFilter);
+    }
 
     private final Map<ResourceKey<Biome>, Set<ClimateSpace>> climates;
     public final C innerCache;

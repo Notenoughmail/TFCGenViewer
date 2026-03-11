@@ -86,7 +86,7 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
         }
         final ColorDefinition color = info.cache().getColor(raw);
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     }
 
     @Override
-    public boolean supportsParallelProcessing() {
-        return true;
+    public boolean shouldDrawInParallel(RockVisualizer.Options options, ImageSize size) {
+        return !options.surface;
     }
 }

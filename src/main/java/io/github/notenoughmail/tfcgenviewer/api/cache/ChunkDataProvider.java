@@ -74,6 +74,7 @@ public class ChunkDataProvider {
         )).build();
 
         private final BiomeSourceExtension biomeSource;
+        private final RegionGenerator regionGenerator;
 
         Region(TFCChunkGenerator chunkGenerator, Seed seed) {
             this(new RegionGenerator(chunkGenerator.settings(), seed), chunkGenerator, seed);
@@ -83,6 +84,11 @@ public class ChunkDataProvider {
             super(generator.chunkDataGenerator());
             biomeSource = ((BiomeSourceExtension) chunkGenerator.getBiomeSource());
             biomeSource.initRandomState(generator, new ConcurrentArea<>(TFCLayers.createRegionBiomeLayer(generator, seed), TFCLayers::getFromLayerId));
+            regionGenerator = generator;
+        }
+
+        public RegionGenerator regionGenerator() {
+            return regionGenerator;
         }
 
         public boolean isWaterBiome(BiomeExtension ext) {

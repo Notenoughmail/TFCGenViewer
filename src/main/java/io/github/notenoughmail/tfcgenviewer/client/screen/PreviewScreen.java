@@ -276,11 +276,12 @@ public class PreviewScreen<
         final C cache = viz.createCache(registryAccess, gen, imageSize.get(), state.genSeed, options);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
+        final Preview.Parallelism parallelism = Preview.Parallelism.of(options, viz, imageSize);
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(viz.supportsParallelProcessing()),
+                new ColorTooltips(parallelism.parallel()),
                 imageSize,
                 scale,
                 options
@@ -305,6 +306,7 @@ public class PreviewScreen<
                         spawnCenterZ,
                         spawnDist
                 ),
+                parallelism,
                 registryAccess,
                 true
         );

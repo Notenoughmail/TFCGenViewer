@@ -182,11 +182,12 @@ public class ViewWorldScreen<
         final C cache = viz.createCache(registryAccess, gen, imageSize.get(), worldSeed, options);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
+        final Preview.Parallelism parallelism = Preview.Parallelism.of(options, viz, imageSize);
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(viz.supportsParallelProcessing()),
+                new ColorTooltips(parallelism.parallel()),
                 imageSize,
                 scale,
                 options
@@ -209,6 +210,7 @@ public class ViewWorldScreen<
                         spawnOverlay,
                         gen.settings()
                 ),
+                parallelism,
                 registryAccess,
                 allowCoords
         );

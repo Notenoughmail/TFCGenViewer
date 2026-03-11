@@ -56,7 +56,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
         }
         final ColorDefinition color = info.cache().getColor(raw);
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override

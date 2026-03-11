@@ -65,6 +65,7 @@ public class TFCGenViewerRegistration {
     public static final Id<ChunkRainfallVisualizer> VIZ_CHUNK_RAINFALL = chunkVisualizer("rainfall", ChunkRainfallVisualizer::new);
     public static final Id<ChunkTemperatureVisualizer> VIZ_CHUNK_TEMPERATURE = chunkVisualizer("temperature", ChunkTemperatureVisualizer::new);
     public static final Id<ChunkRockVisualizer> VIZ_CHUNK_ROCK = chunkVisualizer("rock", ChunkRockVisualizer::new);
+    public static final Id<ChunkClimateRestrictedVisualizer> VIZ_CHUNK_CLIMATE_FEATURE = chunkVisualizer("climate_restricted", ChunkClimateRestrictedVisualizer::new);
 
     public static final Id<Gradient.Preset> GRAD_BLUE = gradient("blue", Gradient.lin(0xFF963232, 0xFFFF8C64));
     public static final Id<Gradient.Preset> GRAD_GREEN = gradient("green", Gradient.lin(0xFF006400, 0xFF50C850));

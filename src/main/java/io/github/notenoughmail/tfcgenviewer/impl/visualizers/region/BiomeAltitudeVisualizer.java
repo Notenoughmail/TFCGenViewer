@@ -57,7 +57,7 @@ public class BiomeAltitudeVisualizer implements RegionVisualizerType.Simple {
         image.setPixel(
                 imageX,
                 imageY,
-                color.abgr()
+                color
         );
     }
 

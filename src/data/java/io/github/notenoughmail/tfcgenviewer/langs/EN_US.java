@@ -172,6 +172,10 @@ public class EN_US extends LangProvider {
                                         .add("", "Rocks")
                                         .add("description", "Shows the rock that is likely to generate at a location")
                                 )
+                                .branch("climate_restricted", climate -> climate
+                                        .add("", "Climate Restricted Generation")
+                                        .add("description", "Shows the regions where climate-restricted features could spawn")
+                                )
                         )
                 )
                 .branch("gradient", gradient -> gradient
