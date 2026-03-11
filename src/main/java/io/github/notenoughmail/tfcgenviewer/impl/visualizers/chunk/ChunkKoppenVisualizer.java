@@ -44,7 +44,7 @@ public class ChunkKoppenVisualizer implements ITFCChunkVisualizerType.Simple<Chu
             )).get();
         }
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override

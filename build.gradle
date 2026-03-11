@@ -34,6 +34,10 @@ sourceSets {
     create("old") {
         compileClasspath += main.compileClasspath + main.output
     }
+    create("devOnly") {
+        compileClasspath += main.compileClasspath + main.output
+        runtimeClasspath += main.runtimeClasspath + main.output
+    }
 }
 
 neoForge {
@@ -52,6 +56,7 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
             sourceSet(sourceSets.data)
+            sourceSet(sourceSets.devOnly)
         }
     }
 
@@ -59,7 +64,7 @@ neoForge {
         configureEach {
             gameDirectory = project.file('run')
 
-            jvmArguments = ["-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition"]
+            jvmArguments = ["-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-XX:+UnlockDiagnosticVMOptions", "-XX:+DebugNonSafepoints"]
 
             systemProperty('terminal.jline', 'true')
 
@@ -68,10 +73,13 @@ neoForge {
 
         client {
             client()
-            programArguments.addAll(
-                    '-XX:+UnlockDiagnosticVMOptions',
-                    '-XX:+DebugNonSafepoints'
-            )
+            sourceSet = sourceSets.devOnly
+        }
+
+        regionCacheCollisionTest() {
+            client()
+            sourceSet = sourceSets.devOnly
+            systemProperty('tfcgenviewer/test', 'region_cache_collision')
         }
 
         server {

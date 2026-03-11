@@ -8,6 +8,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +52,8 @@ public record ColorGradientDefinition(Gradient gradient, Component name, Optiona
         return color(value, info.colorTooltips());
     }
 
-    private Component tooltipTxt(double value) {
+    @ApiStatus.Internal
+    public Component tooltipTxt(double value) {
         return this.tooltips.map(l -> switch (l.size()) {
             case 0 -> null;
             case 1 -> l.getFirst();

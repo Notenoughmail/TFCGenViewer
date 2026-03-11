@@ -24,7 +24,6 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.data.models.blockstates.PropertyDispatch;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -79,6 +78,7 @@ public class Preview {
             PreviewPane previewPane,
             InfoPane infoPane,
             SpawnInfo spawnInfo,
+            Parallelism parallelism,
             RegistryAccess registryAccess,
             boolean showCenterCoords
     ) {
@@ -96,7 +96,7 @@ public class Preview {
                     i -> previewPane.updateProgress(i, imageSize) :
                     i -> {};
 
-            if (viz.supportsParallelProcessing()) {
+            if (parallelism.parallel()) {
                 handleParallelDraw(
                         image,
                         viz,
@@ -104,10 +104,11 @@ public class Preview {
                         previewPixels,
                         progressReturn,
                         xDrawOffsetPixels,
-                        zDrawOffsetPixels
+                        zDrawOffsetPixels,
+                        parallelism.parallelism()
                 );
             } else {
-                handleDraw(
+                handleSerialDraw(
                         image,
                         viz,
                         drawParams,
@@ -220,17 +221,10 @@ public class Preview {
                     int previewPixels,
                     IntConsumer progressReturn,
                     int xDrawOffsetPixels,
-                    int zDrawOffsetPixels
+                    int zDrawOffsetPixels,
+                    int parallelism
     ) {
-        final PropertyDispatch.QuadFunction<Integer, Integer, Integer, Integer, ThrowingRunnable> callerFactory =
-                (x, y, xPos, zPos) ->
-                        () -> {
-                            final FutureTask<?> task = drawTask(viz, x, y, image, xPos, zPos, drawParams);
-                            task.run();
-                            task.get(viz.timeoutMillis(), TimeUnit.MILLISECONDS);
-                        };
-
-        try (final FutureBlockingQueue queue = new FutureBlockingQueue()) {
+        try (final FutureBlockingQueue queue = new FutureBlockingQueue(parallelism)) {
             for (int x = 0 ; x < previewPixels ; x++) {
                 if (!image.isAllocated()) return;
                 progressReturn.accept(x);
@@ -240,7 +234,11 @@ public class Preview {
                     final int zPos = y + zDrawOffsetPixels;
                     final int fx = x, fy = y;
                     queue.add(
-                            callerFactory.apply(x, y, xPos, zPos),
+                            () -> {
+                                final FutureTask<?> task = drawTask(viz, fx, fy, image, xPos, zPos, drawParams);
+                                task.run();
+                                task.get(viz.timeoutMillis(), TimeUnit.MILLISECONDS);
+                            },
                             () -> "Visualizer type %s timed out while drawing %d %d (%d %d)".formatted(
                                     GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz),
                                     fx,
@@ -261,7 +259,7 @@ public class Preview {
             C,
             S extends IScale<?>,
             O extends IVisualizerType.Options<O>
-            > void handleDraw(
+            > void handleSerialDraw(
                     Image image,
                     IVisualizerType<G, C, S, O> viz,
                     IVisualizerType.DrawInfo<G, C, S, O> drawParams,
@@ -359,6 +357,19 @@ public class Preview {
         public static final SpawnInfo NO_SPAWN = new SpawnInfo(false, 0, 0, 0);
     }
 
+    public record Parallelism(int parallelism, boolean parallel) {
+
+        public static <O extends IVisualizerType.Options<O>> Parallelism of(O options, IVisualizerType<?, ?, ?, O> viz, ImageSize size) {
+            if (TFCGenViewerClient.disableParallelGeneration.getAsBoolean()) return NONE;
+            if (!viz.shouldDrawInParallel(options, size)) return NONE;
+            final int parallelism = Math.min(5, Runtime.getRuntime().availableProcessors() - 4);
+            if (parallelism <= 1) return NONE;
+            return new Parallelism(parallelism, true);
+        }
+
+        public static final Parallelism NONE = new Parallelism(-1, false);
+    }
+
     public static <I extends ImageSize> OptionInstance<I> imageSizeOption(IScale<I> scale) {
         return new OptionInstance<>(
                 "tfcgenviewer.option.preview_size",
@@ -411,11 +422,10 @@ public class Preview {
 
         private volatile Throwable exception;
 
-        FutureBlockingQueue() {
+        FutureBlockingQueue(int parallelism) {
             lock = new ReentrantLock(false);
             notFull = lock.newCondition();
 
-            final int parallelism = Math.min(5, Runtime.getRuntime().availableProcessors() - 4);
             final String threadName = Thread.currentThread().getName();
             final AtomicInteger count = new AtomicInteger();
 

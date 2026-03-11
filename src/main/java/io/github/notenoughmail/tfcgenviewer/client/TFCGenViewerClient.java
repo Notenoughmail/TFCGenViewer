@@ -35,7 +35,7 @@ import org.lwjgl.glfw.GLFW;
 @Mod(value = TFCGenViewer.ID, dist = Dist.CLIENT)
 public class TFCGenViewerClient {
 
-    public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress;
+    public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress, disableParallelGeneration;
     public static ModConfigSpec.DoubleValue maxPreviewWidth;
 
     private final KeyMapping openViewer = new KeyMapping("tfcgenviewer.key.open_viewer", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "TFCGenViewer");
@@ -69,6 +69,13 @@ public class TFCGenViewerClient {
                         " The preview will always fit into the largest square between this portion of the screen with and the majority of the screen height",
                         ""
                 ).defineInRange("maxPreviewWidth", 0.5D, 0.25D, 0.75D);
+        disableParallelGeneration = configBuilder
+                .comment(
+                        "",
+                        " If visualizer types which request to generate previews in parallel should be denied",
+                        ""
+                )
+                        .define("disableParallelGeneration", false);
         container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 

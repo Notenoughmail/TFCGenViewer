@@ -146,6 +146,8 @@
   "tfcgenviewer.visualized_feature.kaolin": "Kaolin Clay",
   "tfcgenviewer.visualizers.chunk.biome": "Biomes",
   "tfcgenviewer.visualizers.chunk.biome.description": "Shows a biome map",
+  "tfcgenviewer.visualizers.chunk.climate_restricted": "Climate Restricted Generation",
+  "tfcgenviewer.visualizers.chunk.climate_restricted.description": "Shows the regions where climate-restricted features could spawn",
   "tfcgenviewer.visualizers.chunk.elevation": "Elevation",
   "tfcgenviewer.visualizers.chunk.elevation.description": "The approximate surface elevation of the chunk",
   "tfcgenviewer.visualizers.chunk.koppen": "Köppen Climate Classification",

@@ -10,7 +10,6 @@ import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.MultiViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewResponsePacket;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
-import net.dries007.tfc.util.Helpers;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -18,7 +17,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
-import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -52,19 +50,6 @@ public class TFCGenViewer {
 
     public static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(ID, path);
-    }
-
-    public static void time(Runnable action, String name) {
-        final long startTime = System.nanoTime();
-        action.run();
-        TFCGenViewer.LOGGER.info("{} took {} ns", name, System.nanoTime() - startTime);
-    }
-
-    public static <T> T time(Supplier<T> action, String name) {
-        final long start = System.nanoTime();
-        final T t = action.get();
-        TFCGenViewer.LOGGER.info("{} took {} ns", name, System.nanoTime() - start);
-        return t;
     }
 
     public static <K, V> Map<K, V> mapFromEntries(Stream<Map.Entry<K, V>> entries, @Nullable Supplier<Map<K, V>> origin) {

@@ -42,7 +42,7 @@ public class RainfallVisualizer implements RegionVisualizerType.Simple {
             image.setPixel(imageX, imageY, color);
         } else {
             Colors.fillOcean(
-                    pair.region().noise() / 2,
+                    (pair.region().noise() + 1) * 0.5,
                     imageX,
                     imageY,
                     image,

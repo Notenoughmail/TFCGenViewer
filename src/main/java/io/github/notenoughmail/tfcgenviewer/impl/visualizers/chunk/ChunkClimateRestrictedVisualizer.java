@@ -1,20 +1,19 @@
-package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
+package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
+import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
-import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
-import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
+import io.github.notenoughmail.tfcgenviewer.api.scale.ChunkScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCChunkVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import net.dries007.tfc.world.TFCChunkGenerator;
-import net.dries007.tfc.world.layer.TFCLayers;
-import net.dries007.tfc.world.region.Region;
+import net.dries007.tfc.world.biome.BiomeExtension;
+import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
@@ -25,49 +24,50 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
-public class ClimateRestrictedVisualizer implements IRegionVisualizerType<ClimateFeatureCache<RegionPointCache>, IVisualizerType.NoneOpt> {
+public class ChunkClimateRestrictedVisualizer implements ITFCChunkVisualizerType.Simple<ClimateFeatureCache<ChunkDataProvider.Region>> {
 
-    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE);
-    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_CLIMATE_FEATURE);
+    public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_CHUNK_CLIMATE_FEATURE);
+    public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_CHUNK_CLIMATE_FEATURE);
 
     @Override
-    public NoneOpt createOptions(RegistryAccess registryAccess) {
-        return NoneOpt.INSTANCE;
+    public int sort() {
+        return 70;
     }
 
     @Override
-    public ClimateFeatureCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
-        return new ClimateFeatureCache<>(registryAccess, RegionPointCache.of(generator, size, worldSeed));
+    public ClimateFeatureCache<ChunkDataProvider.Region> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
+        return new ClimateFeatureCache<>(registryAccess, ChunkDataProvider.tfcRegion(worldSeed, generator));
     }
 
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, GridScale, NoneOpt> info) {
-        final RegionPointCache.RegionPoint regionPoint = info.cache().innerCache.getRegionPoint(imageX, imageY, xPos, zPos);
-        final Region.Point point = regionPoint.point();
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ClimateFeatureCache<ChunkDataProvider.Region>, ChunkScale, NoneOpt> info) {
+        final ChunkData data = info.cache().innerCache.create(xPos, zPos);
+        final BiomeExtension biome = info.cache().innerCache.getBiome(xPos, zPos, false);
+        final float rainVariance = data.getRainVariance(7, 7);
         final List<ColorDefinition> colors = info.cache().search(
-                TFCLayers.getFromLayerId(point.biome).key(),
-                point.temperature,
-                point.rainfall,
-                point.rainfallVariance
+                biome.key(),
+                data.getAverageSeaLevelTemp(7, 7),
+                data.getAverageRainfall(7, 7),
+                rainVariance
         );
         final int i = colors.size();
         switch (i) {
             case 0 -> {
-                if (point.land()) {
+                if (info.cache().innerCache.isOceanBiome(biome)) {
+                    Colors.fillOcean(
+                            (rainVariance + 1) / 2,
+                            imageX,
+                            imageY,
+                            image,
+                            info
+                    );
+                } else {
                     final ColorDefinition color = ClimateFeatureCache.LAND.get();
                     info.addTooltip(color);
                     image.setPixel(
                             imageX,
                             imageY,
                             color
-                    );
-                } else {
-                    Colors.fillOcean(
-                            (regionPoint.region().noise() + 1) * 0.5,
-                            imageX,
-                            imageY,
-                            image,
-                            info
                     );
                 }
             }
@@ -103,14 +103,8 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
         }
     }
 
-    @Nullable
     @Override
-    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, ClimateFeatureCache<RegionPointCache>, GridScale, NoneOpt> info) {
-        return Component.translatable("tfcgenviewer.preview_info.generated_regions", info.cache().innerCache.visitedRegions());
-    }
-
-    @Override
-    public Component colorKey(RegistryAccess registryAccess, ClimateFeatureCache<RegionPointCache> cache) {
+    public Component colorKey(RegistryAccess registryAccess, ClimateFeatureCache<ChunkDataProvider.Region> cache) {
         return cache.colorKey();
     }
 
@@ -133,10 +127,5 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     @Override
     public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
         return ClimateFeatureCache.codecForRegistry(registry);
-    }
-
-    @Override
-    public int sort() {
-        return 70;
     }
 }

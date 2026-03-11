@@ -153,11 +153,10 @@ public interface IVisualizerType<
         return 1000;
     }
 
-    // TODO: 2.1.0 | Give this an options parameter
     /**
-     * If the draw requests of this visualizer type can be lowly parallelized. A max of 4 draws will be processed simultaneously
+     * If the draw requests of this visualizer type can be lowly parallelized. A max of 5 draws will be processed simultaneously
      */
-    default boolean supportsParallelProcessing() {
+    default boolean shouldDrawInParallel(O options, ImageSize size) {
         return false;
     }
 

@@ -83,7 +83,7 @@ public class ChunkElevationVisualizer implements ITFCChunkVisualizerType<ChunkDa
     }
 
     @Override
-    public boolean supportsParallelProcessing() {
+    public boolean shouldDrawInParallel(NoneOpt options, ImageSize size) {
         return true;
     }
 }
