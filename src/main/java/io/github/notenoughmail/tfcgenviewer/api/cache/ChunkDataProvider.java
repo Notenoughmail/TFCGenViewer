@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Set;
 import java.util.function.Consumer;
 
-// TODO: Is there a good reason AND way to cache this?
 public class ChunkDataProvider {
 
     public static Region tfcRegion(long worldSeed, TFCChunkGenerator generator) {

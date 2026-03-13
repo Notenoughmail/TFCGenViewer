@@ -46,9 +46,9 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
                     .getGenerator()
                     .chunkDataGenerator()
                     .generateRock(
-                            info.scale().pixelResolutionToBlock(xPos, true),
+                            info.pixelResolutionToBlock(xPos, true),
                             info.options().elevation,
-                            info.scale().pixelResolutionToBlock(zPos, true),
+                            info.pixelResolutionToBlock(zPos, true),
                             surfaceElevation,
                             null
                     )

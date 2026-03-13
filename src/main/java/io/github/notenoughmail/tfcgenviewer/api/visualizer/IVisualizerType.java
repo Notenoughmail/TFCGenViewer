@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.api.BlockEvaluationFunction;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
@@ -182,7 +183,15 @@ public interface IVisualizerType<
         }
 
         public boolean isNorthernHemisphere(int zPos) {
-            return SolarCalculator.getInNorthernHemisphere(scale.pixelResolutionToBlock(zPos, false), generator.settings().temperatureScale());
+            return SolarCalculator.getInNorthernHemisphere(pixelResolutionToBlock(zPos, false), generator.settings().temperatureScale());
+        }
+
+        public int pixelResolutionToBlock(int pixelResolutionPosition, boolean center) {
+            return scale.pixelResolutionToBlock(pixelResolutionPosition, center);
+        }
+
+        public <T> T evaluateAtBlockPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BlockEvaluationFunction<T> function) {
+            return scale.evaluateAtBlockPosition(center, pixelResolutionX, pixelResolutionZ, function);
         }
     }
 

@@ -1,10 +1,10 @@
 package io.github.notenoughmail.tfcgenviewer.api.scale;
 
 import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.api.BlockEvaluationFunction;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * A group of {@link ImageSize}s
@@ -36,8 +36,8 @@ public interface IScale<S extends ImageSize> {
      * @return
      * @param <T>
      */
-    default <T> T evaluateAtPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BiFunction<Integer, Integer, T> function) {
-        return function.apply(pixelResolutionToBlock(pixelResolutionX, center), pixelResolutionToBlock(pixelResolutionZ, center));
+    default <T> T evaluateAtBlockPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BlockEvaluationFunction<T> function) {
+        return function.evaluate(pixelResolutionToBlock(pixelResolutionX, center), pixelResolutionToBlock(pixelResolutionZ, center));
     }
 
     /**
