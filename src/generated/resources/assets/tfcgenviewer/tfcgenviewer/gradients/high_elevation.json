@@ -1,0 +1,71 @@
+{
+  "gradient": {
+    "type": "preset",
+    "preset": "tfcgenviewer:uplift"
+  },
+  "name": {
+    "translate": "tfcgenviewer.gradient.elevation.high"
+  },
+  "tooltips": [
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.0"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.1"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.2"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.3"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.4"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.5"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.6"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.7"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.8"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.9"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.10"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.11"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.12"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.13"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.14"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.15"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.16"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.17"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.18"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.high.19"
+    }
+  ]
+}

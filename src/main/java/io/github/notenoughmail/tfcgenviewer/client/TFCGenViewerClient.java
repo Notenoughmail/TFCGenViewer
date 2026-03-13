@@ -72,10 +72,9 @@ public class TFCGenViewerClient {
         disableParallelGeneration = configBuilder
                 .comment(
                         "",
-                        " If visualizer types which request to generate previews in parallel should be denied",
+                        " If parallel generation should be forcefully disabled, regardless of a visualizer's request",
                         ""
-                )
-                        .define("disableParallelGeneration", false);
+                ).define("disableParallelGeneration", false);
         container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 

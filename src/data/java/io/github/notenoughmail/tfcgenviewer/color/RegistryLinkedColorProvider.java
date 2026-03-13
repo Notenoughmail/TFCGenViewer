@@ -358,7 +358,12 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     biomes,
                     "ancient_shield_volcano",
                     new Color(255, 155, 0),
-                    ANCIENT_SHIELD_VOLCANO,
+                    ANCIENT_SHIELD_VOLCANO
+            );
+            biome(
+                    biomes,
+                    "sunken_shield_volcano",
+                    new Color(215, 175, 125),
                     SUNKEN_SHIELD_VOLCANO
             );
             biome(

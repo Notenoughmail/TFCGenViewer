@@ -13,7 +13,6 @@ import io.github.notenoughmail.tfcgenviewer.impl.mixin.accessor.TFCChunkGenerato
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RockVisualizer;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
-import net.dries007.tfc.world.biome.BiomeNoise;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
@@ -22,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RockVisualizer.*;
 
-public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<ChunkDataProvider.Region>, RockVisualizer.Options> {
+public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<ChunkRockVisualizer.Cache>, RockVisualizer.Options> {
 
     public static final Component NAME = TFCGenViewerRegistration.visualizerName(TFCGenViewerRegistration.VIZ_CHUNK_ROCK);
     public static final Component DESC = TFCGenViewerRegistration.visualizerDescription(TFCGenViewerRegistration.VIZ_CHUNK_ROCK);
@@ -49,37 +48,36 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     }
 
     @Override
-    public RockCache<ChunkDataProvider.Region> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, RockVisualizer.Options options) {
+    public RockCache<Cache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, RockVisualizer.Options options) {
         final Seed seed = Seed.of(worldSeed);
-        final RockCache<ChunkDataProvider.Region> region = new RockCache<>(ChunkDataProvider.tfcRegion(seed, generator));
         ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetSeed(seed);
-        ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetTideHeightNoise(BiomeNoise.shoreTideLevelNoise(seed));
-        return region;
+        return new RockCache<>(new Cache(ChunkDataProvider.tfcRegion(seed, generator), options.surface ? null : new ChunkElevationVisualizer.ElevationCache(generator, seed)));
     }
 
-    // TODO: 2.1.0 | This is slow for the same reasons as the elevation viz
     @Override
-    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RockCache<ChunkDataProvider.Region>, ChunkScale, RockVisualizer.Options> info) {
-        final ChunkData data = info.cache().innerCache.create(xPos, zPos);
+    public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, RockCache<Cache>, ChunkScale, RockVisualizer.Options> info) {
+        final ChunkData data = info.cache().innerCache.chunkDataProvider().create(xPos, zPos);
         final Block raw;
         if (info.options().surface) {
-            raw = info.scale()
-                    .evaluateAtPosition(
-                            true,
-                            xPos,
-                            zPos,
-                            data.getRockData()::getSurfaceRock
-                    )
-                    .raw();
+            raw = info.evaluateAtBlockPosition(
+                    true,
+                    xPos,
+                    zPos,
+                    data.getRockData()::getSurfaceRock
+            ).raw();
         } else {
+            final ChunkElevationVisualizer.ElevationCache elevationCache = info.cache().innerCache.elevationCache();
+            assert elevationCache != null;
+            elevationCache.primePos(xPos, zPos);
             raw = info.cache()
                     .innerCache
+                    .chunkDataProvider()
                     .generator()
                     .generateRock(
-                            info.scale().pixelResolutionToBlock(xPos, true),
+                            info.pixelResolutionToBlock(xPos, true),
                             info.options().elevation,
-                            info.scale().pixelResolutionToBlock(zPos, true),
-                            info.scale().evaluateAtPosition(true, xPos, zPos, info.generator().createHeightFillerForChunk(data.getPos())::sampleHeight).intValue(),
+                            info.pixelResolutionToBlock(zPos, true),
+                            info.evaluateAtBlockPosition(true, xPos, zPos, elevationCache::sample),
                             null
                     )
                     .raw();
@@ -90,7 +88,7 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     }
 
     @Override
-    public Component colorKey(RegistryAccess registryAccess, RockCache<ChunkDataProvider.Region> cache) {
+    public Component colorKey(RegistryAccess registryAccess, RockCache<Cache> cache) {
         return cache.colorKey();
     }
 
@@ -106,7 +104,7 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
 
     @Nullable
     @Override
-    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RockCache<ChunkDataProvider.Region>, ChunkScale, RockVisualizer.Options> info) {
+    public Component additionalPreviewInfo(DrawInfo<TFCChunkGenerator, RockCache<Cache>, ChunkScale, RockVisualizer.Options> info) {
         if (info.options().surface) {
             return null;
         } else {
@@ -118,4 +116,6 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     public boolean shouldDrawInParallel(RockVisualizer.Options options, ImageSize size) {
         return !options.surface;
     }
+
+    public record Cache(ChunkDataProvider.Region chunkDataProvider, @Nullable ChunkElevationVisualizer.ElevationCache elevationCache) {}
 }

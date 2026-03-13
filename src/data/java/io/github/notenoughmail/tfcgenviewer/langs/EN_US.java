@@ -40,7 +40,7 @@ public class EN_US extends LangProvider {
                                         )
                                         .branch("elevation", elev -> elev
                                                 .add("", "Elevation")
-                                                .add("tooltip", "The y-level to preview at, only used if 'At Surface' is false")
+                                                .add("tooltip", "The y-level to preview at, only used if the mode is 'At Elevation'")
                                         )
                                 )
                         )
@@ -181,31 +181,11 @@ public class EN_US extends LangProvider {
                 .branch("gradient", gradient -> gradient
                         .branch("rainfall", rain -> rain
                                 .add("", "Rainfall, 0 mm -> 500 mm")
-                                .add("0", "0 to 50 mm")
-                                .add("1", "50 to 100 mm")
-                                .add("2", "100 to 150 mm")
-                                .add("3", "150 to 200 mm")
-                                .add("4", "200 to 250 mm")
-                                .add("5", "250 to 300 mm")
-                                .add("6", "300 to 350 mm")
-                                .add("7", "350 to 400 mm")
-                                .add("8", "400 to 450 mm")
-                                .add("9", "450 to 500 mm")
+                                .grow(10, i -> "%s to %s mm".formatted(i * 50, 50 + i * 50))
                         )
                         .branch("temperature", temp -> temp
                                 .add("", "Temperature, -25 °C -> 35 °C")
-                                .add("0", "-25 to -20 °C")
-                                .add("1", "-20 to -15 °C")
-                                .add("2", "-15 to -10 °C")
-                                .add("3", "-10 to -5 °C")
-                                .add("4", "-5 to 0 °C")
-                                .add("5", "0 to 5 °C")
-                                .add("6", "5 to 10 °C")
-                                .add("7", "10 to 15 °C")
-                                .add("8", "15 to 20 °C")
-                                .add("9", "20 to 25 °C")
-                                .add("10", "25 to 30 °C")
-                                .add("11", "30 to 35 °C")
+                                .grow(12, i -> "%s to %s °C".formatted(-25 + i * 5, -20 + i * 5))
                         )
                         .branch("rock_type", rock -> rock
                                 .add("oceanic", "Oceanic Rock")
@@ -214,6 +194,20 @@ public class EN_US extends LangProvider {
                                 .add("land", "Land Rock")
                         )
                         .add("ocean", "Ocean")
+                        .branch("elevation", elevation -> elevation
+                                .branch("low", low -> low
+                                        .add("", "Low Elevation: below y 63")
+                                        .grow(8, i -> i == 0 ? "y 28 or lower" : "y %s to %s".formatted(23 + i * 5, 28 + i * 5))
+                                )
+                                .branch("middle", mid -> mid
+                                        .add("", "Middle Elevation: y 63 to 103")
+                                        .grow(8, i -> "y %s to %s".formatted(63 + i * 5, 68 + i * 5))
+                                )
+                                .branch("high", high -> high
+                                        .add("", "High Elevation: above y 103")
+                                        .grow(20, i -> i == 19 ? "y 198 or higher" : "y %s to %s".formatted(103 + i * 5, 108 + i * 5))
+                                )
+                        )
                 )
                 .branch("unit", unit -> unit
                         .add("kilometer", "%s km")

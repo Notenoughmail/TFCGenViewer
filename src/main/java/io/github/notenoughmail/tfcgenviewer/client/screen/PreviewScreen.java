@@ -281,7 +281,7 @@ public class PreviewScreen<
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(parallelism.parallel()),
+                ColorTooltips.of(parallelism.parallel()),
                 imageSize,
                 scale,
                 options

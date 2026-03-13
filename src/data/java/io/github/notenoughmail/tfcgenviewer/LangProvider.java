@@ -6,6 +6,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class LangProvider extends LanguageProvider {
 
@@ -26,6 +27,14 @@ public abstract class LangProvider extends LanguageProvider {
             public Node branch(String branch, Consumer<Node> inBranch) {
                 return LangProvider.this.branch(branch, inBranch);
             }
+
+            @Override
+            public Node grow(int count, Function<Integer, String> grower) {
+                for (int i = 0 ; i < count ; i++) {
+                    add(String.valueOf(i), grower.apply(i));
+                }
+                return this;
+            }
         };
     }
 
@@ -39,5 +48,6 @@ public abstract class LangProvider extends LanguageProvider {
     public interface Node {
         Node add(String leaf, String text);
         Node branch(String branch, Consumer<Node> inBranch);
+        Node grow(int count, Function<Integer, String> grower);
     }
 }
