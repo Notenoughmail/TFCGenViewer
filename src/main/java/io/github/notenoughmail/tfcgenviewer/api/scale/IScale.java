@@ -28,20 +28,14 @@ public interface IScale<S extends ImageSize> {
     }
 
     /**
-     * Evaluate a function using block-scale coordinates
-     * @param center
-     * @param pixelResolutionX
-     * @param pixelResolutionZ
-     * @param function
-     * @return
-     * @param <T>
+     * Perform an action at block scale
      */
     default <T> T evaluateAtBlockPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BlockEvaluationFunction<T> function) {
         return function.evaluate(pixelResolutionToBlock(pixelResolutionX, center), pixelResolutionToBlock(pixelResolutionZ, center));
     }
 
     /**
-     * Format the size
+     * Format the size as text
      */
     Component formatSize(S size);
 

@@ -19,14 +19,12 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -34,9 +32,6 @@ import org.lwjgl.glfw.GLFW;
 
 @Mod(value = TFCGenViewer.ID, dist = Dist.CLIENT)
 public class TFCGenViewerClient {
-
-    public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress, disableParallelGeneration;
-    public static ModConfigSpec.DoubleValue maxPreviewWidth;
 
     private final KeyMapping openViewer = new KeyMapping("tfcgenviewer.key.open_viewer", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "TFCGenViewer");
 
@@ -48,34 +43,6 @@ public class TFCGenViewerClient {
         NeoForge.EVENT_BUS.addListener(this::onInput);
 
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-
-        final ModConfigSpec.Builder configBuilder = new ModConfigSpec.Builder();
-        dingWhenGenerated = configBuilder
-                .comment(
-                        "",
-                        " If a sound should be played when a preview finishes generating",
-                        ""
-                ).define("dingWhenGenerated", true);
-        displayGenerationProgress = configBuilder
-                .comment(
-                        "",
-                        " If the info pane should show a progress bar while a preview is being generated",
-                        ""
-                ).define("displayGenerationProgress", true);
-        maxPreviewWidth = configBuilder
-                .comment(
-                        "",
-                        " The maximum portion of the screen the world preview may take up.",
-                        " The preview will always fit into the largest square between this portion of the screen with and the majority of the screen height",
-                        ""
-                ).defineInRange("maxPreviewWidth", 0.5D, 0.25D, 0.75D);
-        disableParallelGeneration = configBuilder
-                .comment(
-                        "",
-                        " If parallel generation should be forcefully disabled, regardless of a visualizer's request",
-                        ""
-                ).define("disableParallelGeneration", false);
-        container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 
     private void clientReloadListeners(RegisterClientReloadListenersEvent event) {

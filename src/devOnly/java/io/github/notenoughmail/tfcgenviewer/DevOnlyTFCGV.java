@@ -19,6 +19,6 @@ public class DevOnlyTFCGV {
 
     private void tests(FMLLoadCompleteEvent event) {
         final String enabledTest = System.getProperty("tfcgenviewer/test");
-        if ("region_cache_collision".equals(enabledTest)) RegionTests.detectCacheCollisions();
+        if ("region_cache_collision".equals(enabledTest)) RegionTests.findTFCCacheCollisions();
     }
 }

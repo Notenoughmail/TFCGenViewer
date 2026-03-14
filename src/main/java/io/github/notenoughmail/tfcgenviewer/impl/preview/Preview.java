@@ -10,7 +10,6 @@ import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import net.dries007.tfc.util.Helpers;
@@ -92,7 +91,7 @@ public class Preview {
             final int xDrawOffsetPixels = (xCenterBlocks / blocksPerPixel) - halfPreviewPixels;
             final int zDrawOffsetPixels = (zCenterBlocks / blocksPerPixel) - halfPreviewPixels;
 
-            final IntConsumer progressReturn = TFCGenViewerClient.displayGenerationProgress.getAsBoolean() ?
+            final IntConsumer progressReturn = TFCGenViewer.displayGenerationProgress.getAsBoolean() ?
                     i -> previewPane.updateProgress(i, imageSize) :
                     i -> {};
 
@@ -200,7 +199,7 @@ public class Preview {
                 );
                 infoPane.setMessage(ret.infoPaneMessage());
             }
-            if (TFCGenViewerClient.dingWhenGenerated.getAsBoolean()) {
+            if (TFCGenViewer.dingWhenGenerated.getAsBoolean()) {
                 Minecraft.getInstance()
                         .getSoundManager()
                         .play(SimpleSoundInstance.forUI(SoundEvents.ARROW_HIT_PLAYER, 1F));
@@ -233,6 +232,7 @@ public class Preview {
                     if (!image.isAllocated()) return;
                     final int zPos = y + zDrawOffsetPixels;
                     final int fx = x, fy = y;
+                    // TODO: 2.1.0 | This does not fill the image pixel with a fallback color on timeout
                     queue.add(
                             () -> {
                                 final FutureTask<?> task = drawTask(viz, fx, fy, image, xPos, zPos, drawParams);
@@ -288,7 +288,7 @@ public class Preview {
                             xPos,
                             zPos
                     );
-                    image.setPixel(x, y, 0xFF000000);
+                    image.setPixel(x, y, 0xFF000000 | viz.timeoutFillBGR());
                     if (!FMLEnvironment.production) Helpers.throwAsUnchecked(e);
                 } catch (Exception e) {
                     Helpers.throwAsUnchecked(e);
@@ -360,7 +360,7 @@ public class Preview {
     public record Parallelism(int parallelism, boolean parallel) {
 
         public static <O extends IVisualizerType.Options<O>> Parallelism of(O options, IVisualizerType<?, ?, ?, O> viz, ImageSize size) {
-            if (TFCGenViewerClient.disableParallelGeneration.getAsBoolean()) return NONE;
+            if (TFCGenViewer.disableParallelGeneration.getAsBoolean()) return NONE;
             if (!viz.shouldDrawInParallel(options, size)) return NONE;
             final int parallelism = Math.min(5, Runtime.getRuntime().availableProcessors() - 4);
             if (parallelism <= 1) return NONE;
@@ -383,13 +383,13 @@ public class Preview {
 
     private static final Codec<IVisualizerType<?, ?, ?, ?>> VIZ_CODEC = GenViewerAPI.VISUALIZER_REGISTRY.byNameCodec();
 
-    public static <V extends IVisualizerType<?, ?, ?, ?>> OptionInstance<V> visualizerTypeOption(List<V> visualziers, Consumer<V> onChange) {
+    public static <V extends IVisualizerType<?, ?, ?, ?>> OptionInstance<V> visualizerTypeOption(List<V> visualizers, Consumer<V> onChange) {
         return new OptionInstance<>(
                 "tfcgenviewer.option.visualizer_type",
                 viz -> Tooltip.create(viz.description()),
                 (caption, viz) -> viz.name(),
-                new OptionInstance.Enum<>(visualziers, VIZ_CODEC.xmap(TFCGenViewer::<V>cast, Function.identity())),
-                visualziers.getFirst(),
+                new OptionInstance.Enum<>(visualizers, VIZ_CODEC.xmap(TFCGenViewer::<V>cast, Function.identity())),
+                visualizers.getFirst(),
                 onChange
         );
     }

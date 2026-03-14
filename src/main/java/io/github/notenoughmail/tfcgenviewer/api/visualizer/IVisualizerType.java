@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.BlockEvaluationFunction;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
@@ -11,6 +12,8 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import net.dries007.tfc.client.overworld.SolarCalculator;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
+import net.dries007.tfc.world.settings.RockLayerSettings;
+import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
@@ -151,7 +154,14 @@ public interface IVisualizerType<
      * This will immediately cause the preview generation to end exceptionally if in a dev environment
      */
     default int timeoutMillis() {
-        return 1000;
+        return TFCGenViewer.defaultMaxMillisecondsToDrawPixel.getAsInt();
+    }
+
+    /**
+     * The BGR color to fill a pixel with upon generation timing out
+     */
+    default int timeoutFillBGR() {
+        return 0;
     }
 
     /**
@@ -178,20 +188,49 @@ public interface IVisualizerType<
             O options
     ) {
 
+        /**
+         * Add the color to the tooltips if not already present
+         */
         public void addTooltip(ColorDefinition color) {
             colorTooltips.addColorTooltip(color);
         }
 
+        /**
+         * If the position is, per the {@link SolarCalculator}, in the northern hemisphere
+         * @param zPos The pixel-resolution z position
+         */
         public boolean isNorthernHemisphere(int zPos) {
-            return SolarCalculator.getInNorthernHemisphere(pixelResolutionToBlock(zPos, false), generator.settings().temperatureScale());
+            return SolarCalculator.getInNorthernHemisphere(pixelResolutionToBlock(zPos, true), settings().temperatureScale());
         }
 
+        /**
+         * Convert the given pixel resolution position to block scale
+         * @param pixelResolutionPosition The coordinate in pixel resolution
+         * @param center If the returned block coordinate should be shifted to be in the mid-point of the pixel
+         */
         public int pixelResolutionToBlock(int pixelResolutionPosition, boolean center) {
             return scale.pixelResolutionToBlock(pixelResolutionPosition, center);
         }
 
+        /**
+         * Perform an action at block scale
+         */
         public <T> T evaluateAtBlockPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BlockEvaluationFunction<T> function) {
             return scale.evaluateAtBlockPosition(center, pixelResolutionX, pixelResolutionZ, function);
+        }
+
+        /**
+         * The generator settings
+         */
+        public Settings settings() {
+            return generator.settings();
+        }
+
+        /**
+         * The generator rock settings
+         */
+        public RockLayerSettings rockLayerSettings() {
+            return generator.rockLayerSettings();
         }
     }
 
