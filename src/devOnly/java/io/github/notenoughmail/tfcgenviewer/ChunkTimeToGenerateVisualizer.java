@@ -52,7 +52,7 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
         final int nanos = info.cache().time();
         final double val = nanos / 2e8D;
         final double h = (info.cache().innerCache.regionGenerator().getOrCreateRegion(Units.blockToGrid(data.getPos().getMinBlockX()), Units.blockToGrid(data.getPos().getMinBlockZ())).noise() + 1) * 0.5;
-        final int color = FastColor.ABGR32.fromArgb32(Mth.hsvToArgb((float) h, 1f, (float) (val * 0.75 + 0.25), 255));
+        final int color = FastColor.ABGR32.fromArgb32(Mth.hsvToArgb((float) h, 1f, (float) (val * 0.9 + 0.1), 255));
         if (!info.colorTooltips().hasColor(color)) {
             info.colorTooltips().addTooltip(color, GRADIENT.get().tooltipTxt(val));
         }
@@ -72,6 +72,16 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
     @Override
     public Component description() {
         return Component.literal("The time to generate");
+    }
+
+    @Override
+    public int timeoutMillis() {
+        return 1000;
+    }
+
+    @Override
+    public int timeoutFillBGR() {
+        return 0xFFFFFF;
     }
 
     public static final class Timer {

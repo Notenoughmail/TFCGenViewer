@@ -1,11 +1,11 @@
 package io.github.notenoughmail.tfcgenviewer.client.screen;
 
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.options.OptionOrders;
 import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
@@ -123,7 +123,7 @@ public class ViewWorldScreen<
 
     @Override
     protected void init() {
-        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewerClient.maxPreviewWidth.getAsDouble()));
+        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewer.maxPreviewWidth.getAsDouble()));
 
         options = new SingleColumnOptionsList(getMinecraft(), width, height, 32, 25);
         options.setScrollBarOffset(-8);

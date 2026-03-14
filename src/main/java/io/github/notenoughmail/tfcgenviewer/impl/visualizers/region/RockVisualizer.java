@@ -31,8 +31,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
         final Region.Point point = info.cache().innerCache.getPoint(imageX, imageY, xPos, zPos);
         final Block raw;
         if (info.options().surface) {
-            raw = info.generator()
-                    .rockLayerSettings()
+            raw = info.rockLayerSettings()
                     .sampleAtLayer(point.rock, 0)
                     .raw();
         } else {

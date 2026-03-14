@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.LongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,45 +25,57 @@ import static net.dries007.tfc.common.blocks.rock.Rock.*;
 
 public class RegionTests {
 
-    public static void detectCacheCollisions() {
+    public static void findTFCCacheCollisions() {
         final int count = 10_000;
         TFCGenViewer.LOGGER.warn("Detecting cache collisions for {} seeds", count);
-        record Instance(int num, long seed, int gridX, int gridZ, Region region0, Region region1) {
-            static boolean test(RegionGenerator generator, Region iReg, int gridX, int gridZ, int ox, int oz, long seed, int num, List<Instance> feedback) {
-                final Region oReg = generator.getOrCreateRegion(gridX + ox, gridZ + oz);
-                if (iReg != generator.getOrCreateRegion(gridX, gridZ)) {
-                    // There has been a cache collision, overwriting the region in the FastConcurrentCache
-                    final Instance inst = new Instance(num, seed, gridX, gridZ, iReg, oReg);
-                    TFCGenViewer.LOGGER.warn("{}", inst);
-                    feedback.add(inst);
-                    return true;
-                }
-                return false;
-            }
-        }
-        final List<Instance> badSeeds = new ArrayList<>();
+        final List<Instance> collisions = new ArrayList<>();
+        examineRegionSource(s -> {
+            final RegionGenerator regionGenerator = new RegionGenerator(SETTINGS, Seed.of(s));
+            return regionGenerator::getOrCreateRegion;
+        }, count, collisions);
+        finishCollisionExamination(collisions, "tfc", count);
+    }
+
+    public static void testAlternativeCache() {
+        final int count = 100;
+        TFCGenViewer.LOGGER.warn("Detecting cache collisions for {} seeds using alternative cache type", count);
+        final List<Instance> collisions = new ArrayList<>();
+        examineRegionSource(s -> {
+            final RegionGenerator regionGenerator = new RegionGenerator(SETTINGS, Seed.of(s));
+            // TODO: [Future] | Actually implement alternative caching
+            return regionGenerator::getOrCreateRegion;
+        }, count, collisions);
+        finishCollisionExamination(collisions, "alternative", count);
+    }
+
+    static void examineRegionSource(LongFunction<Instance.RegionSource> regionSourceFactory, int count, List<Instance> ret) {
         top:
         for (int i = 0 ; i < count ; i++) {
             final long seed = WorldOptions.randomSeed();
-            final RegionGenerator regionGenerator = new RegionGenerator(SETTINGS, Seed.of(seed));
+            final Instance.RegionSource regionSource = regionSourceFactory.apply(seed);
             for (int x = -128 ; x < 128 ; x++) {
                 for (int z = -128 ; z < 128 ; z++) {
-                    final Region iReg = regionGenerator.getOrCreateRegion(x, z);
+                    final Region iReg = regionSource.getOrCreateRegion(x, z);
                     if (
-                            Instance.test(regionGenerator, iReg, x, z, 1, 0, seed, i, badSeeds) ||
-                            Instance.test(regionGenerator, iReg, x, z, 0, 1, seed, i, badSeeds) ||
-                            Instance.test(regionGenerator, iReg, x, z, 1, 1, seed, i, badSeeds)
+                            Instance.test(regionSource, iReg, x, z, 1, 0, seed, i, ret) ||
+                            Instance.test(regionSource, iReg, x, z, 0, 1, seed, i, ret) ||
+                            Instance.test(regionSource, iReg, x, z, 1, 1, seed, i, ret)
                     ) {
                         continue top;
                     }
                 }
             }
         }
-        if (!badSeeds.isEmpty()) {
-            TFCGenViewer.LOGGER.error("Encountered {} seeds ({}%) with cache collision problems", badSeeds.size(), badSeeds.size() * 100 / count);
-            try (final FileWriter writer = new FileWriter(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("tfcgv_export")).toFile(), "export_%s.csv".formatted(count)))) {
+    }
+
+    static void finishCollisionExamination(List<Instance> instances, String type, int count) {
+        if (instances.isEmpty()) {
+            TFCGenViewer.LOGGER.info("Encountered no cache collisions");
+        } else {
+            TFCGenViewer.LOGGER.error("Encountered {} seeds ({}%) with cache collision problems", instances.size(), instances.size() * 100 / count);
+            try (final FileWriter writer = new FileWriter(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("tfcgv_export")).toFile(), "export_%s_%s.csv".formatted(type, count)))) {
                 writer.append("num,seed,gridX,gridZ\n");
-                for (Instance i : badSeeds) {
+                for (Instance i : instances) {
                     writer.append(String.valueOf(i.num()))
                             .append(",")
                             .append(String.valueOf(i.seed()))
@@ -73,10 +86,27 @@ public class RegionTests {
                             .append("\n");
                 }
             } catch (Exception e) {
-                TFCGenViewer.LOGGER.warn("Error encountered while performing csv write", e);
+                TFCGenViewer.LOGGER.error("Error encountered while performing csv write", e);
             }
-        } else {
-            TFCGenViewer.LOGGER.info("Encountered no cache collisions");
+        }
+    }
+
+    record Instance(int num, long seed, int gridX, int gridZ, Region region0, Region region1) {
+        static boolean test(RegionSource generator, Region iReg, int gridX, int gridZ, int ox, int oz, long seed, int num, List<Instance> feedback) {
+            final Region oReg = generator.getOrCreateRegion(gridX + ox, gridZ + oz);
+            if (iReg != generator.getOrCreateRegion(gridX, gridZ)) {
+                // There has been a cache collision, overwriting the region in the FastConcurrentCache
+                final Instance inst = new Instance(num, seed, gridX, gridZ, iReg, oReg);
+                TFCGenViewer.LOGGER.warn("{}", inst);
+                feedback.add(inst);
+                return true;
+            }
+            return false;
+        }
+
+        @FunctionalInterface
+        interface RegionSource {
+            Region getOrCreateRegion(int gridX, int gridZ);
         }
     }
 
