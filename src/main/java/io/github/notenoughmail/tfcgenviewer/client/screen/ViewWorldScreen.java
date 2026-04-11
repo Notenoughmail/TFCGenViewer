@@ -2,6 +2,7 @@ package io.github.notenoughmail.tfcgenviewer.client.screen;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
@@ -179,10 +180,10 @@ public class ViewWorldScreen<
         final G gen = visualizer.recreateGenerator(generator);
         final V viz = visualizerType.get();
         final O options = IVisualizerType.Options.copy(state.vizOptions);
-        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), worldSeed, options);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
-        final Preview.Parallelism parallelism = Preview.Parallelism.of(options, viz, imageSize);
+        final DrawParallelism parallelism = DrawParallelism.of(options, viz, imageSize);
+        final C cache = viz.createCache(registryAccess, gen, imageSize, worldSeed, options, parallelism);
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
                 gen,
                 cache,

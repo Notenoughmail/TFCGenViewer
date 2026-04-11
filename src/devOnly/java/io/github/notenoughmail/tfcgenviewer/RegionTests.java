@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer;
 
+import io.github.notenoughmail.tfcgenviewer.impl.NoiseBasedRegionCache;
 import net.dries007.tfc.common.blocks.SandstoneBlockType;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.rock.Rock;
@@ -41,8 +42,7 @@ public class RegionTests {
         TFCGenViewer.LOGGER.warn("Detecting cache collisions for {} seeds using alternative cache type", count);
         final List<Instance> collisions = new ArrayList<>();
         examineRegionSource(s -> {
-            final RegionGenerator regionGenerator = new RegionGenerator(SETTINGS, Seed.of(s));
-            // TODO: [Future] | Actually implement alternative caching
+            final RegionGenerator regionGenerator = NoiseBasedRegionCache.regionGeneratorWithThisCache(SETTINGS, Seed.of(s), false);
             return regionGenerator::getOrCreateRegion;
         }, count, collisions);
         finishCollisionExamination(collisions, "alternative", count);
@@ -52,10 +52,15 @@ public class RegionTests {
         top:
         for (int i = 0 ; i < count ; i++) {
             final long seed = WorldOptions.randomSeed();
+            if (count <= 100 || i % 100 == 0) TFCGenViewer.LOGGER.info("Using seed {} on try #{}", seed, i);
             final Instance.RegionSource regionSource = regionSourceFactory.apply(seed);
             for (int x = -128 ; x < 128 ; x++) {
                 for (int z = -128 ; z < 128 ; z++) {
                     final Region iReg = regionSource.getOrCreateRegion(x, z);
+                    if (iReg == null) {
+                        TFCGenViewer.LOGGER.warn("Null region encountered at {}, {}", x, z);
+                        continue top;
+                    }
                     if (
                             Instance.test(regionSource, iReg, x, z, 1, 0, seed, i, ret) ||
                             Instance.test(regionSource, iReg, x, z, 0, 1, seed, i, ret) ||
@@ -72,7 +77,7 @@ public class RegionTests {
         if (instances.isEmpty()) {
             TFCGenViewer.LOGGER.info("Encountered no cache collisions");
         } else {
-            TFCGenViewer.LOGGER.error("Encountered {} seeds ({}%) with cache collision problems", instances.size(), instances.size() * 100 / count);
+            TFCGenViewer.LOGGER.error("Encountered {} seeds ({}%) with cache collision problems", instances.size(), "%.2f".formatted(instances.size() * 100 / (float) count));
             try (final FileWriter writer = new FileWriter(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("tfcgv_export")).toFile(), "export_%s_%s.csv".formatted(type, count)))) {
                 writer.append("num,seed,gridX,gridZ\n");
                 for (Instance i : instances) {

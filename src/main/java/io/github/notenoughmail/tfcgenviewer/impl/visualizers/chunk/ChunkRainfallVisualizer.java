@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
@@ -25,8 +26,8 @@ public class ChunkRainfallVisualizer implements ITFCChunkVisualizerType.Simple<C
     }
 
     @Override
-    public ChunkDataProvider.Region createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
-        return ChunkDataProvider.tfcRegion(worldSeed, generator);
+    public ChunkDataProvider.Region createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
+        return ChunkDataProvider.tfcRegion(worldSeed, generator, parallelism.parallel());
     }
 
     @Override

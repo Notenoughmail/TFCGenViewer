@@ -1,7 +1,7 @@
 {
   "gradient": {
     "type": "preset",
-    "preset": "tfcgenviewer:blue"
+    "preset": "tfcgenviewer:dark_blue"
   },
   "name": {
     "translate": "tfcgenviewer.gradient.ocean"

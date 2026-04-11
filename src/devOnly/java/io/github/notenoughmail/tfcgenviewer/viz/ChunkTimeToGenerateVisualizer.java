@@ -1,6 +1,7 @@
-package io.github.notenoughmail.tfcgenviewer;
+package io.github.notenoughmail.tfcgenviewer.viz;
 
 import com.google.common.base.Suppliers;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
@@ -24,7 +25,7 @@ import java.util.stream.IntStream;
 
 public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Simple<ChunkTimeToGenerateVisualizer.Timer> {
 
-    private static final Supplier<ColorGradientDefinition> GRADIENT = Suppliers.memoize(() -> new ColorGradientDefinition(
+    static final Supplier<ColorGradientDefinition> GRADIENT = Suppliers.memoize(() -> new ColorGradientDefinition(
             TFCGenViewerRegistration.GRAD_GRAYSCALE.get(),
             Component.literal("Time to generate"),
             // 2e8 / 256 is a clean number apparently
@@ -33,7 +34,7 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
                     .toList())
     ));
 
-    private static final ColorKey COLOR_KEY = ColorKey.of(m -> GRADIENT.get().appendTo(m, true));
+    static final ColorKey COLOR_KEY = ColorKey.of(m -> GRADIENT.get().appendTo(m, true));
 
     @Override
     public int sort() {
@@ -41,7 +42,7 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
     }
 
     @Override
-    public Timer createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
+    public Timer createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
         return new Timer(worldSeed, generator);
     }
 
@@ -75,11 +76,6 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
     }
 
     @Override
-    public int timeoutMillis() {
-        return 1000;
-    }
-
-    @Override
     public int timeoutFillBGR() {
         return 0xFFFFFF;
     }
@@ -90,7 +86,7 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
         final StopWatch stopWatch = new StopWatch();
 
         Timer(long worldSeed, TFCChunkGenerator generator) {
-            innerCache = ChunkDataProvider.tfcRegion(worldSeed, generator);
+            innerCache = ChunkDataProvider.tfcRegion(worldSeed, generator, true);
         }
 
         void start() {

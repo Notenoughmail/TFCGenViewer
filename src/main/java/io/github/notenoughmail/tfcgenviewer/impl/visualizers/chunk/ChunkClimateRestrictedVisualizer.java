@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
 import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
@@ -35,8 +36,8 @@ public class ChunkClimateRestrictedVisualizer implements ITFCChunkVisualizerType
     }
 
     @Override
-    public ClimateFeatureCache<ChunkDataProvider.Region> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
-        return new ClimateFeatureCache<>(registryAccess, ChunkDataProvider.tfcRegion(worldSeed, generator));
+    public ClimateFeatureCache<ChunkDataProvider.Region> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
+        return new ClimateFeatureCache<>(registryAccess, ChunkDataProvider.tfcRegion(worldSeed, generator, parallelism.parallel()));
     }
 
     @Override
@@ -127,5 +128,10 @@ public class ChunkClimateRestrictedVisualizer implements ITFCChunkVisualizerType
     @Override
     public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
         return ClimateFeatureCache.codecForRegistry(registry);
+    }
+
+    @Override
+    public boolean shouldDrawInParallel(NoneOpt options, ImageSize size) {
+        return true;
     }
 }

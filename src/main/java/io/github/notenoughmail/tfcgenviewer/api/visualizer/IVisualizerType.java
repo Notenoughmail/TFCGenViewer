@@ -1,11 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
-import io.github.notenoughmail.tfcgenviewer.api.BlockEvaluationFunction;
-import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
-import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
-import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
+import io.github.notenoughmail.tfcgenviewer.api.*;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
@@ -45,7 +41,7 @@ import java.util.function.Consumer;
  *         Upon the preview screen first opening or the <i>Apply</i> button being clicked
  *         <ul>
  *             <li>{@link Options#copy()}</li>
- *             <li>{@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O) createCache}</li>
+ *             <li>{@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O, DrawParallelism) createCache}</li>
  *             <li>{@link #draw(int, int, MutableImage, int, int, DrawInfo) draw}</li>
  *             <li>{@link #afterComplete(MutableImage, DrawInfo) afterComplete}</li>
  *             <li>{@link #appendToFileName(Consumer, Options) appendToFileName}</li>
@@ -93,7 +89,7 @@ public interface IVisualizerType<
     /**
      * Create the cache object which will be available during drawing via {@link DrawInfo}
      */
-    C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed, O options);
+    C createCache(RegistryAccess registryAccess, G generator, ImageSize size, long worldSeed, O options, DrawParallelism parallelism);
 
     /**
      * Set the color of a pixel on the image. May set/modify pixels not at the given pixel. Called for <strong>every</strong>
@@ -118,8 +114,10 @@ public interface IVisualizerType<
 
     /**
      * Optionally perform some actions after all pixels of the image have been drawn
+     * @param xDrawOffsetPixels The pixel offset of the image. {@code xPos = imageX + xDrawOffsetPixels}
+     * @param zDrawOffsetPixels The pixel offset of the image. {@code zPos = imageY + zDrawOffsetPixels}
      */
-    default void afterComplete(MutableImage image, DrawInfo<G, C, S, O> info) {}
+    default void afterComplete(MutableImage image, DrawInfo<G, C, S, O> info, int xDrawOffsetPixels, int zDrawOffsetPixels) {}
 
     /**
      * Optionally provide extra information to display on the right information pane of the preview screens
@@ -150,15 +148,9 @@ public interface IVisualizerType<
     Component description();
 
     /**
-     * The maximum period of time, in milliseconds, a single pixel will be allowed to process for before being skipped.
-     * This will immediately cause the preview generation to end exceptionally if in a dev environment
-     */
-    default int timeoutMillis() {
-        return TFCGenViewer.defaultMaxMillisecondsToDrawPixel.getAsInt();
-    }
-
-    /**
-     * The BGR color to fill a pixel with upon generation timing out
+     * The BGR color to fill a pixel with upon generation timing out.
+     * <p>
+     * Note - In dev, this will not occur as timeout exceptions will be propagated, terminating the image generation process
      */
     default int timeoutFillBGR() {
         return 0;
@@ -175,7 +167,7 @@ public interface IVisualizerType<
      * A collection of relevant objects which are provided during drawing of a preview image
      * @param colorTooltips The tooltip cache. Use {@link #addTooltip(ColorDefinition)} or {@link io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition#color(double, DrawInfo) ColorGradientDefinition#color}
      *                      to add tooltips
-     * @param cache The cache, as created in {@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O) createCache}
+     * @param cache The cache, as created in {@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O, DrawParallelism) createCache}
      * @param size The image size, guaranteed to be {@link IScale#sizes() possessed} by the scale
      */
     record DrawInfo<G extends ChunkGeneratorExtension, C, S extends IScale<?>, O extends Options<O>>(
