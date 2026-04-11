@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.machinezoo.noexception.throwing.ThrowingRunnable;
 import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
@@ -28,6 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.fml.loading.FMLEnvironment;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +40,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
-import java.util.function.Supplier;
 
 public class Preview {
 
@@ -77,7 +78,7 @@ public class Preview {
             PreviewPane previewPane,
             InfoPane infoPane,
             SpawnInfo spawnInfo,
-            Parallelism parallelism,
+            DrawParallelism parallelism,
             RegistryAccess registryAccess,
             boolean showCenterCoords
     ) {
@@ -96,50 +97,15 @@ public class Preview {
                     i -> {};
 
             if (parallelism.parallel()) {
-                handleParallelDraw(
-                        image,
-                        viz,
-                        drawParams,
-                        previewPixels,
-                        progressReturn,
-                        xDrawOffsetPixels,
-                        zDrawOffsetPixels,
-                        parallelism.parallelism()
-                );
+                handleParallelDraw(image, viz, drawParams, previewPixels, progressReturn, xDrawOffsetPixels, zDrawOffsetPixels, parallelism.parallelism());
             } else {
-                handleSerialDraw(
-                        image,
-                        viz,
-                        drawParams,
-                        previewPixels,
-                        progressReturn,
-                        xDrawOffsetPixels,
-                        zDrawOffsetPixels
-                );
+                handleSerialDraw(image, viz, drawParams, previewPixels, progressReturn, xDrawOffsetPixels, zDrawOffsetPixels);
             }
 
-            viz.afterComplete(image, drawParams);
+            viz.afterComplete(image, drawParams, xDrawOffsetPixels, zDrawOffsetPixels);
 
             if (spawnInfo.drawSpawn()) {
-                final int xSpawnCenterPixels = (spawnInfo.xCenterBlocks() / blocksPerPixel) - xDrawOffsetPixels;
-                final int zSpawnCenterPixels = (spawnInfo.zCenterBlocks() / blocksPerPixel) - zDrawOffsetPixels;
-                final int spawnRadiusPixels = spawnInfo.radiusBlocks() / blocksPerPixel;
-
-                final ColorDefinition border = SPAWN_BORDER.get();
-                final ColorDefinition reticule = SPAWN_RETICULE.get();
-                drawParams.addTooltip(border);
-                drawParams.addTooltip(reticule);
-
-                final int lineWidth = drawParams.size().lineWidth();
-
-                image.hLine(xSpawnCenterPixels - spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, lineWidth, border.abgr());
-                image.hLine(xSpawnCenterPixels - spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, zSpawnCenterPixels - spawnRadiusPixels, lineWidth, border.abgr());
-                image.vLine(zSpawnCenterPixels - spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, lineWidth, border.abgr());
-                image.vLine(zSpawnCenterPixels - spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, xSpawnCenterPixels - spawnRadiusPixels, lineWidth, border.abgr());
-
-                final int reticuleLength = Math.min(spawnRadiusPixels / 4, previewPixels /12);
-                image.hLine(xSpawnCenterPixels - reticuleLength, xSpawnCenterPixels + reticuleLength, zSpawnCenterPixels, lineWidth, reticule.abgr());
-                image.vLine(zSpawnCenterPixels - reticuleLength, zSpawnCenterPixels + reticuleLength, xSpawnCenterPixels, lineWidth, reticule.abgr());
+                handleSpawnDraw(image, spawnInfo, drawParams, blocksPerPixel, xDrawOffsetPixels, zDrawOffsetPixels, previewPixels);
             }
 
             timer.stop();
@@ -208,6 +174,36 @@ public class Preview {
         });
     }
 
+    private static void handleSpawnDraw(
+            Image image,
+            SpawnInfo spawnInfo,
+            IVisualizerType.DrawInfo<?, ?, ?, ?> drawParams,
+            int blocksPerPixel,
+            int xDrawOffsetPixels,
+            int zDrawOffsetPixels,
+            int previewPixels
+    ) {
+        final int xSpawnCenterPixels = (spawnInfo.xCenterBlocks() / blocksPerPixel) - xDrawOffsetPixels;
+        final int zSpawnCenterPixels = (spawnInfo.zCenterBlocks() / blocksPerPixel) - zDrawOffsetPixels;
+        final int spawnRadiusPixels = spawnInfo.radiusBlocks() / blocksPerPixel;
+
+        final ColorDefinition border = SPAWN_BORDER.get();
+        final ColorDefinition reticule = SPAWN_RETICULE.get();
+        drawParams.addTooltip(border);
+        drawParams.addTooltip(reticule);
+
+        final int lineWidth = drawParams.size().lineWidth();
+
+        image.hLine(xSpawnCenterPixels - spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, lineWidth, border.abgr());
+        image.hLine(xSpawnCenterPixels - spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, zSpawnCenterPixels - spawnRadiusPixels, lineWidth, border.abgr());
+        image.vLine(zSpawnCenterPixels - spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, xSpawnCenterPixels + spawnRadiusPixels, lineWidth, border.abgr());
+        image.vLine(zSpawnCenterPixels - spawnRadiusPixels, zSpawnCenterPixels + spawnRadiusPixels, xSpawnCenterPixels - spawnRadiusPixels, lineWidth, border.abgr());
+
+        final int reticuleLength = Math.min(spawnRadiusPixels / 4, previewPixels / 12);
+        image.hLine(xSpawnCenterPixels - reticuleLength, xSpawnCenterPixels + reticuleLength, zSpawnCenterPixels, lineWidth, reticule.abgr());
+        image.vLine(zSpawnCenterPixels - reticuleLength, zSpawnCenterPixels + reticuleLength, xSpawnCenterPixels, lineWidth, reticule.abgr());
+    }
+
     private static <
             G extends ChunkGeneratorExtension,
             C,
@@ -231,22 +227,7 @@ public class Preview {
                 for (int y = 0 ; y < previewPixels ; y++) {
                     if (!image.isAllocated()) return;
                     final int zPos = y + zDrawOffsetPixels;
-                    final int fx = x, fy = y;
-                    // TODO: 2.1.0 | This does not fill the image pixel with a fallback color on timeout
-                    queue.add(
-                            () -> {
-                                final FutureTask<?> task = drawTask(viz, fx, fy, image, xPos, zPos, drawParams);
-                                task.run();
-                                task.get(viz.timeoutMillis(), TimeUnit.MILLISECONDS);
-                            },
-                            () -> "Visualizer type %s timed out while drawing %d %d (%d %d)".formatted(
-                                    GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz),
-                                    fx,
-                                    fy,
-                                    xPos,
-                                    zPos
-                            )
-                    );
+                    queue.add(new DrawTask<>(viz, x, y, image, xPos, zPos, drawParams)::executeDraw);
                 }
             }
         } catch (Throwable e) {
@@ -275,43 +256,13 @@ public class Preview {
             for (int y = 0 ; y < previewPixels ; y++) {
                 if (!image.isAllocated()) return;
                 final int zPos = y + zDrawOffsetPixels;
-                final FutureTask<?> task = drawTask(viz, x, y, image, xPos, zPos, drawParams);
                 try {
-                    task.run();
-                    task.get(viz.timeoutMillis(), TimeUnit.MILLISECONDS);
-                } catch (TimeoutException e) {
-                    TFCGenViewer.LOGGER.error(
-                            "Visualizer type {} timed out while drawing {} {} ({} {})",
-                            GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz),
-                            x,
-                            y,
-                            xPos,
-                            zPos
-                    );
-                    image.setPixel(x, y, 0xFF000000 | viz.timeoutFillBGR());
-                    if (!FMLEnvironment.production) Helpers.throwAsUnchecked(e);
-                } catch (Exception e) {
+                    new DrawTask<>(viz, x, y, image, xPos, zPos, drawParams).executeDraw();
+                } catch (Throwable e) {
                     Helpers.throwAsUnchecked(e);
                 }
             }
         }
-    }
-
-    private static <
-            G extends ChunkGeneratorExtension,
-            C,
-            S extends IScale<?>,
-            O extends IVisualizerType.Options<O>
-            > FutureTask<?> drawTask(
-                    IVisualizerType<G, C, S, O> viz,
-                    int imageX,
-                    int imageY,
-                    Image image,
-                    int xPos,
-                    int zPos,
-                    IVisualizerType.DrawInfo<G, C, S, O> drawParams
-    ) {
-        return new FutureTask<>(() -> viz.draw(imageX, imageY, image, xPos, zPos, drawParams), null);
     }
 
     private static String formatMillis(long millis) {
@@ -355,19 +306,6 @@ public class Preview {
         }
 
         public static final SpawnInfo NO_SPAWN = new SpawnInfo(false, 0, 0, 0);
-    }
-
-    public record Parallelism(int parallelism, boolean parallel) {
-
-        public static <O extends IVisualizerType.Options<O>> Parallelism of(O options, IVisualizerType<?, ?, ?, O> viz, ImageSize size) {
-            if (TFCGenViewer.disableParallelGeneration.getAsBoolean()) return NONE;
-            if (!viz.shouldDrawInParallel(options, size)) return NONE;
-            final int parallelism = Math.min(5, Runtime.getRuntime().availableProcessors() - 4);
-            if (parallelism <= 1) return NONE;
-            return new Parallelism(parallelism, true);
-        }
-
-        public static final Parallelism NONE = new Parallelism(-1, false);
     }
 
     public static <I extends ImageSize> OptionInstance<I> imageSizeOption(IScale<I> scale) {
@@ -438,30 +376,24 @@ public class Preview {
             }, null, true, 0, 0x7FFF, 1, null, 1L, TimeUnit.SECONDS);
         }
 
-        public void add(ThrowingRunnable drawTask, Supplier<String> timeOutString) throws Throwable {
+        public void add(ThrowingRunnable drawTask) throws Throwable {
             lock.lockInterruptibly();
             try {
                 while (count == values.length) notFull.await();
                 if (exception != null) throw exception;
-                queue(drawTask, timeOutString);
+                queue(drawTask);
             } finally {
                 lock.unlock();
             }
         }
 
-        private void queue(ThrowingRunnable drawTask, Supplier<String> timeOutString) {
+        private void queue(ThrowingRunnable drawTask) {
             final int i = index;
             values[i] = CompletableFuture.<Throwable>supplyAsync(() -> {
                 Helpers.uncheck(drawTask);
                 return null;
             }, service)
-                    .exceptionally(t -> {
-                        if (t instanceof TimeoutException e) {
-                            TFCGenViewer.LOGGER.error(timeOutString.get());
-                            return FMLEnvironment.production ? null : e;
-                        }
-                        return t;
-                    })
+                    .exceptionally(Function.identity())
                     .thenAccept(t -> {
                         Helpers.uncheck(lock::lockInterruptibly);
                         try {
@@ -486,6 +418,55 @@ public class Preview {
                 if (task != null) task.cancel(true);
             }
             service.shutdownNow();
+        }
+    }
+
+    private static class DrawTask<
+            G extends ChunkGeneratorExtension,
+            C,
+            S extends IScale<?>,
+            O extends IVisualizerType.Options<O>
+            > extends FutureTask<@Nullable Object> {
+
+        private final IVisualizerType<G, C, S, O> viz;
+        private final Image image;
+        private final int imageX, imageY, xPos, zPos;
+
+        public DrawTask(
+                IVisualizerType<G, C, S, O> viz,
+                int imageX,
+                int imageY,
+                Image image,
+                int xPos,
+                int zPos,
+                IVisualizerType.DrawInfo<G, C, S, O> drawParams
+        ) {
+            // TODO: Java 25 | Would before-super operations allow this to be non-capturing?
+            super(() -> viz.draw(imageX, imageY, image, xPos, zPos, drawParams), null);
+            this.viz = viz;
+            this.image = image;
+            this.imageX = imageX;
+            this.imageY = imageY;
+            this.xPos = xPos;
+            this.zPos = zPos;
+        }
+
+        public void executeDraw() throws Throwable {
+            try {
+                run();
+                get(TFCGenViewer.absoluteMaximumMicrosToDrawPixel.getAsInt(), TimeUnit.MICROSECONDS);
+            } catch (TimeoutException e) {
+                TFCGenViewer.LOGGER.error(
+                        "Visualizer type {} timed out while drawing {} {} ({} {})",
+                        GenViewerAPI.VISUALIZER_REGISTRY.getKey(viz),
+                        imageX,
+                        imageY,
+                        xPos,
+                        zPos
+                );
+                image.setPixel(imageX, imageY, 0xFF000000 | viz.timeoutFillBGR());
+                if (!FMLEnvironment.production) throw e;
+            }
         }
     }
 }

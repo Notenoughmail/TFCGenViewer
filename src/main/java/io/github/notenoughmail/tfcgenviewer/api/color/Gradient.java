@@ -111,6 +111,7 @@ public sealed interface Gradient permits Gradient.Data, Gradient.Preset, Gradien
         }
     }
 
+    @FunctionalInterface
     non-sealed interface Preset extends Gradient {
 
         Codec<Preset> CODEC = GenViewerAPI.GRADIENT_REGISTRY.byNameCodec();

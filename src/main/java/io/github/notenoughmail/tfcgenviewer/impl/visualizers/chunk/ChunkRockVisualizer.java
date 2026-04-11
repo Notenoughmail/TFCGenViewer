@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RockCache;
@@ -48,10 +49,10 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     }
 
     @Override
-    public RockCache<Cache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, RockVisualizer.Options options) {
+    public RockCache<Cache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, RockVisualizer.Options options, DrawParallelism parallelism) {
         final Seed seed = Seed.of(worldSeed);
         ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetSeed(seed);
-        return new RockCache<>(new Cache(ChunkDataProvider.tfcRegion(seed, generator), options.surface ? null : new ChunkElevationVisualizer.ElevationCache(generator, seed)));
+        return new RockCache<>(new Cache(ChunkDataProvider.tfcRegion(seed, generator, parallelism.parallel()), options.surface ? null : new ChunkElevationVisualizer.ElevationCache(generator, seed)));
     }
 
     @Override

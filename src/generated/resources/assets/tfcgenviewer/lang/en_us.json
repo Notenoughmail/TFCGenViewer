@@ -149,7 +149,7 @@
   "tfcgenviewer.option.region_visualizer.rivers_and_mountains.sensitivity.tooltip": "The sensitivity of river location calculations, a higher value is fuzzier",
   "tfcgenviewer.option.region_visualizer.rivers_and_mountains.sensitivity.value": "Sensitivity: %s%%",
   "tfcgenviewer.option.region_visualizer.rock.elevation": "Elevation",
-  "tfcgenviewer.option.region_visualizer.rock.elevation.tooltip": "The y-level to preview at, only used if 'At Surface' is false",
+  "tfcgenviewer.option.region_visualizer.rock.elevation.tooltip": "The y-level to preview at, only used if the mode is 'At Elevation'",
   "tfcgenviewer.option.region_visualizer.rock.mode": "Mode",
   "tfcgenviewer.option.region_visualizer.rock.mode.elevation": "At Elevation",
   "tfcgenviewer.option.region_visualizer.rock.mode.surface": "At Surface",

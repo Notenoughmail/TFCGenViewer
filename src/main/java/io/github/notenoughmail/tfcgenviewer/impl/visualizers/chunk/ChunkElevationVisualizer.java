@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
@@ -57,9 +58,9 @@ public class ChunkElevationVisualizer implements ITFCChunkVisualizerType.Simple<
 
     @Nullable
     @Override
-    public ElevationCache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
+    public ElevationCache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
         final Seed seed = Seed.of(worldSeed);
-        ChunkDataProvider.tfcRegion(seed, generator); // init the biome layer for the height filler
+        ChunkDataProvider.tfcRegion(seed, generator, parallelism.parallel()); // init the biome layer for the height filler
         ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetSeed(seed);
         // ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetTideHeightNoise(BiomeNoise.shoreTideLevelNoise(seed));
         return new ElevationCache(generator, seed);

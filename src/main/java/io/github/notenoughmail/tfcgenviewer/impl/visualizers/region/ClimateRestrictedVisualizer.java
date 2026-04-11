@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
 import com.mojang.serialization.Codec;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
@@ -36,7 +37,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     }
 
     @Override
-    public ClimateFeatureCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
+    public ClimateFeatureCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
         return new ClimateFeatureCache<>(registryAccess, RegionPointCache.of(generator, size, worldSeed));
     }
 

@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RockCache;
@@ -75,7 +76,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
     }
 
     @Override
-    public RockCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, Options options) {
+    public RockCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, Options options, DrawParallelism parallelism) {
         return new RockCache<>(RegionPointCache.of(generator, size, worldSeed));
     }
 

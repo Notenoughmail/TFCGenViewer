@@ -30,7 +30,7 @@ public class GradientProvider extends DataManagerProvider {
     protected void make(HolderLookup.Provider lookup) {
         makeFor(Colors.MISC_GRADIENTS, colors -> {
             colors.accept(Colors.OCEAN, simple(
-                    TFCGenViewerRegistration.GRAD_BLUE,
+                    TFCGenViewerRegistration.GRAD_DARK_BLUE,
                     "ocean"
             ));
             colors.accept(RainfallVisualizer.RAINFALL, new ColorGradientDefinition(

@@ -37,7 +37,7 @@ public class TFCGenViewer {
 
     public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress, disableParallelGeneration;
     public static ModConfigSpec.DoubleValue maxPreviewWidth;
-    public static ModConfigSpec.IntValue defaultMaxMillisecondsToDrawPixel;
+    public static ModConfigSpec.IntValue absoluteMaximumMicrosToDrawPixel, maximumNumberOfParallelDrawOperations;
 
     public TFCGenViewer(IEventBus modBus, ModContainer container) {
         TFCGenViewerRegistration.init(modBus);
@@ -63,8 +63,10 @@ public class TFCGenViewer {
         maxPreviewWidth = configBuilder
                 .comment(
                         "",
-                        " The maximum portion of the screen the world preview may take up.",
-                        " The preview will always fit into the largest square between this portion of the screen with and the majority of the screen height",
+                        " The maximum portion of the screen the world preview may take up",
+                        "",
+                        " The preview will always fit into the largest square between this portion of the screen with",
+                        " and the majority of the screen height",
                         ""
                 ).defineInRange("maxPreviewWidth", 0.5D, 0.25D, 0.75D);
         disableParallelGeneration = configBuilder
@@ -73,12 +75,19 @@ public class TFCGenViewer {
                         " If parallel generation should be forcefully disabled, regardless of a visualizer's request",
                         ""
                 ).define("disableParallelGeneration", false);
-        defaultMaxMillisecondsToDrawPixel = configBuilder
+        maximumNumberOfParallelDrawOperations = configBuilder
                 .comment(
                         "",
-                        " The maximum length of time the image generator will attempt to draw a single pixel.",
+                        " The maximum number of parallel draw operations that may occur if parallel generation is enabled",
                         ""
-                ).defineInRange("defaultMaxMillisecondsToDrawPixel", 5, 1, Integer.MAX_VALUE);
+                ).defineInRange("maximumNumberOfParallelDrawOperations", 5, 2, Integer.MAX_VALUE); // Go at it
+        absoluteMaximumMicrosToDrawPixel = configBuilder
+                .comment(
+                        "",
+                        " The absolute maximum number of microseconds the image generator will process a single pixel before",
+                        " cancelling the operation, filling the pixel with a default color, and logging an error",
+                        ""
+                ).defineInRange("absoluteMaximumMicrosToDrawPixel", 200, 1, Integer.MAX_VALUE);
         container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 

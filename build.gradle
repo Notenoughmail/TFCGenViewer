@@ -82,6 +82,12 @@ neoForge {
             systemProperty('tfcgenviewer/test', 'region_cache_collision')
         }
 
+        alternativeCacheTest() {
+            client()
+            sourceSet = sourceSets.devOnly
+            systemProperty('tfcgenviewer/test', 'region_cache_alternative')
+        }
+
         server {
             server()
             programArgument('-nogui')

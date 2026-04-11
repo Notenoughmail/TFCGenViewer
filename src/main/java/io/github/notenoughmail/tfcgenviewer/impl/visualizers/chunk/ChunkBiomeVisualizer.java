@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
@@ -30,7 +31,7 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
     }
 
     @Override
-    public ChunkBiomeVisualizer.Cache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options) {
+    public ChunkBiomeVisualizer.Cache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
         return new Cache(worldSeed, generator);
     }
 
@@ -63,7 +64,7 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
         private final Set<ColorDefinition> colorsEncountered;
 
         Cache(long worldSeed, TFCChunkGenerator generator) {
-            biomeSource = ChunkDataProvider.tfcRegion(worldSeed, generator);
+            biomeSource = ChunkDataProvider.tfcRegion(worldSeed, generator, false);
             colorsEncountered = new HashSet<>();
         }
 

@@ -10,6 +10,7 @@ import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType region visualizers}
@@ -47,7 +48,8 @@ public class RegionPointCache {
     protected final int neighborFreeDistance;
     protected int regionCount;
 
-    protected RegionPointCache(RegionGenerator generator, int size, int neighborRetentionDistance) {
+    @VisibleForTesting
+    public RegionPointCache(RegionGenerator generator, int size, int neighborRetentionDistance) {
         this.generator = generator;
         this.size = size;
         pointCache = new RegionPoint[size * size];

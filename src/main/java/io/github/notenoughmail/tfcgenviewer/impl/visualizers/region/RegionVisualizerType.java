@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
@@ -13,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public interface RegionVisualizerType<O extends IVisualizerType.Options<O>> extends IRegionVisualizerType<RegionPointCache, O> {
 
     @Override
-    default RegionPointCache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, O options) {
+    default RegionPointCache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, O options, DrawParallelism parallelism) {
         return RegionPointCache.of(generator, size, worldSeed);
     }
 
