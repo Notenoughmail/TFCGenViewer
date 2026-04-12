@@ -6,7 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.impl.NoiseBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
@@ -75,7 +75,7 @@ public class RegionCacheDifferenceVisualizer implements IRegionVisualizerType<Re
 
         public Cache(Settings settings, long seed) {
             tfc = new RegionGenerator(settings, Seed.of(seed));
-            alternative = NoiseBasedRegionCache.regionGeneratorWithThisCache(settings, Seed.of(seed), false);
+            alternative = TableBasedRegionCache.regionGeneratorWithThisCache(settings, Seed.of(seed), false);
         }
 
         public Region getTFC(int x, int z) {

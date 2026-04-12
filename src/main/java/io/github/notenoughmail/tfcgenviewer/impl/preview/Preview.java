@@ -29,14 +29,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.fml.loading.FMLEnvironment;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
@@ -69,7 +68,6 @@ public class Preview {
             >
     CompletableFuture<ImageReturn> draw(
             Image image,
-            I imageSize,
             IVisualizerType.DrawInfo<G, C, S, O> drawParams,
             IVisualizerType<G, C, S, O> viz,
             int xCenterBlocks,
@@ -86,14 +84,14 @@ public class Preview {
             infoPane.setGenerating(viz);
             final Stopwatch timer = Stopwatch.createStarted();
 
-            final int previewPixels = imageSize.sizeInPixels();
+            final int previewPixels = drawParams.size().sizeInPixels();
             final int halfPreviewPixels = previewPixels >> 1;
             final int blocksPerPixel = drawParams.scale().blocksPerPixel();
             final int xDrawOffsetPixels = (xCenterBlocks / blocksPerPixel) - halfPreviewPixels;
             final int zDrawOffsetPixels = (zCenterBlocks / blocksPerPixel) - halfPreviewPixels;
 
             final IntConsumer progressReturn = TFCGenViewer.displayGenerationProgress.getAsBoolean() ?
-                    i -> previewPane.updateProgress(i, imageSize) :
+                    i -> previewPane.updateProgress(i, drawParams.size()) :
                     i -> {};
 
             if (parallelism.parallel()) {
@@ -131,7 +129,12 @@ public class Preview {
                         builder.append(".png");
                     }).toString(),
                     Util.make(
-                            Component.translatable("tfcgenviewer.preview_info.base", viz.name(), drawParams.scale().formatSize(imageSize), formatMillis(millis)),
+                            Component.translatable(
+                                    "tfcgenviewer.preview_info.base",
+                                    viz.name(),
+                                    drawParams.scale().formatSize(TFCGenViewer.cast(drawParams.size())),
+                                    formatMillis(millis)
+                            ),
                             c -> {
                                 if (showCenterCoords) {
                                     c.append(CommonComponents.NEW_LINE)
@@ -155,7 +158,7 @@ public class Preview {
             return new ImageReturn(image, -1L, null, ON_ERROR);
         }).thenApply(ret -> {
             if (ret.millis() != -1) {
-                final int halfImageBlocks = drawParams.scale().blocksPerPixel() * imageSize.sizeInPixels() / 2;
+                final int halfImageBlocks = drawParams.scale().blocksPerPixel() * drawParams.size().sizeInPixels() / 2;
                 previewPane.updateImage(
                         ret.image(),
                         drawParams.colorTooltips(),
@@ -227,7 +230,7 @@ public class Preview {
                 for (int y = 0 ; y < previewPixels ; y++) {
                     if (!image.isAllocated()) return;
                     final int zPos = y + zDrawOffsetPixels;
-                    queue.add(new DrawTask<>(viz, x, y, image, xPos, zPos, drawParams)::executeDraw);
+                    queue.queueBlocking(new DrawTask<>(viz, x, y, image, xPos, zPos, drawParams)::executeDraw);
                 }
             }
         } catch (Throwable e) {
@@ -256,11 +259,7 @@ public class Preview {
             for (int y = 0 ; y < previewPixels ; y++) {
                 if (!image.isAllocated()) return;
                 final int zPos = y + zDrawOffsetPixels;
-                try {
-                    new DrawTask<>(viz, x, y, image, xPos, zPos, drawParams).executeDraw();
-                } catch (Throwable e) {
-                    Helpers.throwAsUnchecked(e);
-                }
+                Helpers.uncheck(new DrawTask<>(viz, x, y, image, xPos, zPos, drawParams)::executeDraw);
             }
         }
     }
@@ -349,74 +348,56 @@ public class Preview {
 
     private static class FutureBlockingQueue implements AutoCloseable {
 
-        private final Future<?>[] values;
         private final ExecutorService service;
-
-        private final ReentrantLock lock;
-        private final Condition notFull;
-
-        int count;
-        int index;
 
         private volatile Throwable exception;
 
         FutureBlockingQueue(int parallelism) {
-            lock = new ReentrantLock(false);
-            notFull = lock.newCondition();
 
-            final String threadName = Thread.currentThread().getName();
-            final AtomicInteger count = new AtomicInteger();
+            final ThreadFactory baseFactory = Thread.ofVirtual()
+                    .name(Thread.currentThread().getName() + "-", 0L)
+                    .factory();
 
-            values = new Future[parallelism];
-            service = new ForkJoinPool(parallelism, fjp -> {
-                final ForkJoinWorkerThread thread = new ForkJoinWorkerThread(fjp) {};
-                thread.setContextClassLoader(CLASS_LOADER);
-                thread.setName(threadName + "-" + count.getAndIncrement());
-                return thread;
-            }, null, true, 0, 0x7FFF, 1, null, 1L, TimeUnit.SECONDS);
+            service = new ThreadPoolExecutor(
+                    parallelism,
+                    parallelism,
+                    0L,
+                    TimeUnit.SECONDS,
+                    new LinkedBlockingQueue<>(parallelism + 5) {
+                        // Force the damned executor to be blocking
+                        @Override
+                        public boolean offer(@NotNull Runnable runnable) {
+                            try {
+                                put(runnable);
+                            } catch (InterruptedException e) {
+                                Helpers.throwAsUnchecked(e);
+                            }
+                            return true;
+                        }
+                    },
+                    r -> {
+                        final Thread t = baseFactory.newThread(r);
+                        t.setContextClassLoader(CLASS_LOADER);
+                        return t;
+                    }
+            );
         }
 
-        public void add(ThrowingRunnable drawTask) throws Throwable {
-            lock.lockInterruptibly();
-            try {
-                while (count == values.length) notFull.await();
-                if (exception != null) throw exception;
-                queue(drawTask);
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        private void queue(ThrowingRunnable drawTask) {
-            final int i = index;
-            values[i] = CompletableFuture.<Throwable>supplyAsync(() -> {
+        public void queueBlocking(ThrowingRunnable drawTask) throws Throwable {
+            // Never gets overwritten to null and which one is ultimately throw shouldn't matter too much so this
+            // doesn't need any threading safeguards
+            if (exception != null) throw exception;
+            CompletableFuture.<Throwable>supplyAsync(() -> {
                 Helpers.uncheck(drawTask);
                 return null;
             }, service)
                     .exceptionally(Function.identity())
                     .thenAccept(t -> {
-                        Helpers.uncheck(lock::lockInterruptibly);
-                        try {
-                            remove(i);
-                        } finally {
-                            lock.unlock();
-                        }
                         if (t != null) exception = t;
                     });
-            count++;
-        }
-
-        private void remove(int i) {
-            values[i] = null;
-            count--;
-            index = i;
-            notFull.signal();
         }
 
         public void close() {
-            for (Future<?> task : values) {
-                if (task != null) task.cancel(true);
-            }
             service.shutdownNow();
         }
     }

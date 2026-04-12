@@ -43,7 +43,7 @@ import java.util.function.Consumer;
  *             <li>{@link Options#copy()}</li>
  *             <li>{@link #createCache(RegistryAccess, ChunkGeneratorExtension, ImageSize, long, O, DrawParallelism) createCache}</li>
  *             <li>{@link #draw(int, int, MutableImage, int, int, DrawInfo) draw}</li>
- *             <li>{@link #afterComplete(MutableImage, DrawInfo) afterComplete}</li>
+ *             <li>{@link #afterComplete(MutableImage, DrawInfo, int, int) afterComplete}</li>
  *             <li>{@link #appendToFileName(Consumer, Options) appendToFileName}</li>
  *             <li>{@link #additionalPreviewInfo(DrawInfo) additionalPreviewInfo}</li>
  *             <li>{@link #colorKey(RegistryAccess, Object) colorKey}</li>
@@ -161,6 +161,13 @@ public interface IVisualizerType<
      */
     default boolean shouldDrawInParallel(O options, ImageSize size) {
         return false;
+    }
+
+    /**
+     * The maximum number of parallel drawing operations that may be performed if drawing in parallel is allowed
+     */
+    default int maxLevelOfParallelism(O options, ImageSize size) {
+        return 10;
     }
 
     /**

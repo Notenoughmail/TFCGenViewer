@@ -58,7 +58,6 @@ public class TFCGenViewerRegistration {
     public static final Id<RiversAndMountainsVisualizer> VIZ_RIVERS_AND_MOUNTAINS = regionVisualizer("rivers_and_mountains", RiversAndMountainsVisualizer::new);
     public static final Id<ClimateRestrictedVisualizer> VIZ_CLIMATE_FEATURE = regionVisualizer("climate_restricted", ClimateRestrictedVisualizer::new);
 
-    // TODO: 2.1.0 | See if any of these benefit from parallelization
     public static final Id<ChunkElevationVisualizer> VIZ_CHUNK_ELEVATION = chunkVisualizer("elevation", ChunkElevationVisualizer::new);
     public static final Id<ChunkBiomeVisualizer> VIZ_CHUNK_BIOME = chunkVisualizer("biome", ChunkBiomeVisualizer::new);
     public static final Id<ChunkKoppenVisualizer> VIZ_CHUNK_KOPPEN = chunkVisualizer("koppen", ChunkKoppenVisualizer::new);

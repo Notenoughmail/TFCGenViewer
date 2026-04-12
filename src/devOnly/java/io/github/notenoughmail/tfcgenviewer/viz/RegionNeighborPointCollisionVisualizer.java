@@ -6,7 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
-import io.github.notenoughmail.tfcgenviewer.impl.NoiseBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
@@ -68,7 +68,7 @@ public class RegionNeighborPointCollisionVisualizer implements IRegionVisualizer
             final Seed s = Seed.of(seed);
             generator = tfc ?
                     new RegionGenerator(settings, s) :
-                    NoiseBasedRegionCache.regionGeneratorWithThisCache(settings, s, false);
+                    TableBasedRegionCache.regionGeneratorWithThisCache(settings, s, false);
         }
 
         public int color(int x, int z) {

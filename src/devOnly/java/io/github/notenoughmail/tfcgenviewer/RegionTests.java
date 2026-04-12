@@ -1,6 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer;
 
-import io.github.notenoughmail.tfcgenviewer.impl.NoiseBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
 import net.dries007.tfc.common.blocks.SandstoneBlockType;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.rock.Rock;
@@ -42,7 +42,7 @@ public class RegionTests {
         TFCGenViewer.LOGGER.warn("Detecting cache collisions for {} seeds using alternative cache type", count);
         final List<Instance> collisions = new ArrayList<>();
         examineRegionSource(s -> {
-            final RegionGenerator regionGenerator = NoiseBasedRegionCache.regionGeneratorWithThisCache(SETTINGS, Seed.of(s), false);
+            final RegionGenerator regionGenerator = TableBasedRegionCache.regionGeneratorWithThisCache(SETTINGS, Seed.of(s), false);
             return regionGenerator::getOrCreateRegion;
         }, count, collisions);
         finishCollisionExamination(collisions, "alternative", count);

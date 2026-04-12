@@ -40,7 +40,7 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     @Override
     public void addOptions(OptionProvider optionProvider, RockVisualizer.Options options) {
         optionProvider.orderBool("tfcgenviewer.option.region_visualizer.rock.mode", options.surface, b -> options.surface = b)
-                .withDisplay(optionProvider.genericDisplay(b -> b ? MODE_SURFACE : MODE_ELEVATION))
+                .withGenericDisplay(b -> b ? MODE_SURFACE : MODE_ELEVATION)
                 .withConstantTooltip(MODE_EXP)
                 .finish();
         optionProvider.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", options.elevation, -64, 320, i -> options.elevation = i)

@@ -294,7 +294,6 @@ public class PreviewScreen<
 
         state.previousImageProcess = Preview.draw(
                 image,
-                imageSize,
                 info,
                 viz,
                 xCenterBlocks,

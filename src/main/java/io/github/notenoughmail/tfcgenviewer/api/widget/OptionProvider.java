@@ -77,13 +77,8 @@ public interface OptionProvider {
      */
     Order<Double> orderDouble(String name, double initial, double min, double max, DoubleConsumer onChange);
 
-    default <T> DisplayFactory<T> genericDisplay(Function<T, Component> formatter) {
-        return convertToFactory(formatter);
-    }
-
     /**
      * A {@link net.minecraft.client.OptionInstance OptionInstance} builder. Must be {@link #finish() finished} to add to preview screens
-     * @param <T>
      */
     interface Order<T> {
 
@@ -108,12 +103,24 @@ public interface OptionProvider {
         Order<T> withDisplay(DisplayFactory<T> displayFactory);
 
         /**
+         * Override the default display of the option to be in the generic {@code <option name>: <formatted obj>} form
+         * @return this
+         */
+        default Order<T> withGenericDisplay(Function<T, Component> formatter) {
+            return withDisplay(convertToFactory(formatter));
+        }
+
+        /**
          * Create and add the option to the list of options available to the player
          */
         default void finish() {
             finish(() -> true);
         }
 
+        /**
+         * Create and add the option to the list of options available to the player with the ability to disable
+         * the option in response to other options
+         */
         void finish(BooleanSupplier active);
     }
 
