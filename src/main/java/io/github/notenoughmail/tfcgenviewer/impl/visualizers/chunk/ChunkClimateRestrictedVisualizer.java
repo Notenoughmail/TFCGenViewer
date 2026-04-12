@@ -129,9 +129,4 @@ public class ChunkClimateRestrictedVisualizer implements ITFCChunkVisualizerType
     public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
         return ClimateFeatureCache.codecForRegistry(registry);
     }
-
-    @Override
-    public boolean shouldDrawInParallel(NoneOpt options, ImageSize size) {
-        return true;
-    }
 }

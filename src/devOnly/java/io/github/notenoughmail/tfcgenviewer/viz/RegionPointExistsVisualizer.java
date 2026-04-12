@@ -6,7 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
-import io.github.notenoughmail.tfcgenviewer.impl.NoiseBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RegionVisualizerType;
 import net.dries007.tfc.world.Seed;
@@ -28,7 +28,7 @@ public class RegionPointExistsVisualizer implements RegionVisualizerType<RegionP
         return new RegionPointCache(
                 options.tfc ?
                         new RegionGenerator(generator.settings(), seed) :
-                        NoiseBasedRegionCache.regionGeneratorWithThisCache(generator.settings(), seed, parallelism.parallel()),
+                        TableBasedRegionCache.regionGeneratorWithThisCache(generator.settings(), seed, parallelism.parallel()),
                 size.sizeInPixels(),
                 0
         );

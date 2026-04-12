@@ -135,7 +135,7 @@ public class RegionPointCache {
                 // offset = grid - image
                 final int xOffset = gridX - x, zOffset = gridZ - y;
                 fillCache(region, xOffset, zOffset);
-            } else {
+            } else if (false) {
                 TFCGenViewer.LOGGER.warn("Encountered broken region! Reusing previous point");
                 // Just lie and use the previous point
                 // It's fine, it's rare and off in the middle of the ocean

@@ -23,7 +23,7 @@ public record DrawParallelism(
         if (!viz.shouldDrawInParallel(options, size)) return NONE;
         final int parallelism = Math.min(
                 TFCGenViewer.maximumNumberOfParallelDrawOperations.getAsInt(),
-                Runtime.getRuntime().availableProcessors() - 4
+                viz.maxLevelOfParallelism(options, size)
         );
         if (parallelism <= 1) return NONE;
         return new DrawParallelism(parallelism, true);

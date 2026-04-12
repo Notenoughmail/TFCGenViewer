@@ -199,7 +199,6 @@ public class ViewWorldScreen<
 
         state.previousImageProcess = Preview.draw(
                 image,
-                imageSize,
                 info,
                 viz,
                 xCenterBlocks,

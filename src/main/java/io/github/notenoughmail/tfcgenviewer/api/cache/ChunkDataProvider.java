@@ -1,7 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api.cache;
 
 import com.google.common.collect.ImmutableSet;
-import io.github.notenoughmail.tfcgenviewer.impl.NoiseBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeExtension;
@@ -80,7 +80,7 @@ public class ChunkDataProvider {
         // regions to share a cache position, making some chunks to recreate both regions twice
         // This bypasses that by using a different cache type which doesn't suffer the same problem
         Region(TFCChunkGenerator chunkGenerator, Seed seed, boolean parallel) {
-            this(NoiseBasedRegionCache.regionGeneratorWithThisCache(chunkGenerator.settings(), seed, parallel), chunkGenerator, seed);
+            this(TableBasedRegionCache.regionGeneratorWithThisCache(chunkGenerator.settings(), seed, parallel), chunkGenerator, seed);
         }
 
         Region(RegionGenerator generator, TFCChunkGenerator chunkGenerator, Seed seed) {
