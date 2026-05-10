@@ -1,11 +1,13 @@
 package io.github.notenoughmail.tfcgenviewer.client;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.client.screen.PreviewScreen;
 import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
 import net.minecraft.client.KeyMapping;
@@ -25,15 +27,45 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.function.Supplier;
+
 @Mod(value = TFCGenViewer.ID, dist = Dist.CLIENT)
 public class TFCGenViewerClient {
 
-    private final KeyMapping openViewer = new KeyMapping("tfcgenviewer.key.open_viewer", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "TFCGenViewer");
+    private final KeyMapping openViewer = new KeyMapping(
+            "tfcgenviewer.key.open_viewer",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_K,
+            "TFCGenViewer"
+    );
+    public static final Supplier<KeyMapping> PREVIEW_CENTER_SPAWN = Suppliers.memoize(() -> new KeyMapping(
+            "tfcgenviewer.key.preview_center_spawn",
+            PreviewScreen.KEY_CONFLICT_CONTEXT,
+            KeyModifier.CONTROL,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_SHIFT,
+            "TFCGenViewer"
+    ));
+    public static final Supplier<KeyMapping> PREVIEW_CENTER_VIEW = Suppliers.memoize(() -> new KeyMapping(
+            "tfcgenviewer.key.preview_center_view",
+            PreviewScreen.KEY_CONFLICT_CONTEXT,
+            KeyModifier.ALT,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_SHIFT,
+            "TFCGenViewer"
+    ));
+
+    public static boolean isDown(KeyMapping mapping) {
+        return mapping.getKeyModifier().isActive(PreviewScreen.KEY_CONFLICT_CONTEXT)
+                && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), mapping.getKey().getValue());
+    }
 
     public TFCGenViewerClient(IEventBus modBus, ModContainer container) {
         modBus.addListener(this::clientReloadListeners);
@@ -68,6 +100,8 @@ public class TFCGenViewerClient {
 
     private void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(openViewer);
+        event.register(PREVIEW_CENTER_SPAWN.get());
+        event.register(PREVIEW_CENTER_VIEW.get());
     }
 
     private static final Component TFCGV_ABSENT = Component.translatable("tfcgenviewer.network.view_request.response.absent");

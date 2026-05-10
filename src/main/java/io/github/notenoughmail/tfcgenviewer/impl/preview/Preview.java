@@ -11,6 +11,8 @@ import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.client.options.EnhancedEnumValueSet;
+import io.github.notenoughmail.tfcgenviewer.client.options.EnhancedSliderValueSet;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import net.dries007.tfc.util.Helpers;
@@ -312,7 +314,7 @@ public class Preview {
                 "tfcgenviewer.option.preview_size",
                 OptionInstance.noTooltip(),
                 (caption, i) -> scale.formatSize(i),
-                new OptionInstance.Enum<>(scale.sizes(), scale.codec()),
+                new EnhancedEnumValueSet<>(scale.codec(), scale.sizes(), false),
                 scale.getDefault(),
                 i -> {}
         );
@@ -325,8 +327,19 @@ public class Preview {
                 "tfcgenviewer.option.visualizer_type",
                 viz -> Tooltip.create(viz.description()),
                 (caption, viz) -> viz.name(),
-                new OptionInstance.Enum<>(visualizers, VIZ_CODEC.xmap(TFCGenViewer::<V>cast, Function.identity())),
+                new EnhancedEnumValueSet<>(VIZ_CODEC.xmap(TFCGenViewer::<V>cast, Function.identity()), visualizers, false),
                 visualizers.getFirst(),
+                onChange
+        );
+    }
+
+    public static OptionInstance<Boolean> boolOption(String caption, boolean initialValue, Consumer<Boolean> onChange) {
+        return new OptionInstance<>(
+                caption,
+                OptionInstance.noTooltip(),
+                OptionInstance.BOOLEAN_TO_STRING,
+                EnhancedEnumValueSet.BOOL,
+                initialValue,
                 onChange
         );
     }
@@ -340,7 +353,7 @@ public class Preview {
                         text,
                         Component.translatable("tfc.settings.km", String.format("%.1f", value / 1000.0))
                 ),
-                new OptionInstance.IntRange(min, max),
+                EnhancedSliderValueSet.integer(min, max),
                 defaultValue,
                 i -> {}
         );

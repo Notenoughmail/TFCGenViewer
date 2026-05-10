@@ -90,7 +90,7 @@ public class ViewWorldScreen<
         final int offset = visualizer.scale().blocksPerPixel() * visualizer.maximumPreviewOffset();
         visualizerType = Preview.visualizerTypeOption(visualizers, v -> onVisualizerChange());
         imageSize = Preview.imageSizeOption(visualizer.scale());
-        spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {});
+        spawnOverlay = Preview.boolOption("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {});
         xOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0);
         zOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.z_offset", -offset, offset, 0);
         apply = new ButtonOption("tfcgenviewer.button.apply", b -> visualize());
@@ -221,7 +221,7 @@ public class ViewWorldScreen<
     }
 
     private void populateOptions() {
-        options.children().clear();
+        options.clear();
         options.add(visualizerType);
         visualizerType.get().addOptions(new OptionOrders(options::addDynamic), state.vizOptions);
         options.add(imageSize);

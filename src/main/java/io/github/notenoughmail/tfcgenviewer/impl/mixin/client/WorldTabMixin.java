@@ -1,6 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.mixin.client;
 
-import io.github.notenoughmail.tfcgenviewer.impl.ISeedSetter;
+import io.github.notenoughmail.tfcgenviewer.impl.util.ISeedSetter;
 import net.minecraft.client.gui.components.EditBox;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.client.widget;
 
+import io.github.notenoughmail.tfcgenviewer.impl.util.RefreshableResettableOptionWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -8,7 +9,9 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -19,9 +22,32 @@ import java.util.function.BooleanSupplier;
  */
 public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsList.Entry> {
 
+    private final List<RefreshableResettableOptionWidget> refreshableResettableWidgets;
+
     public SingleColumnOptionsList(Minecraft pMinecraft, int pWidth, int pHeight, int y, int pItemHeight) {
         super(pMinecraft, pWidth, pHeight, y, pItemHeight);
         setScrollBarOffset(-4);
+        refreshableResettableWidgets = new ArrayList<>();
+    }
+
+    public void clear() {
+        children().clear();
+        refreshableResettableWidgets.clear();
+    }
+
+    public void refreshFromInstances() {
+        refreshableResettableWidgets.forEach(RefreshableResettableOptionWidget::refreshFromInstance);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            final Entry entry = getEntryAtPosition(mouseX, mouseY);
+            if (entry != null) {
+                return entry.resetValueIfPossible();
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     public void add(OptionInstance<?>... options) {
@@ -57,6 +83,9 @@ public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsLi
             this.widget = List.of(instance);
             this.withBackground = withBackground;
             this.active = active;
+            if (instance instanceof RefreshableResettableOptionWidget rr) {
+                refreshableResettableWidgets.add(rr);
+            }
         }
 
         @Override
@@ -71,6 +100,15 @@ public class SingleColumnOptionsList extends SelectionList<SingleColumnOptionsLi
             instance.setY(top);
             instance.setWidth(width - 4 - getScrollBarScrunchFactor());
             instance.render(graphics, mouseX, mouseY, partialTick);
+        }
+
+        public boolean resetValueIfPossible() {
+            if (widget.getFirst() instanceof RefreshableResettableOptionWidget refreshable) {
+                refreshable.resetToDefaultValue();
+                playDownSound(minecraft.getSoundManager());
+                return true;
+            }
+            return false;
         }
 
         @Override

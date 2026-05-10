@@ -8,6 +8,7 @@
   ],
   "client": [
     "accessor.NativeImageAccessor",
+    "client.EditBoxMixin",
     "client.MoreTabMixin",
     "client.WorldTabMixin"
   ]

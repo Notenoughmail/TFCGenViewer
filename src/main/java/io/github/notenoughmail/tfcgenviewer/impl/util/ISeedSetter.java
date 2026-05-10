@@ -1,4 +1,4 @@
-package io.github.notenoughmail.tfcgenviewer.impl;
+package io.github.notenoughmail.tfcgenviewer.impl.util;
 
 public interface ISeedSetter {
 

@@ -4,7 +4,9 @@ import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
+import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
+import io.github.notenoughmail.tfcgenviewer.impl.util.CoordSetter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -40,13 +42,27 @@ public class PreviewPane extends AbstractWidget {
     private final boolean allowCoordinates;
     private float progress;
     private DisplayState display;
+    private final CoordSetter spawn, pos;
 
     public PreviewPane(int x, int y, Supplier<Font> font, boolean allowCoordinates) {
+        this(x, y, font, allowCoordinates, CoordSetter.NONE, CoordSetter.NONE);
+    }
+
+    public PreviewPane(
+            int x,
+            int y,
+            Supplier<Font> font,
+            boolean allowCoordinates,
+            CoordSetter spawn,
+            CoordSetter pos
+    ) {
         super(x, y, 10, 10, Component.empty());
         tooltipMode = Mode.NONE;
         state = State.PROCESSING;
         this.font = font;
         this.allowCoordinates = allowCoordinates;
+        this.spawn = spawn;
+        this.pos = pos;
         resetProgress();
     }
 
@@ -98,14 +114,9 @@ public class PreviewPane extends AbstractWidget {
                 if (isMouseOver(mouseX, mouseY)) {
                     switch (tooltipMode) {
                         case COORDS -> {
-                            final int
-                                    x0 = display.x0(),
-                                    x1 = x0 + display.sizeInBlocks(),
-                                    y0 = display.z0(),
-                                    y1 = y0 + display.sizeInBlocks(),
-                                    x = (int) Mth.map(mouseX, getX(), getX() + getWidth(), x0, x1),
-                                    y = (int) Mth.map(mouseY, getY(), getY() + getHeight(), y0, y1);
-                            graphics.renderTooltip(font.get(), Component.translatable("tfcgenviewer.widget.preview_pane.hover_pos", x, y), mouseX, mouseY);
+                            final int x = getMousedXPos(mouseX);
+                            final int z = getMousedZPos(mouseY);
+                            graphics.renderTooltip(font.get(), Component.translatable("tfcgenviewer.widget.preview_pane.hover_pos", x, z), mouseX, mouseY);
                         }
                         case COLOR_DESC -> {
                             final int
@@ -162,9 +173,36 @@ public class PreviewPane extends AbstractWidget {
 
     @Override
     protected boolean clicked(double pMouseX, double pMouseY) {
-        final boolean click = super.clicked(pMouseX, pMouseY);
-        if (click && state == State.DISPLAY) tooltipMode = tooltipMode.next(allowCoordinates);
-        return click;
+        return state == State.DISPLAY && super.clicked(pMouseX, pMouseY);
+    }
+
+    @Override
+    public void onClick(double mouseX, double mouseY, int button) {
+        if (TFCGenViewerClient.isDown(TFCGenViewerClient.PREVIEW_CENTER_VIEW.get())) {
+            pos.set(
+                    getMousedXPos(mouseX),
+                    getMousedZPos(mouseY)
+            );
+        } else if (TFCGenViewerClient.isDown(TFCGenViewerClient.PREVIEW_CENTER_SPAWN.get())) {
+            spawn.set(
+                    getMousedXPos(mouseX),
+                    getMousedZPos(mouseY)
+            );
+        } else {
+            tooltipMode = tooltipMode.next(allowCoordinates);
+        }
+    }
+
+    private int getMousedXPos(double mouseX) {
+        final int x0 = display.x0();
+        final int x1 = x0 + display.sizeInBlocks();
+        return (int) Mth.map(mouseX, getX(), getX() + getWidth(), x0, x1);
+    }
+
+    private int getMousedZPos(double mouseY) {
+        final int z0 = display.z0();
+        final int z1 = z0 + display.sizeInBlocks();
+        return (int) Mth.map(mouseY, getY(), getY() + getHeight(), z0, z1);
     }
 
     @Override
