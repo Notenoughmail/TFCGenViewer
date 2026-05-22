@@ -18,9 +18,41 @@ public class EN_US extends LangProvider {
     protected void addTranslations() {
         branch(TFCGenViewer.ID, mod -> mod
                 .branch("configuration", config -> config
-                        .add("dingWhenGenerated", "Ding When Complete")
-                        .add("displayGenerationProgress", "Display Progress")
-                        .add("maxPreviewWidth", "Max Preview Width")
+                        .add("title", "TFCGenViewer Configuration")
+                        .branch("section", section -> section
+                                .branch(TFCGenViewer.ID, self -> self
+                                        .branch("client", client -> client
+                                                .branch("toml", toml -> toml
+                                                        .add("", "TFCGenViewer Client Configuration")
+                                                        .add("title", "TFCGenViewer Client Configuration")
+                                                )
+                                        )
+                                )
+                        )
+                        .branch("dingWhenGenerated", ding -> ding
+                                .add("", "Ding When Complete")
+                                .add("tooltip", "If a sound should be played when the preview finishes generating")
+                        )
+                        .branch("displayGenerationProgress", progress -> progress
+                                .add("", "Display Generation Progress")
+                                .add("tooltip", "If a progress bar should be displayed while a preview is generating")
+                        )
+                        .branch("maxPreviewWidth", width -> width
+                                .add("", "Max Preview Width")
+                                .add("tooltip", "The maximum portion of the screen the preview may take up\n\nThe preview will always fit into the largest square between this portion of the screen width and the majority of the screen height")
+                        )
+                        .branch("disableParallelGeneration", parallel -> parallel
+                                .add("", "Disable Parallel Generation")
+                                .add("tooltip", "If parallel generation should be disabled, regardless of a visualizer's request")
+                        )
+                        .branch("maximumNumberOfParallelDrawOperations", ops -> ops
+                                .add("", "Maximum Concurrent Draw Operations")
+                                .add("tooltip", "The maximum number of concurrent draw operations that may occur if parallel generation is enabled")
+                        )
+                        .branch("absoluteMaximumMicrosToDrawPixel", micros -> micros
+                                .add("", "Draw Timeout")
+                                .add("tooltip", "The absolute maximum number of microseconds the image generator will process a single pixel before cancelling the operation, filling the pixel with a default color, and logging an error")
+                        )
                 )
                 .branch("option", option -> option
                         .branch("region_visualizer", region -> region

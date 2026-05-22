@@ -57,6 +57,7 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
         return DESC;
     }
 
+    // TODO: 2.1.0 | This reveals subterranean rivers
     public static class Cache {
 
         private final ChunkDataProvider.Region biomeSource;

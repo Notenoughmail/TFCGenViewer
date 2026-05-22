@@ -7,28 +7,28 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.Mth;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.DoubleFunction;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 public record EnhancedSliderValueSet<T extends Comparable<T>>(
-        Codec<T> codec,
-        T min,
-        T max,
+        Codec<T> codec, // Only used for loading to/from the options file. Numeric types needn't be bound
+        InclusiveRange<T> range,
         ToDoubleFunction<T> toSlider,
-        DoubleFunction<T> fromSlider,
-        Predicate<T> validator
+        DoubleFunction<T> fromSlider
 ) implements OptionInstance.SliderableValueSet<T> {
 
     public static final EnhancedSliderValueSet<Double> UNIT_DOUBLE = new EnhancedSliderValueSet<>(
-            Codec.doubleRange(0D, 1D),
-            0D,
-            1D,
+            Codec.DOUBLE,
+            new InclusiveRange<>(0D, 1D),
             d -> d,
-            d -> d,
-            v -> v >= 0D && v <= 1D
+            d -> d
     );
 
     public static EnhancedSliderValueSet<Integer> integer(
@@ -36,9 +36,8 @@ public record EnhancedSliderValueSet<T extends Comparable<T>>(
             int maxInclusive
     ) {
         return new EnhancedSliderValueSet<>(
-                Codec.intRange(minInclusive, maxInclusive + 1),
-                minInclusive,
-                maxInclusive,
+                Codec.INT,
+                new InclusiveRange<>(minInclusive, maxInclusive),
                 i -> {
                     if (i == minInclusive) {
                         return 0D;
@@ -53,8 +52,7 @@ public record EnhancedSliderValueSet<T extends Comparable<T>>(
                         d = 0.99999F;
                     }
                     return Mth.floor(Mth.map(d, 0D, 1D, minInclusive, maxInclusive));
-                },
-                i -> i <= maxInclusive && i >= minInclusive
+                }
         );
     }
 
@@ -64,11 +62,9 @@ public record EnhancedSliderValueSet<T extends Comparable<T>>(
     ) {
         return new EnhancedSliderValueSet<>(
                 Codec.DOUBLE,
-                minInclusive,
-                maxInclusive,
+                new InclusiveRange<>(minInclusive, maxInclusive),
                 d -> Mth.map(d, minInclusive, maxInclusive, 0D, 1D),
-                d -> Mth.map(d, 0D, 1D, minInclusive, maxInclusive),
-                d -> d <= maxInclusive && d >= minInclusive
+                d -> Mth.map(d, 0D, 1D, minInclusive, maxInclusive)
         );
     }
 
@@ -84,7 +80,7 @@ public record EnhancedSliderValueSet<T extends Comparable<T>>(
 
     @Override
     public Optional<T> validateValue(T value) {
-        return validator.test(value) ?
+        return range.isValueInRange(value) ?
                 Optional.of(value) :
                 Optional.empty();
     }

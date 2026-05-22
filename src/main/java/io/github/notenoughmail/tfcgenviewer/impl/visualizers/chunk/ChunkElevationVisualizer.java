@@ -62,15 +62,13 @@ public class ChunkElevationVisualizer implements ITFCChunkVisualizerType.Simple<
         final Seed seed = Seed.of(worldSeed);
         ChunkDataProvider.tfcRegion(seed, generator, parallelism.parallel()); // init the biome layer for the height filler
         ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetSeed(seed);
-        // ((TFCChunkGeneratorAccessor) generator).tfcgenviewer$SetTideHeightNoise(BiomeNoise.shoreTideLevelNoise(seed));
         return new ElevationCache(generator, seed);
     }
 
     @Override
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, ElevationCache, ChunkScale, NoneOpt> info) {
         info.cache().primePos(xPos, zPos);
-        final int elevation = info.scale().evaluateAtBlockPosition(true, xPos, zPos, info.cache()::sample);
-        // final int elevation = info.evaluateAtBlockPosition(true, xPos, zPos, info.generator().createHeightFillerForChunk(new ChunkPos(xPos, zPos))::sampleHeight).intValue();
+        final int elevation = info.evaluateAtBlockPosition(true, xPos, zPos, info.cache()::sample);
         final int color = elevation < TFCChunkGenerator.SEA_LEVEL_Y ?
                 LOW.get().color(Mth.clampedMap(elevation, 23, TFCChunkGenerator.SEA_LEVEL_Y, 0, 1), info) :
                 elevation > 103 ?

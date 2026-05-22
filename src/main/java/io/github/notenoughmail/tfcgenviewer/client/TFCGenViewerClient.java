@@ -1,6 +1,5 @@
 package io.github.notenoughmail.tfcgenviewer.client;
 
-import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
@@ -33,34 +32,32 @@ import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.function.Supplier;
-
 @Mod(value = TFCGenViewer.ID, dist = Dist.CLIENT)
 public class TFCGenViewerClient {
 
-    private final KeyMapping openViewer = new KeyMapping(
+    private static final KeyMapping OPEN_VIEWER = new KeyMapping(
             "tfcgenviewer.key.open_viewer",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_K,
             "TFCGenViewer"
     );
-    public static final Supplier<KeyMapping> PREVIEW_CENTER_SPAWN = Suppliers.memoize(() -> new KeyMapping(
+    public static final KeyMapping PREVIEW_CENTER_SPAWN = new KeyMapping(
             "tfcgenviewer.key.preview_center_spawn",
             PreviewScreen.KEY_CONFLICT_CONTEXT,
             KeyModifier.CONTROL,
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_SHIFT,
             "TFCGenViewer"
-    ));
-    public static final Supplier<KeyMapping> PREVIEW_CENTER_VIEW = Suppliers.memoize(() -> new KeyMapping(
+    );
+    public static final KeyMapping PREVIEW_CENTER_VIEW = new KeyMapping(
             "tfcgenviewer.key.preview_center_view",
             PreviewScreen.KEY_CONFLICT_CONTEXT,
             KeyModifier.ALT,
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_SHIFT,
             "TFCGenViewer"
-    ));
+    );
 
     public static boolean isDown(KeyMapping mapping) {
         return mapping.getKeyModifier().isActive(PreviewScreen.KEY_CONFLICT_CONTEXT)
@@ -99,16 +96,16 @@ public class TFCGenViewerClient {
     }
 
     private void registerKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(openViewer);
-        event.register(PREVIEW_CENTER_SPAWN.get());
-        event.register(PREVIEW_CENTER_VIEW.get());
+        event.register(OPEN_VIEWER);
+        event.register(PREVIEW_CENTER_SPAWN);
+        event.register(PREVIEW_CENTER_VIEW);
     }
 
     private static final Component TFCGV_ABSENT = Component.translatable("tfcgenviewer.network.view_request.response.absent");
 
     private void onInput(InputEvent.Key event) {
         final ClientPacketListener clientPacketListener = Minecraft.getInstance().getConnection();
-        if (openViewer.isDown() && clientPacketListener != null) {
+        if (OPEN_VIEWER.isDown() && clientPacketListener != null) {
             if (clientPacketListener.hasChannel(ViewRequestPacket.TYPE)) {
                 PacketDistributor.sendToServer(new ViewRequestPacket(ImplAPI.GEN_IDS.keySet(), GenViewerAPI.VISUALIZER_REGISTRY.keySet()));
             } else {

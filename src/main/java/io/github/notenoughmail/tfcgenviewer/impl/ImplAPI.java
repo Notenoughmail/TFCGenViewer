@@ -17,7 +17,10 @@ public class ImplAPI {
         GEN_IDS.put(generatorVisualizer.id(), generatorVisualizer);
     }
 
-    public static <G extends ChunkGeneratorExtension, V extends IVisualizerType<G, ?, ?, ?>> List<IGeneratorVisualizer<G, ?, ?, V>> getVisualizersFor(G gen) {
+    public static <
+            G extends ChunkGeneratorExtension,
+            V extends IVisualizerType<G, ?, ?, ?>
+            > List<IGeneratorVisualizer<G, ?, ?, V>> getVisualizersFor(G gen) {
         return TFCGenViewer.cast(GENS.get(gen.getClass()));
     }
 

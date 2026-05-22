@@ -10,6 +10,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.InclusiveRange;
 
 import java.util.List;
 import java.util.function.*;
@@ -82,7 +83,6 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
     ) implements OptionOrder<Boolean> {
 
         static final OptionInstance.CaptionBasedToString<Boolean> DEFAULT = OptionProvider.<Boolean>convertToFactory(b -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)::make;
-        static final EnhancedEnumValueSet<Boolean> BOOL = new EnhancedEnumValueSet<>(Codec.BOOL, List.of(true, false), true);
 
         @Override
         public void finish(BooleanSupplier active) {
@@ -90,7 +90,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     name,
                     getTooltip(),
                     getCaption(DEFAULT),
-                    BOOL,
+                    EnhancedEnumValueSet.BOOL,
                     initialValue,
                     onChange
             ), active);
@@ -164,11 +164,9 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     getCaption(t -> Component.literal(t.toString())),
                     new EnhancedSliderValueSet<>(
                             codec,
-                            min,
-                            max,
+                            new InclusiveRange<>(min, max),
                             toSlider,
-                            fromSlider,
-                            t -> min.compareTo(t) <= 0 && max.compareTo(t) >= 0
+                            fromSlider
                     ),
                     initial,
                     onChange

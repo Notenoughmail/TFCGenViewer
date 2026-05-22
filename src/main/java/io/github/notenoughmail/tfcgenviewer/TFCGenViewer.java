@@ -24,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -60,7 +59,7 @@ public class TFCGenViewer {
         displayGenerationProgress = configBuilder
                 .comment(
                         "",
-                        " If the info pane should show a progress bar while a preview is being generated",
+                        " If a progress bar should be displayed while a preview is generating",
                         ""
                 ).define("displayGenerationProgress", true);
         maxPreviewWidth = configBuilder
@@ -68,7 +67,7 @@ public class TFCGenViewer {
                         "",
                         " The maximum portion of the screen the world preview may take up",
                         "",
-                        " The preview will always fit into the largest square between this portion of the screen with",
+                        " The preview will always fit into the largest square between this portion of the screen width",
                         " and the majority of the screen height",
                         ""
                 ).defineInRange("maxPreviewWidth", 0.5D, 0.25D, 0.75D);
@@ -90,7 +89,7 @@ public class TFCGenViewer {
                         " The absolute maximum number of microseconds the image generator will process a single pixel before",
                         " cancelling the operation, filling the pixel with a default color, and logging an error",
                         ""
-                ).defineInRange("absoluteMaximumMicrosToDrawPixel", 200, 1, Integer.MAX_VALUE);
+                ).defineInRange("absoluteMaximumMicrosToDrawPixel", 1000, 1, Integer.MAX_VALUE);
         container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 

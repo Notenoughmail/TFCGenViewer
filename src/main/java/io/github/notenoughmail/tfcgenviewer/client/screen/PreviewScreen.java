@@ -14,9 +14,9 @@ import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.SingleColumnOptionsList;
-import io.github.notenoughmail.tfcgenviewer.impl.util.ISeedSetter;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Preview;
+import io.github.notenoughmail.tfcgenviewer.impl.util.ISeedSetter;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.Settings;
@@ -117,7 +117,8 @@ public class PreviewScreen<
 
         originalGenerator = generator;
         this.generator = visualizer.recreateGenerator(generator);
-        if (this.generator == generator) throw new IllegalArgumentException("Generator Visualizers must recreate generators! %s [%s] doe not".formatted(visualizer, visualizer.getClass().getSimpleName()));
+        if (this.generator == generator)
+            throw new IllegalArgumentException("Generator Visualizers must recreate generators! %s [%s] does not".formatted(visualizer.id(), visualizer.getClass().getSimpleName()));
         this.visualizer = visualizer;
         this.parent = parent;
         state = new State();
@@ -433,10 +434,10 @@ public class PreviewScreen<
     // Default behaviour when beyond the bounds is to reset to the initial value...
     private static void setAndClamp(int value, OptionInstance<Integer> instance) {
         if (
-                instance.values() instanceof EnhancedSliderValueSet<?> slider
-             && slider.min() instanceof Integer min
-             && slider.max() instanceof Integer max
+                instance.values() instanceof EnhancedSliderValueSet<Integer> slider
         ) {
+            final int min = slider.range().minInclusive();
+            final int max = slider.range().maxInclusive();
             if (value < min) {
                 value = min;
             } else if (value > max) {
