@@ -1,4 +1,4 @@
-# 2.1.0 (W.I.P.)
+# 2.1.0
 - Add the ability to visualizer the world at a chunk (16 block) scale
   - Has *Biome*, *Climate Restricted Features*, *Elevation* *Köppen Climate Classification*, *Rainfall*, *Rock*, and *Temperature* visualizer types
   - The *Elevation* VT has three elevation bands:
