@@ -1,3 +1,43 @@
+# 2.1.0 (W.I.P.)
+- Add the ability to visualizer the world at a chunk (16 block) scale
+  - Has *Biome*, *Climate Restricted Features*, *Elevation* *Köppen Climate Classification*, *Rainfall*, *Rock*, and *Temperature* visualizer types
+  - The *Elevation* VT has three elevation bands:
+    - Low, for elevations below y = 63
+    - Middle, for elevations above y = 63 and below y = 103
+    - High, for elevations above y = 103
+- Many biome colors have been added to accommodate the biomes now visible with the finer resolution
+- Visualizer types now have the ability to draw previews in a parallel manner
+  - The maximum level of parallelism (concurrent pixel draws) can be configured, defaults to 5
+  - If previews may even be drawn in parallel can be disabled, defaults to allowing
+  - Currently, only the chunk-scale *Elevation* and *Rock* (when on at-depth mode) use this
+  - With this, a configurable timeout for the drawing of a single pixel has been added and is configurable
+    - Those with weaker systems *may* want to increase this if they notice the log has a lot of warning about pixel draws timing out or previews have lots of empty space
+- The spawn and display center of the preview can be set to the mouse's position on a visible preview by control-left shift and alt-left shift clicking
+- All slider and cycle values in the preview screen can now be reset to their default value by right-clicking them
+- Add `tfcgenviewer:dark_blue` preset gradient
+- the seed box of the preview screen now has the hint text present on create world screen's seed box
+- [API]
+  - Add `MutableImage#setPixel(int,int,ColorDefinition)`
+  - Add `DrawParallelism`, a holder for the canonical parallelism of a preview draw operation
+  - Add `ChunkDataProvider`, a pseudo-cache type for `ChunkData`s
+  - `ClimateFeatureCache` now has methods to delegate `IVisualizerType#additionalSynchronization` and `#elementCodecForRegistry` calls to
+  - `RegionPointCache#isNortherHemisphere` has been deprecated in favor of `IVisualizerType$DrawInfo#isNorthernHemisphere`
+  - `IVisualizerType`
+    - `#createCache` now has `O extends $Options<O>` and `DrawParallelism` parameters
+      - With this, the call order of `$Options#copy` and `#createCache` has been reversed
+    - `#afterComplete` now has two `int` parameters for the x and z drawing offset of the image
+    - Add `#timeoutFillBGR`, the BGR color to fill a pixel with if the drawing operation times out. Defaults to `0`
+    - Add `#requestDrawInParallel`, request parallel drawing. Defaults to `false`
+    - Add `#maxLevelOfParallelism`, the max parallelism the VT can handle if allowed to draw in parallel. Defaults to `10`
+    - `$Drawinfo`
+      - Add `#isNorthernHemisphere`
+      - Add `#pixelResolutionToBlock`, a simple delegator to the same method in `IScale`
+      - Add `#evaluateAtBlockPosition`, perform an action at a certain block-pos resolution as determined from the given pixel-resolution coordinates
+      - Add `#settings`, a simple delegator to the same method in the chunk generator extension
+      - Add `#rockLayerSettings`, a simple delegator to the same method in the chunk generator extension
+  - Move `OptionProvider#withgenericDisplay` to `$Order` where it is called in place of `#withDisplay`
+  - VT caches which implement `AutoClosable` will now be closed upon completion of an image draw
+
 # 2.0.3
 - Fix incompatibility with Sodium's `BiomeMixin`
 - Add the ability to disable (and re-enable) the permissions system outright, allowing full access when disabled

@@ -11,6 +11,8 @@ import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCChunkVisualizerTy
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeExtension;
+import net.dries007.tfc.world.biome.TFCBiomes;
+import net.dries007.tfc.world.river.RiverBlendType;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -57,7 +59,6 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
         return DESC;
     }
 
-    // TODO: 2.1.0 | This reveals subterranean rivers
     public static class Cache {
 
         private final ChunkDataProvider.Region biomeSource;
@@ -70,10 +71,21 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
         }
 
         public ColorDefinition getColor(int xPos, int zPos) {
-            final BiomeExtension ext = biomeSource.getBiome(xPos, zPos, true);
+            final BiomeExtension ext = getBiome(xPos, zPos);
             final ColorDefinition color = Colors.BIOME_COLORS.getInstanceColor(ext.key(), Colors.UNKNOWN_BIOME);
             colorsEncountered.add(color);
             return color;
+        }
+
+        protected BiomeExtension getBiome(int xPos, int zPos) {
+            final BiomeExtension ext = biomeSource.getBiome(xPos, zPos, true);
+            if (ext == TFCBiomes.RIVER) {
+                final BiomeExtension base = biomeSource.getBiome(xPos, zPos, false);
+                if (base.riverBlendType() == RiverBlendType.CAVE) {
+                    return base; // 'Hide' rivers that would not be seen from surface
+                }
+            }
+            return ext;
         }
 
         public Component colorKey() {

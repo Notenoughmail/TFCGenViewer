@@ -114,7 +114,7 @@ public class ChunkRockVisualizer implements ITFCChunkVisualizerType<RockCache<Ch
     }
 
     @Override
-    public boolean shouldDrawInParallel(RockVisualizer.Options options, ImageSize size) {
+    public boolean requestDrawInParallel(RockVisualizer.Options options, ImageSize size) {
         return !options.surface;
     }
 

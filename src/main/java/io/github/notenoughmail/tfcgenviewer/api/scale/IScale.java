@@ -1,7 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.scale;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.api.BlockEvaluationFunction;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
@@ -25,13 +24,6 @@ public interface IScale<S extends ImageSize> {
         int blockRes = pixelResolutionPosition * blocksPerPixel();
         if (center) blockRes += blocksPerPixel() / 2;
         return blockRes;
-    }
-
-    /**
-     * Perform an action at block scale
-     */
-    default <T> T evaluateAtBlockPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BlockEvaluationFunction<T> function) {
-        return function.evaluate(pixelResolutionToBlock(pixelResolutionX, center), pixelResolutionToBlock(pixelResolutionZ, center));
     }
 
     /**

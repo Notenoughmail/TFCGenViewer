@@ -16,7 +16,7 @@ import org.jetbrains.annotations.VisibleForTesting;
  * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType region visualizers}
  * as the cache of {@link RegionGenerator} is often too small for the scales often encountered by visualizers
  * <p>
- * This cache is <strong>not</strong> thread safe
+ * This cache <strong>is not</strong> thread safe
  */
 public class RegionPointCache {
 
@@ -135,7 +135,7 @@ public class RegionPointCache {
                 // offset = grid - image
                 final int xOffset = gridX - x, zOffset = gridZ - y;
                 fillCache(region, xOffset, zOffset);
-            } else if (false) {
+            } else {
                 TFCGenViewer.LOGGER.warn("Encountered broken region! Reusing previous point");
                 // Just lie and use the previous point
                 // It's fine, it's rare and off in the middle of the ocean

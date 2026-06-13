@@ -1,4 +1,4 @@
-package io.github.notenoughmail.tfcgenviewer.impl;
+package io.github.notenoughmail.tfcgenviewer.impl.behavior;
 
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectMap;

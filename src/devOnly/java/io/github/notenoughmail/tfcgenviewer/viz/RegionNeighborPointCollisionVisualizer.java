@@ -7,7 +7,7 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
-import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.behavior.TableBasedRegionCache;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;

@@ -397,8 +397,8 @@ public class Preview {
         }
 
         public void queueBlocking(ThrowingRunnable drawTask) throws Throwable {
-            // Never gets overwritten to null and which one is ultimately throw shouldn't matter too much so this
-            // doesn't need any threading safeguards
+            // Never gets overwritten to null and which one is ultimately throw shouldn't matter too much
+            // so this doesn't need any threading safeguards
             if (exception != null) throw exception;
             CompletableFuture.<Throwable>supplyAsync(() -> {
                 Helpers.uncheck(drawTask);
@@ -415,6 +415,9 @@ public class Preview {
         }
     }
 
+    /**
+     * The runnable task for the drawing of a single pixel in a preview image
+     */
     private static class DrawTask<
             G extends ChunkGeneratorExtension,
             C,

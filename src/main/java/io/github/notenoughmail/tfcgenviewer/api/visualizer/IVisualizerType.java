@@ -157,9 +157,11 @@ public interface IVisualizerType<
     }
 
     /**
-     * If the draw requests of this visualizer type can be lowly parallelized. A max of 5 draws will be processed simultaneously
+     * If the draw requests of this visualizer type can be lowly parallelized. A max of
+     * {@link io.github.notenoughmail.tfcgenviewer.TFCGenViewer#maximumNumberOfParallelDrawOperations TFCGenViewer#maximumNumberOfParallelDrawOperations}
+     * draws will be processed simultaneously
      */
-    default boolean shouldDrawInParallel(O options, ImageSize size) {
+    default boolean requestDrawInParallel(O options, ImageSize size) {
         return false;
     }
 
@@ -215,7 +217,10 @@ public interface IVisualizerType<
          * Perform an action at block scale
          */
         public <T> T evaluateAtBlockPosition(boolean center, int pixelResolutionX, int pixelResolutionZ, BlockEvaluationFunction<T> function) {
-            return scale.evaluateAtBlockPosition(center, pixelResolutionX, pixelResolutionZ, function);
+            return function.evaluate(
+                    scale.pixelResolutionToBlock(pixelResolutionX, center),
+                    scale.pixelResolutionToBlock(pixelResolutionZ, center)
+            );
         }
 
         /**

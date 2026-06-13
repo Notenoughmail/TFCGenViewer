@@ -178,12 +178,12 @@ public class PreviewPane extends AbstractWidget {
 
     @Override
     public void onClick(double mouseX, double mouseY, int button) {
-        if (TFCGenViewerClient.isDown(TFCGenViewerClient.PREVIEW_CENTER_VIEW)) {
+        if (pos != CoordSetter.NONE && TFCGenViewerClient.isDown(TFCGenViewerClient.PREVIEW_CENTER_VIEW)) {
             pos.set(
                     getMousedXPos(mouseX),
                     getMousedZPos(mouseY)
             );
-        } else if (TFCGenViewerClient.isDown(TFCGenViewerClient.PREVIEW_CENTER_SPAWN)) {
+        } else if (spawn != CoordSetter.NONE && TFCGenViewerClient.isDown(TFCGenViewerClient.PREVIEW_CENTER_SPAWN)) {
             spawn.set(
                     getMousedXPos(mouseX),
                     getMousedZPos(mouseY)

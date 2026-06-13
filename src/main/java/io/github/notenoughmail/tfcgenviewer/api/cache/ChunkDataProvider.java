@@ -1,7 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.api.cache;
 
 import com.google.common.collect.ImmutableSet;
-import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.behavior.MaybeConcurrentArea;
+import io.github.notenoughmail.tfcgenviewer.impl.behavior.TableBasedRegionCache;
 import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeExtension;
@@ -10,7 +11,6 @@ import net.dries007.tfc.world.biome.TFCBiomes;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataGenerator;
 import net.dries007.tfc.world.layer.TFCLayers;
-import net.dries007.tfc.world.layer.framework.ConcurrentArea;
 import net.dries007.tfc.world.region.RegionGenerator;
 import net.minecraft.Util;
 import net.minecraft.core.QuartPos;
@@ -20,6 +20,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * A pseudo-cache for {@link ChunkData}. The default implementation(s) do not provide
+ * any true caching functionality of their own, expect where 'inherited' from the underlying
+ * {@link ChunkDataGenerator}
+ */
 public class ChunkDataProvider {
 
     public static Region tfcRegion(long worldSeed, TFCChunkGenerator generator, boolean parallel) {
@@ -30,6 +35,10 @@ public class ChunkDataProvider {
         return new Region(generator, seed, parallel);
     }
 
+    /**
+     * An action to be applied on generating a {@link ChunkData} so that it
+     * can be promoted to {@link ChunkData.Status#FULL}
+     */
     public void withPromotionToFull(Consumer<ChunkData> onGenerate) {
         fullPromotion = onGenerate;
     }
@@ -79,14 +88,14 @@ public class ChunkDataProvider {
         // There's a nasty issue with the current region cache that sometimes causes neighboring
         // regions to share a cache position, making some chunks to recreate both regions twice
         // This bypasses that by using a different cache type which doesn't suffer the same problem
-        Region(TFCChunkGenerator chunkGenerator, Seed seed, boolean parallel) {
-            this(TableBasedRegionCache.regionGeneratorWithThisCache(chunkGenerator.settings(), seed, parallel), chunkGenerator, seed);
+        protected Region(TFCChunkGenerator chunkGenerator, Seed seed, boolean parallel) {
+            this(TableBasedRegionCache.regionGeneratorWithThisCache(chunkGenerator.settings(), seed, parallel), chunkGenerator, seed, parallel);
         }
 
-        Region(RegionGenerator generator, TFCChunkGenerator chunkGenerator, Seed seed) {
+        protected Region(RegionGenerator generator, TFCChunkGenerator chunkGenerator, Seed seed, boolean parallel) {
             super(generator.chunkDataGenerator());
             biomeSource = ((BiomeSourceExtension) chunkGenerator.getBiomeSource());
-            biomeSource.initRandomState(generator, new ConcurrentArea<>(TFCLayers.createRegionBiomeLayer(generator, seed), TFCLayers::getFromLayerId));
+            biomeSource.initRandomState(generator, MaybeConcurrentArea.create(parallel, TFCLayers.createRegionBiomeLayer(generator, seed), TFCLayers::getFromLayerId));
             regionGenerator = generator;
         }
 

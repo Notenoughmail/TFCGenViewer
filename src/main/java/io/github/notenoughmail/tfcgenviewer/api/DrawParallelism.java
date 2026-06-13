@@ -10,7 +10,7 @@ import org.jetbrains.annotations.ApiStatus;
  * @param parallelism The maximum number of concurrent draw operations that will occur.
  *                    Will be negative if operations are purely serial
  * @param parallel If draw operations will actually be parallel. This value may not match
- *                 the value returned in {@link IVisualizerType#shouldDrawInParallel(IVisualizerType.Options, ImageSize) #shouldDrawInParallel}
+ *                 the value returned in {@link IVisualizerType#requestDrawInParallel(IVisualizerType.Options, ImageSize) #shouldDrawInParallel}
  */
 public record DrawParallelism(
         int parallelism,
@@ -20,7 +20,7 @@ public record DrawParallelism(
     @ApiStatus.Internal
     public static <O extends IVisualizerType.Options<O>> DrawParallelism of(O options, IVisualizerType<?, ?, ?, O> viz, ImageSize size) {
         if (TFCGenViewer.disableParallelGeneration.getAsBoolean()) return NONE;
-        if (!viz.shouldDrawInParallel(options, size)) return NONE;
+        if (!viz.requestDrawInParallel(options, size)) return NONE;
         final int parallelism = Math.min(
                 TFCGenViewer.maximumNumberOfParallelDrawOperations.getAsInt(),
                 viz.maxLevelOfParallelism(options, size)

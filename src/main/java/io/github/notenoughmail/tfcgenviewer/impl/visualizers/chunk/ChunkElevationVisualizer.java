@@ -93,7 +93,7 @@ public class ChunkElevationVisualizer implements ITFCChunkVisualizerType.Simple<
     }
 
     @Override
-    public boolean shouldDrawInParallel(NoneOpt options, ImageSize size) {
+    public boolean requestDrawInParallel(NoneOpt options, ImageSize size) {
         return true;
     }
 

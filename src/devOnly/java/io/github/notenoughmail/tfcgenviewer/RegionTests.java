@@ -1,6 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer;
 
-import io.github.notenoughmail.tfcgenviewer.impl.TableBasedRegionCache;
+import io.github.notenoughmail.tfcgenviewer.impl.behavior.TableBasedRegionCache;
 import net.dries007.tfc.common.blocks.SandstoneBlockType;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.rock.Rock;
