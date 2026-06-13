@@ -12,10 +12,14 @@
   - Currently, only the chunk-scale *Elevation* and *Rock* (when on at-depth mode) use this
   - With this, a configurable timeout for the drawing of a single pixel has been added and is configurable
     - Those with weaker systems *may* want to increase this if they notice the log has a lot of warning about pixel draws timing out or previews have lots of empty space
-- The spawn and display center of the preview can be set to the mouse's position on a visible preview by control-left shift and alt-left shift clicking
+- The preview center and spawn center coords can now be set by clicking on the displayed preview
+  - Control-left alt clicking the preview will set the preview center
+  - Shift-left alt clicking the preview will set the spawn center
+  - The modifier keys for each can be set in the keybinds screen
 - All slider and cycle values in the preview screen can now be reset to their default value by right-clicking them
 - Add `tfcgenviewer:dark_blue` preset gradient
 - the seed box of the preview screen now has the hint text present on create world screen's seed box
+- This version is network compatible with 2.0.3 through 2.0.1
 - [API]
   - Add `MutableImage#setPixel(int,int,ColorDefinition)`
   - Add `DrawParallelism`, a holder for the canonical parallelism of a preview draw operation
@@ -30,7 +34,7 @@
     - Add `#requestDrawInParallel`, request parallel drawing. Defaults to `false`
     - Add `#maxLevelOfParallelism`, the max parallelism the VT can handle if allowed to draw in parallel. Defaults to `10`
     - `$Drawinfo`
-      - Add `#isNorthernHemisphere`
+      - Add `#isNorthernHemisphere`, self-explanatory
       - Add `#pixelResolutionToBlock`, a simple delegator to the same method in `IScale`
       - Add `#evaluateAtBlockPosition`, perform an action at a certain block-pos resolution as determined from the given pixel-resolution coordinates
       - Add `#settings`, a simple delegator to the same method in the chunk generator extension

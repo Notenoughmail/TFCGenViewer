@@ -265,9 +265,9 @@ public class EN_US extends LangProvider {
                         )
                 )
                 .branch("key", key -> key
-                        .add("open_viewer", "Open world viewer")
-                        .add("preview_center_view", "Center preview")
-                        .add("preview_center_spawn", "Center spawn position")
+                        .add("open_viewer", "Open World Viewer")
+                        .add("preview_center_view", "Center Preview")
+                        .add("preview_center_spawn", "Center Spawn Position")
                 )
                 .branch("narration", narration -> narration
                         .branch("info_pane", infoPane -> infoPane

@@ -47,15 +47,15 @@ public class TFCGenViewerClient {
             PreviewScreen.KEY_CONFLICT_CONTEXT,
             KeyModifier.CONTROL,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_LEFT_SHIFT,
+            GLFW.GLFW_KEY_LEFT_ALT,
             "TFCGenViewer"
     );
     public static final KeyMapping PREVIEW_CENTER_VIEW = new KeyMapping(
             "tfcgenviewer.key.preview_center_view",
             PreviewScreen.KEY_CONFLICT_CONTEXT,
-            KeyModifier.ALT,
+            KeyModifier.SHIFT,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_LEFT_SHIFT,
+            GLFW.GLFW_KEY_LEFT_ALT,
             "TFCGenViewer"
     );
 
