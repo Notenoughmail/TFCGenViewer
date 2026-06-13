@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 120,
+      "g": 120,
+      "r": 80
+    },
+    "name": {
+      "translate": "biome.tfc.terrace_lower"
+    },
+    "sort": 341
+  },
+  "keys": [
+    "tfc:terrace_lower"
+  ]
+}

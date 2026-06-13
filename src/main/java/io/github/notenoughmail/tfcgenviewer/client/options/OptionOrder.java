@@ -7,15 +7,12 @@ import it.unimi.dsi.fastutil.doubles.DoubleConsumer;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
+import net.minecraft.util.InclusiveRange;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.*;
 
 public interface OptionOrder<T> extends OptionProvider.Order<T> {
@@ -93,7 +90,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     name,
                     getTooltip(),
                     getCaption(DEFAULT),
-                    ImprovedEnumValueSet.BOOL,
+                    EnhancedEnumValueSet.BOOL,
                     initialValue,
                     onChange
             ), active);
@@ -116,7 +113,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     name,
                     getTooltip(),
                     getCaption(Options::genericValueLabel),
-                    new OptionInstance.IntRange(min, max),
+                    EnhancedSliderValueSet.integer(min, max),
                     initial,
                     onChange
             ), active);
@@ -139,14 +136,7 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     name,
                     getTooltip(),
                     getCaption(d -> Component.literal(Double.toString(d))),
-                    new SliderValue<>(
-                            Codec.DOUBLE,
-                            min,
-                            max,
-                            d -> Mth.map(d, min, max, 0D, 1D),
-                            d -> Mth.map(d, 0D, 1D, min, max),
-                            Optional.of(d -> d <= max && d >= min)
-                    ),
+                    EnhancedSliderValueSet.doub(min, max),
                     initial,
                     onChange
             ), active);
@@ -172,13 +162,11 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     name,
                     getTooltip(),
                     getCaption(t -> Component.literal(t.toString())),
-                    new SliderValue<>(
+                    new EnhancedSliderValueSet<>(
                             codec,
-                            min,
-                            max,
+                            new InclusiveRange<>(min, max),
                             toSlider,
-                            fromSlider,
-                            Optional.empty()
+                            fromSlider
                     ),
                     initial,
                     onChange
@@ -202,9 +190,10 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
                     name,
                     getTooltip(),
                     getCaption(t -> Component.literal(t.toString())),
-                    new ImprovedEnumValueSet<>(
+                    new EnhancedEnumValueSet<>(
+                            codec,
                             values,
-                            codec
+                            true
                     ),
                     initial,
                     onChange
@@ -216,48 +205,5 @@ public interface OptionOrder<T> extends OptionProvider.Order<T> {
         private T val;
         void set(T val) { this.val = val; }
         <R> R get(Function<T, R> mapper, R def) { return val == null ? def : mapper.apply(val); }
-    }
-
-    record SliderValue<T extends Comparable<T>>(Codec<T> codec, T min, T max, ToDoubleFunction<T> toSlider, DoubleFunction<T> fromSlider, Optional<Predicate<T>> validator) implements OptionInstance.SliderableValueSet<T> {
-
-        @Override
-        public double toSliderValue(T value) {
-            return toSlider.applyAsDouble(value);
-        }
-
-        @Override
-        public T fromSliderValue(double value) {
-            return fromSlider.apply(value);
-        }
-
-        @Override
-        public Optional<T> validateValue(T value) {
-            return validator
-                    .orElse(val -> min.compareTo(val) <= 0 && max.compareTo(val) >= 0)
-                    .test(value) ? Optional.of(value) : Optional.empty();
-        }
-    }
-
-    record ImprovedEnumValueSet<T>(List<T> values, Codec<T> codec) implements OptionInstance.ValueSet<T> {
-
-        public static final ImprovedEnumValueSet<Boolean> BOOL = new ImprovedEnumValueSet<>(List.of(true, false), Codec.BOOL);
-
-        @Override
-        public Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> tooltipSupplier, Options options, int x, int y, int width, Consumer<T> onValueChanged) {
-            return instance -> CycleButton.builder(instance.toString)
-                    .withValues(values)
-                    .withTooltip(tooltipSupplier)
-                    .withInitialValue(instance.get())
-                    .displayOnlyValue() // <-- Effectively the only change
-                    .create(x, y, width, 20, instance.caption, (button, value) -> {
-                        instance.set(value);
-                        onValueChanged.accept(value);
-                    });
-        }
-
-        @Override
-        public Optional<T> validateValue(T value) {
-            return values.contains(value) ? Optional.of(value) : Optional.empty();
-        }
     }
 }

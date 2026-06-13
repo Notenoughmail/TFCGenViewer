@@ -4,13 +4,17 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.chat.Component;
 
-public final class ColorTooltips {
+public sealed class ColorTooltips permits ColorTooltips.Synchronous {
+
+    public static ColorTooltips of(boolean parallel) {
+        return parallel ? new Synchronous() : new ColorTooltips();
+    }
 
     public static final Component NO_TOOLTIP = Component.translatable("tfcgenviewer.widget.preview_pane.no_tooltip");
 
-    private final Int2ObjectOpenHashMap<Component> mapping;
+    protected final Int2ObjectOpenHashMap<Component> mapping;
 
-    public ColorTooltips() {
+    protected ColorTooltips() {
         mapping = new Int2ObjectOpenHashMap<>();
         mapping.defaultReturnValue(NO_TOOLTIP);
     }
@@ -35,5 +39,29 @@ public final class ColorTooltips {
 
     public Component get(int abgrColor) {
         return mapping.get(abgrColor);
+    }
+
+    public static final class Synchronous extends ColorTooltips {
+
+        @Override
+        public void addTooltip(int abgrColor, Component tooltip) {
+            synchronized (mapping) {
+                super.addTooltip(abgrColor, tooltip);
+            }
+        }
+
+        @Override
+        public boolean hasColor(int abgrColor) {
+            synchronized (mapping) {
+                return super.hasColor(abgrColor);
+            }
+        }
+
+        @Override
+        public Component get(int abgrColor) {
+            synchronized (mapping) {
+                return super.get(abgrColor);
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RockCache;
@@ -31,8 +32,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
         final Region.Point point = info.cache().innerCache.getPoint(imageX, imageY, xPos, zPos);
         final Block raw;
         if (info.options().surface) {
-            raw = info.generator()
-                    .rockLayerSettings()
+            raw = info.rockLayerSettings()
                     .sampleAtLayer(point.rock, 0)
                     .raw();
         } else {
@@ -46,9 +46,9 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
                     .getGenerator()
                     .chunkDataGenerator()
                     .generateRock(
-                            info.scale().pixelResolutionToBlock(xPos, true),
+                            info.pixelResolutionToBlock(xPos, true),
                             info.options().elevation,
-                            info.scale().pixelResolutionToBlock(zPos, true),
+                            info.pixelResolutionToBlock(zPos, true),
                             surfaceElevation,
                             null
                     )
@@ -56,7 +56,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
         }
         final ColorDefinition color = info.cache().getColor(raw);
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
     @Override
     public void addOptions(OptionProvider optionProvider, Options options) {
         optionProvider.orderBool("tfcgenviewer.option.region_visualizer.rock.mode", options.surface, b -> options.surface = b)
-                .withDisplay(optionProvider.genericDisplay(b -> b ? MODE_SURFACE : MODE_ELEVATION))
+                .withGenericDisplay(b -> b ? MODE_SURFACE : MODE_ELEVATION)
                 .withConstantTooltip(MODE_EXP)
                 .finish();
         optionProvider.orderInt("tfcgenviewer.option.region_visualizer.rock.elevation", options.elevation, -64, 320, i -> options.elevation = i)
@@ -76,7 +76,7 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
     }
 
     @Override
-    public RockCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+    public RockCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, Options options, DrawParallelism parallelism) {
         return new RockCache<>(RegionPointCache.of(generator, size, worldSeed));
     }
 
@@ -114,8 +114,8 @@ public class RockVisualizer implements IRegionVisualizerType<RockCache<RegionPoi
 
     public static final class Options implements IVisualizerType.Options<Options> {
 
-        boolean surface = true;
-        int elevation = 75; // Random guess for 'surface' y-level
+        public boolean surface = true;
+        public int elevation = 75; // Random guess for 'surface' y-level
 
         @Override
         public Options copy() {

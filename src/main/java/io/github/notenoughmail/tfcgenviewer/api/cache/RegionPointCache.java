@@ -10,15 +10,18 @@ import net.dries007.tfc.world.Seed;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.region.Region;
 import net.dries007.tfc.world.region.RegionGenerator;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * A cache of {@link Region.Point}s. Generally used, in some capacity, by {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType region visualizers}
  * as the cache of {@link RegionGenerator} is often too small for the scales often encountered by visualizers
+ * <p>
+ * This cache <strong>is not</strong> thread safe
  */
 public class RegionPointCache {
 
     public static RegionPointCache of(TFCChunkGenerator generator, ImageSize size, long worldSeed) {
-        return of (generator, size, worldSeed, 0);
+        return of(generator, size, worldSeed, 0);
     }
 
     /**
@@ -28,7 +31,15 @@ public class RegionPointCache {
      *                                  Negative values will completely disable cache clearing
      */
     public static RegionPointCache of(TFCChunkGenerator generator, ImageSize size, long worldSeed, int neighborRetentionDistance) {
-        return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), size, neighborRetentionDistance);
+        return of(generator, size.sizeInPixels(), worldSeed, neighborRetentionDistance);
+    }
+
+    public static RegionPointCache of(TFCChunkGenerator generator, int sizeInPixels, long worldSeed) {
+        return of(generator, sizeInPixels, worldSeed, 0);
+    }
+
+    public static RegionPointCache of(TFCChunkGenerator generator, int sizeInPixels, long worldSeed, int neighborRetentionDistance) {
+        return new RegionPointCache(new RegionGenerator(generator.settings(), Seed.of(worldSeed)), sizeInPixels, neighborRetentionDistance);
     }
 
     protected final RegionPoint[] pointCache;
@@ -37,10 +48,11 @@ public class RegionPointCache {
     protected final int neighborFreeDistance;
     protected int regionCount;
 
-    protected RegionPointCache(RegionGenerator generator, ImageSize size, int neighborRetentionDistance) {
+    @VisibleForTesting
+    public RegionPointCache(RegionGenerator generator, int size, int neighborRetentionDistance) {
         this.generator = generator;
-        this.size = size.sizeInPixels();
-        pointCache = new RegionPoint[this.size * this.size];
+        this.size = size;
+        pointCache = new RegionPoint[size * size];
         this.neighborFreeDistance = neighborRetentionDistance + 1;
     }
 
@@ -81,8 +93,9 @@ public class RegionPointCache {
     }
 
     /**
-     * @return If the z position is in the Northern hemisphere
+     * Deprecated, please use {@link IVisualizerType.DrawInfo#isNorthernHemisphere(int)}
      */
+    @Deprecated(forRemoval = true, since = "2.1.0")
     public boolean isNorthernHemisphere(int gridZ, IScale<?> scale) {
         return SolarCalculator.getInNorthernHemisphere(scale.pixelResolutionToBlock(gridZ, false), generator.settings.temperatureScale());
     }

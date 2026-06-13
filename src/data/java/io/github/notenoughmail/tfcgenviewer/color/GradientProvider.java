@@ -5,6 +5,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorGradientDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.Gradient;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
+import io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk.ChunkElevationVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RainfallVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.RockTypeVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.TemperatureVisualizer;
@@ -29,7 +30,7 @@ public class GradientProvider extends DataManagerProvider {
     protected void make(HolderLookup.Provider lookup) {
         makeFor(Colors.MISC_GRADIENTS, colors -> {
             colors.accept(Colors.OCEAN, simple(
-                    TFCGenViewerRegistration.GRAD_BLUE,
+                    TFCGenViewerRegistration.GRAD_DARK_BLUE,
                     "ocean"
             ));
             colors.accept(RainfallVisualizer.RAINFALL, new ColorGradientDefinition(
@@ -58,6 +59,21 @@ public class GradientProvider extends DataManagerProvider {
                     TFCGenViewerRegistration.GRAD_BLUE,
                     "rock_type", "oceanic"
             ));
+            colors.accept(ChunkElevationVisualizer.LOW, new ColorGradientDefinition(
+                    TFCGenViewerRegistration.GRAD_BLUE.get(),
+                    name("elevation", "low"),
+                    tooltips(8, i -> "tfcgenviewer.gradient.elevation.low." + i)
+            ));
+            colors.accept(ChunkElevationVisualizer.MID, new ColorGradientDefinition(
+                    TFCGenViewerRegistration.GRAD_GREEN.get(),
+                    name("elevation", "middle"),
+                    tooltips(8, i -> "tfcgenviewer.gradient.elevation.middle." + i)
+            ));
+            colors.accept(ChunkElevationVisualizer.HIGH, new ColorGradientDefinition(
+                    TFCGenViewerRegistration.GRAD_UPLIFT.get(),
+                    name("elevation", "high"),
+                    tooltips(20, i -> "tfcgenviewer.gradient.elevation.high." + i)
+            ));
         });
     }
 
@@ -80,8 +96,7 @@ public class GradientProvider extends DataManagerProvider {
         return Optional.of(
                 IntStream.range(0, count)
                         .mapToObj(key)
-                        .map(Component::translatable)
-                        .map(Component.class::cast)
+                        .<Component>map(Component::translatable)
                         .toList()
         );
     }

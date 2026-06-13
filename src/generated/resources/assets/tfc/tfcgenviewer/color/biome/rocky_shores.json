@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 120,
+      "g": 140,
+      "r": 140
+    },
+    "name": {
+      "translate": "biome.tfc.rocky_shores"
+    },
+    "sort": 311
+  },
+  "keys": [
+    "tfc:rocky_shores",
+    "tfc:embayments"
+  ]
+}

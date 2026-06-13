@@ -1,7 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
 import com.mojang.serialization.Codec;
-import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
@@ -13,13 +13,11 @@ import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
-import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -39,7 +37,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
     }
 
     @Override
-    public ClimateFeatureCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+    public ClimateFeatureCache<RegionPointCache> createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
         return new ClimateFeatureCache<>(registryAccess, RegionPointCache.of(generator, size, worldSeed));
     }
 
@@ -62,11 +60,11 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
                     image.setPixel(
                             imageX,
                             imageY,
-                            color.abgr()
+                            color
                     );
                 } else {
                     Colors.fillOcean(
-                            regionPoint.region().noise() / 2,
+                            (regionPoint.region().noise() + 1) * 0.5,
                             imageX,
                             imageY,
                             image,
@@ -80,7 +78,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
                 image.setPixel(
                         imageX,
                         imageY,
-                        color.abgr()
+                        color
                 );
             }
             default -> {
@@ -89,7 +87,7 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
 
                 final Iterator<ColorDefinition> iter = colors.iterator();
                 final ColorDefinition first = iter.next();
-                image.setPixel(imageX, imageY, first.abgr());
+                image.setPixel(imageX, imageY, first);
                 tooltip.append(Component.translatable("tfcgenviewer.climate_features.list_entry", first.getTooltip()));
 
                 while (iter.hasNext()) {
@@ -129,19 +127,13 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
 
     @Override
     public void additionalSynchronization(SynchronizationRequest synchronizationRequest) {
-        synchronizationRequest.request(ClimateFeatureCache.VISUALIZABLE_FEATURES);
-        synchronizationRequest.request(Registries.BIOME, h -> h.is(k -> k.location().getNamespace().equals(TerraFirmaCraft.MOD_ID)));
+        ClimateFeatureCache.syncRequest(synchronizationRequest, null);
     }
 
     @Nullable
     @Override
     public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
-        if (Registries.PLACED_FEATURE.equals(registry)) {
-            return TFCGenViewer.cast(ClimateFeatureCache.MINIMAL_FEATURE_CODEC);
-        } else if (Registries.BIOME.equals(registry)) {
-            return TFCGenViewer.cast(ClimateFeatureCache.MINIMAL_BIOME_CODEC);
-        }
-        return null;
+        return ClimateFeatureCache.codecForRegistry(registry);
     }
 
     @Override

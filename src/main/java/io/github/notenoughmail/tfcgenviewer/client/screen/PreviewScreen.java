@@ -1,23 +1,27 @@
 package io.github.notenoughmail.tfcgenviewer.client.screen;
 
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.options.EditBoxValueSet;
+import io.github.notenoughmail.tfcgenviewer.client.options.EnhancedSliderValueSet;
 import io.github.notenoughmail.tfcgenviewer.client.options.OptionOrders;
 import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.PreviewPane;
 import io.github.notenoughmail.tfcgenviewer.client.widget.SingleColumnOptionsList;
-import io.github.notenoughmail.tfcgenviewer.impl.ISeedSetter;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Image;
 import io.github.notenoughmail.tfcgenviewer.impl.preview.Preview;
+import io.github.notenoughmail.tfcgenviewer.impl.util.ISeedSetter;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.Settings;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,6 +37,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.common.extensions.ILevelExtension;
 
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +53,7 @@ public class PreviewScreen<
         > extends Screen {
 
     public static final Component SAVE = Component.translatable("tfcgenviewer.button.save");
+    public static final Component SEED_EMPTY_HINT = Component.translatable("selectWorld.seedInfo").withStyle(ChatFormatting.DARK_GRAY);
 
     // Copied from CreateTFCWorldScreen
     private static OptionInstance<Double> constOption(String caption, double defaultValue) {
@@ -57,7 +63,7 @@ public class PreviewScreen<
                 (text, value) -> (value > 0.49 && value < 0.51) ?
                         Options.genericValueLabel(text, CommonComponents.OPTION_OFF) :
                         Component.translatable("options.percent_value", text, (int)((value - 0.5) * 200.0)),
-                OptionInstance.UnitDouble.INSTANCE,
+                EnhancedSliderValueSet.UNIT_DOUBLE,
                 (1.0 + defaultValue) * 0.5,
                 d -> {}
         );
@@ -68,7 +74,7 @@ public class PreviewScreen<
                 caption,
                 OptionInstance.noTooltip(),
                 (text, value) -> Component.translatable("options.percent_value", text, (int)((value - 0.5) * 200.0)),
-                OptionInstance.UnitDouble.INSTANCE,
+                EnhancedSliderValueSet.UNIT_DOUBLE,
                 defaultValue,
                 d -> {}
         );
@@ -111,7 +117,8 @@ public class PreviewScreen<
 
         originalGenerator = generator;
         this.generator = visualizer.recreateGenerator(generator);
-        if (this.generator == generator) throw new IllegalArgumentException("Generator Visualizers must recreate generators! %s [%s] doe not".formatted(visualizer, visualizer.getClass().getSimpleName()));
+        if (this.generator == generator)
+            throw new IllegalArgumentException("Generator Visualizers must recreate generators! %s [%s] does not".formatted(visualizer.id(), visualizer.getClass().getSimpleName()));
         this.visualizer = visualizer;
         this.parent = parent;
         state = new State();
@@ -120,7 +127,7 @@ public class PreviewScreen<
         final Settings settings = generator.settings();
         final int offset = visualizer.scale().blocksPerPixel() * visualizer.maximumPreviewOffset();
         intransientOptionsBefore = new OptionInstance[] {
-                flatBedrock = OptionInstance.createBoolean("tfc.create_world.flat_bedrock", settings.flatBedrock(), b -> {}),
+                flatBedrock = Preview.boolOption("tfc.create_world.flat_bedrock", settings.flatBedrock(), b -> {}),
                 spawnDist = Preview.kmOption("tfc.create_world.spawn_distance", 100, 20_000, settings.spawnDistance()),
                 spawnCenterX = Preview.kmOption("tfc.create_world.spawn_center_x", -20_000, 20_000, settings.spawnCenterX()),
                 spawnCenterZ = Preview.kmOption("tfc.create_world.spawn_center_z", -20_000, 20_000, settings.spawnCenterZ()),
@@ -130,12 +137,12 @@ public class PreviewScreen<
                 rainConst = constOption("tfc.create_world.rainfall_constant", settings.rainfallConstant()),
                 continentalness = pctOption("tfc.create_world.continentalness", settings.continentalness()),
                 grassDensity = pctOption("tfc.create_world.grass_density", settings.continentalness()),
-                finiteContinents = OptionInstance.createBoolean("tfc.create_world.finite_continents", settings.finiteContinents(), b -> {}),
+                finiteContinents = Preview.boolOption("tfc.create_world.finite_continents", settings.finiteContinents(), b -> {}),
                 visualizerType = Preview.visualizerTypeOption(visualizer.allVisualizers(), v -> onVisualizerChange())
         };
         intransientOptionsAfter = new OptionInstance[] {
                 imageSize = Preview.imageSizeOption(visualizer.scale()),
-                spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {}),
+                spawnOverlay = Preview.boolOption("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {}),
                 xOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0),
                 zOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.z_offset", -offset, offset, 0),
                 seed = new OptionInstance<>(
@@ -144,7 +151,8 @@ public class PreviewScreen<
                         (c, seed) -> Component.literal(seed),
                         new EditBoxValueSet(
                                 () -> font,
-                                editBox -> seedBox = editBox
+                                editBox -> seedBox = editBox,
+                                SEED_EMPTY_HINT
                         ),
                         parent.getUiState().getSeed(),
                         s -> {}
@@ -165,7 +173,22 @@ public class PreviewScreen<
                 })
         };
 
-        previewPane = new PreviewPane(0, 0, () -> font, true);
+        previewPane = new PreviewPane(
+                0,
+                0,
+                () -> font,
+                true,
+                (x, z) -> {
+                    setAndClamp(x, spawnCenterX);
+                    setAndClamp(z, spawnCenterZ);
+                    options.refreshFromInstances();
+                },
+                (x, z) -> {
+                    setAndClamp(x, xOffset);
+                    setAndClamp(z, zOffset);
+                    options.refreshFromInstances();
+                }
+        );
         infoPane = new InfoPane(0, 0, 10, 10, () -> font);
         state.createVizOptions(true);
 
@@ -180,9 +203,9 @@ public class PreviewScreen<
                 .build();
         saveButton = Button.builder(SAVE, b -> {
             applySettings();
-            getMinecraft().setScreen(this.parent);
+            onClose();
         }).build();
-        cancelButton = Button.builder(CommonComponents.GUI_CANCEL, b -> getMinecraft().setScreen(this.parent)).build();
+        cancelButton = Button.builder(CommonComponents.GUI_CANCEL, b -> onClose()).build();
 
         visualize();
     }
@@ -201,7 +224,7 @@ public class PreviewScreen<
 
     @Override
     protected void init() {
-        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewerClient.maxPreviewWidth.getAsDouble()));
+        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewer.maxPreviewWidth.getAsDouble()));
 
         options = new SingleColumnOptionsList(getMinecraft(), width, height, 32, 25);
         options.setScrollBarOffset(-8);
@@ -272,17 +295,19 @@ public class PreviewScreen<
 
         final G gen = visualizer.recreateGenerator(generator);
         final V viz = visualizerType.get();
-        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), state.genSeed);
+        final O options = IVisualizerType.Options.copy(state.vizOptions);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
+        final DrawParallelism parallelism = DrawParallelism.of(options, viz, imageSize);
+        final C cache = viz.createCache(registryAccess, gen, imageSize, state.genSeed, options, parallelism);
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(),
+                ColorTooltips.of(parallelism.parallel()),
                 imageSize,
                 scale,
-                IVisualizerType.Options.copy(state.vizOptions)
+                options
         );
 
         final Image image = new Image(imageSize.sizeInPixels());
@@ -290,7 +315,6 @@ public class PreviewScreen<
 
         state.previousImageProcess = Preview.draw(
                 image,
-                imageSize,
                 info,
                 viz,
                 xCenterBlocks,
@@ -304,6 +328,7 @@ public class PreviewScreen<
                         spawnCenterZ,
                         spawnDist
                 ),
+                parallelism,
                 registryAccess,
                 true
         );
@@ -365,7 +390,7 @@ public class PreviewScreen<
     }
 
     private void populateOptions() {
-        options.children().clear();
+        options.clear();
         options.add(intransientOptionsBefore);
         visualizerType.get().addOptions(new OptionOrders(options::addDynamic), state.vizOptions);
         options.add(intransientOptionsAfter);
@@ -392,5 +417,33 @@ public class PreviewScreen<
                 previousImage = null;
             }
         }
+    }
+
+    public static final IKeyConflictContext KEY_CONFLICT_CONTEXT = new IKeyConflictContext() {
+        @Override
+        public boolean isActive() {
+            return Minecraft.getInstance().screen instanceof PreviewScreen<?,?,?,?,?,?>;
+        }
+
+        @Override
+        public boolean conflicts(IKeyConflictContext other) {
+            return other == this;
+        }
+    };
+
+    // Default behaviour when beyond the bounds is to reset to the initial value...
+    private static void setAndClamp(int value, OptionInstance<Integer> instance) {
+        if (
+                instance.values() instanceof EnhancedSliderValueSet<Integer> slider
+        ) {
+            final int min = slider.range().minInclusive();
+            final int max = slider.range().maxInclusive();
+            if (value < min) {
+                value = min;
+            } else if (value > max) {
+                value = max;
+            }
+        }
+        instance.set(value);
     }
 }

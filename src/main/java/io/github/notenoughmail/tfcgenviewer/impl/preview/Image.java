@@ -4,14 +4,17 @@ import com.mojang.blaze3d.platform.NativeImage;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.impl.mixin.accessor.NativeImageAccessor;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FastColor;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.util.Lazy;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public class Image implements MutableImage {
+
+    private static final Supplier<File> EXPORT_DIR = Lazy.of(() -> FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile());
 
     private final NativeImage image;
     private final int maxPixel;
@@ -160,20 +163,9 @@ public class Image implements MutableImage {
     public void export(String name) {
         synchronized (image) {
             try {
-                image.writeToFile(new File(FMLPaths.getOrCreateGameRelativePath(Path.of("screenshots", "tfcgenviewer")).toFile(), name));
+                image.writeToFile(new File(EXPORT_DIR.get(), name));
             } catch (Exception e) {
                 TFCGenViewer.LOGGER.error("Unable to write preview %s to disk!".formatted(name), e);
-            }
-        }
-    }
-
-    // This has a problem where while the image may be allocated when *requesting* the upload,
-    // the image can be unallocated afterward, before the image is uploaded on the render thread
-    public void upload(DynamicTexture tex) {
-        synchronized (image) {
-            if (isAllocated()) {
-                tex.setPixels(image);
-                tex.upload();
             }
         }
     }

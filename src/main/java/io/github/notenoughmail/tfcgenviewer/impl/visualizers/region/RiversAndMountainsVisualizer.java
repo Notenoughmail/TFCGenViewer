@@ -61,7 +61,7 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
                                     INLAND_MOUNTAIN :
                                     LAND).get();
             info.addTooltip(color);
-            image.setPixel(imageX, imageY, color.abgr());
+            image.setPixel(imageX, imageY, color);
 
             for (RiverEdge edge : pair.region().rivers()) {
                 if (riverEdgeEncapsulates(edge, xPos, zPos)) {
@@ -71,7 +71,7 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
                         image.setPixel(
                                 imageX,
                                 imageY,
-                                RIVER.get().abgr()
+                                RIVER.get()
                         );
                         return;
                     }
@@ -80,10 +80,10 @@ public class RiversAndMountainsVisualizer implements RegionVisualizerType<Rivers
         } else if (point.hotSpotAge > 0) {
             final ColorDefinition color = hotSpot(point).get();
             info.addTooltip(color);
-            image.setPixel(imageX, imageY, color.abgr());
+            image.setPixel(imageX, imageY, color);
         } else {
             Colors.fillOcean(
-                    pair.region().noise() / 2,
+                    (pair.region().noise() + 1) * 0.5,
                     imageX,
                     imageY,
                     image,

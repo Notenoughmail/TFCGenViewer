@@ -27,7 +27,7 @@ public interface IScale<S extends ImageSize> {
     }
 
     /**
-     * Format the size
+     * Format the size as text
      */
     Component formatSize(S size);
 

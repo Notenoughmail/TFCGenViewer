@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 75,
+      "g": 180,
+      "r": 215
+    },
+    "name": {
+      "translate": "biome.tfc.shield_volcano_shore"
+    },
+    "sort": 431
+  },
+  "keys": [
+    "tfc:shield_volcano_shore",
+    "tfc:old_shield_volcano_shore"
+  ]
+}

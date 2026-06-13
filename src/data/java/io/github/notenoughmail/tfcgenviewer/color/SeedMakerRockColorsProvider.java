@@ -37,7 +37,7 @@ public record SeedMakerRockColorsProvider(PackOutput.PathProvider pathProvider, 
                     ColorProvider.ROCK_COLORS.forEach((r, i) -> i.make(r, false, colors::put));
                     colors.put(Colors.UNKNOWN, ColorDefinition.of(
                             29, 32, 33,
-                            Component.translatable("rock.tfcgenviewer.unknown"),
+                            Component.translatable("color.tfcgenviewer.rock.unknown"),
                             null
                     ));
                     return CompletableFuture.allOf(

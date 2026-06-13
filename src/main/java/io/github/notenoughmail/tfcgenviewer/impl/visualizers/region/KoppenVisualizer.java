@@ -26,13 +26,13 @@ public class KoppenVisualizer implements RegionVisualizerType.Simple {
                     point.temperature,
                     point.rainfall,
                     point.rainfallVariance,
-                    info.cache().isNorthernHemisphere(zPos, info.scale())
+                    info.isNorthernHemisphere(zPos)
             )).get();
         } else {
             color = Colors.KOPPEN_COLORS.unknown();
         }
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override

@@ -7,7 +7,9 @@ import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.color.Gradient;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCChunkVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk.*;
 import io.github.notenoughmail.tfcgenviewer.impl.visualizers.region.*;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
@@ -56,7 +58,16 @@ public class TFCGenViewerRegistration {
     public static final Id<RiversAndMountainsVisualizer> VIZ_RIVERS_AND_MOUNTAINS = regionVisualizer("rivers_and_mountains", RiversAndMountainsVisualizer::new);
     public static final Id<ClimateRestrictedVisualizer> VIZ_CLIMATE_FEATURE = regionVisualizer("climate_restricted", ClimateRestrictedVisualizer::new);
 
+    public static final Id<ChunkElevationVisualizer> VIZ_CHUNK_ELEVATION = chunkVisualizer("elevation", ChunkElevationVisualizer::new);
+    public static final Id<ChunkBiomeVisualizer> VIZ_CHUNK_BIOME = chunkVisualizer("biome", ChunkBiomeVisualizer::new);
+    public static final Id<ChunkKoppenVisualizer> VIZ_CHUNK_KOPPEN = chunkVisualizer("koppen", ChunkKoppenVisualizer::new);
+    public static final Id<ChunkRainfallVisualizer> VIZ_CHUNK_RAINFALL = chunkVisualizer("rainfall", ChunkRainfallVisualizer::new);
+    public static final Id<ChunkTemperatureVisualizer> VIZ_CHUNK_TEMPERATURE = chunkVisualizer("temperature", ChunkTemperatureVisualizer::new);
+    public static final Id<ChunkRockVisualizer> VIZ_CHUNK_ROCK = chunkVisualizer("rock", ChunkRockVisualizer::new);
+    public static final Id<ChunkClimateRestrictedVisualizer> VIZ_CHUNK_CLIMATE_FEATURE = chunkVisualizer("climate_restricted", ChunkClimateRestrictedVisualizer::new);
+
     public static final Id<Gradient.Preset> GRAD_BLUE = gradient("blue", Gradient.lin(0xFF963232, 0xFFFF8C64));
+    public static final Id<Gradient.Preset> GRAD_DARK_BLUE = gradient("dark_blue", Gradient.lin(0xFF752222, 0xFFFF2200));
     public static final Id<Gradient.Preset> GRAD_GREEN = gradient("green", Gradient.lin(0xFF006400, 0xFF50C850));
     public static final Id<Gradient.Preset> GRAD_VOLCANIC = gradient("volcanic", d -> FastColor.ABGR32.color(
             0xFF,
@@ -96,6 +107,10 @@ public class TFCGenViewerRegistration {
 
     private static <T extends IRegionVisualizerType<?, ?>> Id<T> regionVisualizer(String name, Supplier<T> supplier) {
         return visualizer("region/" + name, supplier);
+    }
+
+    private static <T extends ITFCChunkVisualizerType<?, ?>> Id<T> chunkVisualizer(String name, Supplier<T> supplier) {
+        return visualizer("chunk/" + name, supplier);
     }
 
     private static <T extends IVisualizerType<?, ?, ?, ?>> Id<T> visualizer(String name, Supplier<T> supplier) {

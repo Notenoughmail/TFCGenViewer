@@ -6,6 +6,7 @@ import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorKey;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
+import io.github.notenoughmail.tfcgenviewer.client.screen.PreviewScreen;
 import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
 import net.minecraft.client.KeyMapping;
@@ -19,14 +20,13 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -35,10 +35,34 @@ import org.lwjgl.glfw.GLFW;
 @Mod(value = TFCGenViewer.ID, dist = Dist.CLIENT)
 public class TFCGenViewerClient {
 
-    public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress;
-    public static ModConfigSpec.DoubleValue maxPreviewWidth;
+    private static final KeyMapping OPEN_VIEWER = new KeyMapping(
+            "tfcgenviewer.key.open_viewer",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_K,
+            "TFCGenViewer"
+    );
+    public static final KeyMapping PREVIEW_CENTER_SPAWN = new KeyMapping(
+            "tfcgenviewer.key.preview_center_spawn",
+            PreviewScreen.KEY_CONFLICT_CONTEXT,
+            KeyModifier.CONTROL,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_ALT,
+            "TFCGenViewer"
+    );
+    public static final KeyMapping PREVIEW_CENTER_VIEW = new KeyMapping(
+            "tfcgenviewer.key.preview_center_view",
+            PreviewScreen.KEY_CONFLICT_CONTEXT,
+            KeyModifier.SHIFT,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_ALT,
+            "TFCGenViewer"
+    );
 
-    private final KeyMapping openViewer = new KeyMapping("tfcgenviewer.key.open_viewer", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "TFCGenViewer");
+    public static boolean isDown(KeyMapping mapping) {
+        return mapping.getKeyModifier().isActive(PreviewScreen.KEY_CONFLICT_CONTEXT)
+                && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), mapping.getKey().getValue());
+    }
 
     public TFCGenViewerClient(IEventBus modBus, ModContainer container) {
         modBus.addListener(this::clientReloadListeners);
@@ -48,28 +72,6 @@ public class TFCGenViewerClient {
         NeoForge.EVENT_BUS.addListener(this::onInput);
 
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-
-        final ModConfigSpec.Builder configBuilder = new ModConfigSpec.Builder();
-        dingWhenGenerated = configBuilder
-                .comment(
-                        "",
-                        " If a sound should be played when a preview finishes generating",
-                        ""
-                ).define("dingWhenGenerated", true);
-        displayGenerationProgress = configBuilder
-                .comment(
-                        "",
-                        " If the info pane should show a progress bar while a preview is being generated",
-                        ""
-                ).define("displayGenerationProgress", true);
-        maxPreviewWidth = configBuilder
-                .comment(
-                        "",
-                        " The maximum portion of the screen the world preview may take up.",
-                        " The preview will always fit into the largest square between this portion of the screen with and the majority of the screen height",
-                        ""
-                ).defineInRange("maxPreviewWidth", 0.5D, 0.25D, 0.75D);
-        container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 
     private void clientReloadListeners(RegisterClientReloadListenersEvent event) {
@@ -94,14 +96,16 @@ public class TFCGenViewerClient {
     }
 
     private void registerKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(openViewer);
+        event.register(OPEN_VIEWER);
+        event.register(PREVIEW_CENTER_SPAWN);
+        event.register(PREVIEW_CENTER_VIEW);
     }
 
     private static final Component TFCGV_ABSENT = Component.translatable("tfcgenviewer.network.view_request.response.absent");
 
     private void onInput(InputEvent.Key event) {
         final ClientPacketListener clientPacketListener = Minecraft.getInstance().getConnection();
-        if (openViewer.isDown() && clientPacketListener != null) {
+        if (OPEN_VIEWER.isDown() && clientPacketListener != null) {
             if (clientPacketListener.hasChannel(ViewRequestPacket.TYPE)) {
                 PacketDistributor.sendToServer(new ViewRequestPacket(ImplAPI.GEN_IDS.keySet(), GenViewerAPI.VISUALIZER_REGISTRY.keySet()));
             } else {

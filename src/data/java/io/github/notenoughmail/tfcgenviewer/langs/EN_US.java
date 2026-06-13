@@ -18,9 +18,41 @@ public class EN_US extends LangProvider {
     protected void addTranslations() {
         branch(TFCGenViewer.ID, mod -> mod
                 .branch("configuration", config -> config
-                        .add("dingWhenGenerated", "Ding When Complete")
-                        .add("displayGenerationProgress", "Display Progress")
-                        .add("maxPreviewWidth", "Max Preview Width")
+                        .add("title", "TFCGenViewer Configuration")
+                        .branch("section", section -> section
+                                .branch(TFCGenViewer.ID, self -> self
+                                        .branch("client", client -> client
+                                                .branch("toml", toml -> toml
+                                                        .add("", "TFCGenViewer Client Configuration")
+                                                        .add("title", "TFCGenViewer Client Configuration")
+                                                )
+                                        )
+                                )
+                        )
+                        .branch("dingWhenGenerated", ding -> ding
+                                .add("", "Ding When Complete")
+                                .add("tooltip", "If a sound should be played when the preview finishes generating")
+                        )
+                        .branch("displayGenerationProgress", progress -> progress
+                                .add("", "Display Generation Progress")
+                                .add("tooltip", "If a progress bar should be displayed while a preview is generating")
+                        )
+                        .branch("maxPreviewWidth", width -> width
+                                .add("", "Max Preview Width")
+                                .add("tooltip", "The maximum portion of the screen the preview may take up\n\nThe preview will always fit into the largest square between this portion of the screen width and the majority of the screen height")
+                        )
+                        .branch("disableParallelGeneration", parallel -> parallel
+                                .add("", "Disable Parallel Generation")
+                                .add("tooltip", "If parallel generation should be disabled, regardless of a visualizer's request")
+                        )
+                        .branch("maximumNumberOfParallelDrawOperations", ops -> ops
+                                .add("", "Maximum Concurrent Draw Operations")
+                                .add("tooltip", "The maximum number of concurrent draw operations that may occur if parallel generation is enabled")
+                        )
+                        .branch("absoluteMaximumMicrosToDrawPixel", micros -> micros
+                                .add("", "Draw Timeout")
+                                .add("tooltip", "The absolute maximum number of microseconds the image generator will process a single pixel before cancelling the operation, filling the pixel with a default color, and logging an error")
+                        )
                 )
                 .branch("option", option -> option
                         .branch("region_visualizer", region -> region
@@ -40,7 +72,7 @@ public class EN_US extends LangProvider {
                                         )
                                         .branch("elevation", elev -> elev
                                                 .add("", "Elevation")
-                                                .add("tooltip", "The y-level to preview at, only used if 'At Surface' is false")
+                                                .add("tooltip", "The y-level to preview at, only used if the mode is 'At Elevation'")
                                         )
                                 )
                         )
@@ -91,9 +123,11 @@ public class EN_US extends LangProvider {
                                 .add("title", "Viewing %s with %s")
                         )
                 )
-                    .branch("generator", gen -> gen
+                .branch("generator", gen -> gen
                         .branch("tfc_overworld", tfc -> tfc
-                                .add("region", "TFC (Grid Scale)"))
+                                .add("region", "TFC (Grid Scale)")
+                                .add("chunk", "TFC (Chunk Scale)")
+                        )
                 )
                 .branch("preview_info", info -> info
                         .add("base", "Visualizer used: %1$s\nSize: %2$s x %2$s\nTime elapsed: %3$s seconds")
@@ -101,6 +135,7 @@ public class EN_US extends LangProvider {
                         .add("additional_from_visualizer", "Additional information from visualizer:\n%s")
                         .add("generated_regions", "Generated %s regions")
                         .add("generated_rock", "Generated %s regions at y-level %s")
+                        .add("generated_rock_chunk", "Generated at y-level %s")
                         .add("color_key", "Color Key:\n%s")
                         .add("generating", "Generating with %s...")
                         .add("error", "An error occurred during generation\n\nPlease check the log and report the error")
@@ -144,35 +179,45 @@ public class EN_US extends LangProvider {
                                         .add("description", "Shows the locations of hotspots, inland & coastal mountains, and rivers")
                                 )
                         )
+                        .branch("chunk", chunk -> chunk
+                                .branch("elevation", el -> el
+                                        .add("", "Elevation")
+                                        .add("description", "The approximate surface elevation of the chunk")
+                                )
+                                .branch("biome", biome -> biome
+                                        .add("", "Biomes")
+                                        .add("description", "Shows a biome map")
+                                )
+                                .branch("koppen", koppen -> koppen
+                                        .add("", "Köppen Climate Classification")
+                                        .add("description", "Shows the Köppen climate classification of the world")
+                                )
+                                .branch("rainfall", rain -> rain
+                                        .add("", "Rainfall")
+                                        .add("description", "Shows the average rainfall over land")
+                                )
+                                .branch("temperature", temp -> temp
+                                        .add("", "Temperature")
+                                        .add("description", "Shows the average temperature over land")
+                                )
+                                .branch("rock", rock -> rock
+                                        .add("", "Rocks")
+                                        .add("description", "Shows the rock that is likely to generate at a location")
+                                )
+                                .branch("climate_restricted", climate -> climate
+                                        .add("", "Climate Restricted Generation")
+                                        .add("description", "Shows the regions where climate-restricted features could spawn")
+                                )
+                        )
                 )
                 .branch("gradient", gradient -> gradient
                         .branch("rainfall", rain -> rain
                                 .add("", "Rainfall, 0 mm -> 500 mm")
-                                .add("0", "0 to 50 mm")
-                                .add("1", "50 to 100 mm")
-                                .add("2", "100 to 150 mm")
-                                .add("3", "150 to 200 mm")
-                                .add("4", "200 to 250 mm")
-                                .add("5", "250 to 300 mm")
-                                .add("6", "300 to 350 mm")
-                                .add("7", "350 to 400 mm")
-                                .add("8", "400 to 450 mm")
-                                .add("9", "450 to 500 mm")
+                                .grow(10, i -> "%s to %s mm".formatted(i * 50, 50 + i * 50))
                         )
                         .branch("temperature", temp -> temp
                                 .add("", "Temperature, -25 °C -> 35 °C")
-                                .add("0", "-25 to -20 °C")
-                                .add("1", "-20 to -15 °C")
-                                .add("2", "-15 to -10 °C")
-                                .add("3", "-10 to -5 °C")
-                                .add("4", "-5 to 0 °C")
-                                .add("5", "0 to 5 °C")
-                                .add("6", "5 to 10 °C")
-                                .add("7", "10 to 15 °C")
-                                .add("8", "15 to 20 °C")
-                                .add("9", "20 to 25 °C")
-                                .add("10", "25 to 30 °C")
-                                .add("11", "30 to 35 °C")
+                                .grow(12, i -> "%s to %s °C".formatted(-25 + i * 5, -20 + i * 5))
                         )
                         .branch("rock_type", rock -> rock
                                 .add("oceanic", "Oceanic Rock")
@@ -181,6 +226,20 @@ public class EN_US extends LangProvider {
                                 .add("land", "Land Rock")
                         )
                         .add("ocean", "Ocean")
+                        .branch("elevation", elevation -> elevation
+                                .branch("low", low -> low
+                                        .add("", "Low Elevation: below y 63")
+                                        .grow(8, i -> i == 0 ? "y 28 or lower" : "y %s to %s".formatted(23 + i * 5, 28 + i * 5))
+                                )
+                                .branch("middle", mid -> mid
+                                        .add("", "Middle Elevation: y 63 to 103")
+                                        .grow(8, i -> "y %s to %s".formatted(63 + i * 5, 68 + i * 5))
+                                )
+                                .branch("high", high -> high
+                                        .add("", "High Elevation: above y 103")
+                                        .grow(20, i -> i == 19 ? "y 198 or higher" : "y %s to %s".formatted(103 + i * 5, 108 + i * 5))
+                                )
+                        )
                 )
                 .branch("unit", unit -> unit
                         .add("kilometer", "%s km")
@@ -207,6 +266,8 @@ public class EN_US extends LangProvider {
                 )
                 .branch("key", key -> key
                         .add("open_viewer", "Open World Viewer")
+                        .add("preview_center_view", "Center Preview")
+                        .add("preview_center_spawn", "Center Spawn Position")
                 )
                 .branch("narration", narration -> narration
                         .branch("info_pane", infoPane -> infoPane

@@ -3,6 +3,7 @@ package io.github.notenoughmail.tfcgenviewer;
 import com.mojang.logging.LogUtils;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.client.ClientBridge;
+import io.github.notenoughmail.tfcgenviewer.impl.TFCChunkVisualizer;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGVCommands;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import io.github.notenoughmail.tfcgenviewer.impl.TFCRegionVisualizer;
@@ -11,7 +12,10 @@ import io.github.notenoughmail.tfcgenviewer.impl.network.packet.SingleViewRespon
 import io.github.notenoughmail.tfcgenviewer.impl.network.packet.ViewRequestPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -33,12 +37,60 @@ public class TFCGenViewer {
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final String NETWORK_VERSION = "2.0.1";
 
-    public TFCGenViewer(IEventBus modBus) {
+    public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress, disableParallelGeneration;
+    public static ModConfigSpec.DoubleValue maxPreviewWidth;
+    public static ModConfigSpec.IntValue absoluteMaximumMicrosToDrawPixel, maximumNumberOfParallelDrawOperations;
+
+    public TFCGenViewer(IEventBus modBus, ModContainer container) {
         TFCGenViewerRegistration.init(modBus);
         modBus.addListener(this::newRegistries);
         modBus.addListener(this::registerPayloadHandlers);
         GenViewerAPI.registerGeneratorVisualizer(TFCRegionVisualizer.INSTANCE);
+        GenViewerAPI.registerGeneratorVisualizer(TFCChunkVisualizer.INSTANCE);
         NeoForge.EVENT_BUS.addListener(TFCGVCommands::registerCommands);
+
+        final ModConfigSpec.Builder configBuilder = new ModConfigSpec.Builder();
+        dingWhenGenerated = configBuilder
+                .comment(
+                        "",
+                        " If a sound should be played when a preview finishes generating",
+                        ""
+                ).define("dingWhenGenerated", true);
+        displayGenerationProgress = configBuilder
+                .comment(
+                        "",
+                        " If a progress bar should be displayed while a preview is generating",
+                        ""
+                ).define("displayGenerationProgress", true);
+        maxPreviewWidth = configBuilder
+                .comment(
+                        "",
+                        " The maximum portion of the screen the world preview may take up",
+                        "",
+                        " The preview will always fit into the largest square between this portion of the screen width",
+                        " and the majority of the screen height",
+                        ""
+                ).defineInRange("maxPreviewWidth", 0.5D, 0.25D, 0.75D);
+        disableParallelGeneration = configBuilder
+                .comment(
+                        "",
+                        " If parallel generation should be forcefully disabled, regardless of a visualizer's request",
+                        ""
+                ).define("disableParallelGeneration", false);
+        maximumNumberOfParallelDrawOperations = configBuilder
+                .comment(
+                        "",
+                        " The maximum number of parallel draw operations that may occur if parallel generation is enabled",
+                        ""
+                ).defineInRange("maximumNumberOfParallelDrawOperations", 5, 2, Integer.MAX_VALUE); // Go at it
+        absoluteMaximumMicrosToDrawPixel = configBuilder
+                .comment(
+                        "",
+                        " The absolute maximum number of microseconds the image generator will process a single pixel before",
+                        " cancelling the operation, filling the pixel with a default color, and logging an error",
+                        ""
+                ).defineInRange("absoluteMaximumMicrosToDrawPixel", 1000, 1, Integer.MAX_VALUE);
+        container.registerConfig(ModConfig.Type.CLIENT, configBuilder.build());
     }
 
     public static <T> T cast(Object o) {

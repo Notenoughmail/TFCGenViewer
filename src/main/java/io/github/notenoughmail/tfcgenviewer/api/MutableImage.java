@@ -1,5 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api;
 
+import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
+
 /**
  * An abstract wrapper around a {@link com.mojang.blaze3d.platform.NativeImage NativeIamge} that can be included in common code
  */
@@ -21,6 +23,13 @@ public interface MutableImage {
      * is within the bounds of the image
      */
     void setPixel(int x, int y, int abgrColor);
+
+    /**
+     * Sets the pixel at the given coordinates to the given color, ensuring the pixel is within the bounds of the image
+     */
+    default void setPixel(int x, int y, ColorDefinition color) {
+        setPixel(x, y, color.abgr());
+    }
 
     /**
      * Draws a vertical line from {@code x0} to {@code x1} at the given {@code y} in the given color. Non-{@code 0xFF}

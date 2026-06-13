@@ -1,0 +1,35 @@
+{
+  "gradient": {
+    "type": "preset",
+    "preset": "tfcgenviewer:blue"
+  },
+  "name": {
+    "translate": "tfcgenviewer.gradient.elevation.low"
+  },
+  "tooltips": [
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.0"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.1"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.2"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.3"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.4"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.5"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.6"
+    },
+    {
+      "translate": "tfcgenviewer.gradient.elevation.low.7"
+    }
+  ]
+}

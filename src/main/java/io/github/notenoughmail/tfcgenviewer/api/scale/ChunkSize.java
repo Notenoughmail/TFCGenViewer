@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import java.util.List;
 
 /**
- * {@link ImageSize}s at a chunk scale ranging from 32 to 1024 chunks in powers of 2
+ * {@link ImageSize}s at a chunk scale ranging from 32 to 2048 chunks in powers of 2
  */
 public enum ChunkSize implements ImageSize {
     _0,

@@ -1,11 +1,12 @@
 package io.github.notenoughmail.tfcgenviewer.client.screen;
 
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.ColorTooltips;
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
-import io.github.notenoughmail.tfcgenviewer.client.TFCGenViewerClient;
 import io.github.notenoughmail.tfcgenviewer.client.options.OptionOrders;
 import io.github.notenoughmail.tfcgenviewer.client.widget.ButtonOption;
 import io.github.notenoughmail.tfcgenviewer.client.widget.InfoPane;
@@ -89,7 +90,7 @@ public class ViewWorldScreen<
         final int offset = visualizer.scale().blocksPerPixel() * visualizer.maximumPreviewOffset();
         visualizerType = Preview.visualizerTypeOption(visualizers, v -> onVisualizerChange());
         imageSize = Preview.imageSizeOption(visualizer.scale());
-        spawnOverlay = OptionInstance.createBoolean("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {});
+        spawnOverlay = Preview.boolOption("tfcgenviewer.screen.preview_world.option.spawn_overlay", false, b -> {});
         xOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.x_offset", -offset, offset, 0);
         zOffset = Preview.kmOption("tfcgenviewer.screen.preview_world.option.z_offset", -offset, offset, 0);
         apply = new ButtonOption("tfcgenviewer.button.apply", b -> visualize());
@@ -123,7 +124,7 @@ public class ViewWorldScreen<
 
     @Override
     protected void init() {
-        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewerClient.maxPreviewWidth.getAsDouble()));
+        final int previewPixels = Math.min(height - 64, (int) (width * TFCGenViewer.maxPreviewWidth.getAsDouble()));
 
         options = new SingleColumnOptionsList(getMinecraft(), width, height, 32, 25);
         options.setScrollBarOffset(-8);
@@ -178,17 +179,19 @@ public class ViewWorldScreen<
 
         final G gen = visualizer.recreateGenerator(generator);
         final V viz = visualizerType.get();
-        final C cache = viz.createCache(registryAccess, gen, imageSize.get(), worldSeed);
+        final O options = IVisualizerType.Options.copy(state.vizOptions);
         final I imageSize = this.imageSize.get();
         final S scale = visualizer.scale();
+        final DrawParallelism parallelism = DrawParallelism.of(options, viz, imageSize);
+        final C cache = viz.createCache(registryAccess, gen, imageSize, worldSeed, options, parallelism);
         final IVisualizerType.DrawInfo<G, C, S, O> info = new IVisualizerType.DrawInfo<>(
                 gen,
                 cache,
                 registryAccess,
-                new ColorTooltips(),
+                ColorTooltips.of(parallelism.parallel()),
                 imageSize,
                 scale,
-                IVisualizerType.Options.copy(state.vizOptions)
+                options
         );
 
         final Image image = new Image(imageSize.sizeInPixels());
@@ -196,7 +199,6 @@ public class ViewWorldScreen<
 
         state.previousImageProcess = Preview.draw(
                 image,
-                imageSize,
                 info,
                 viz,
                 xCenterBlocks,
@@ -208,6 +210,7 @@ public class ViewWorldScreen<
                         spawnOverlay,
                         gen.settings()
                 ),
+                parallelism,
                 registryAccess,
                 allowCoords
         );
@@ -218,7 +221,7 @@ public class ViewWorldScreen<
     }
 
     private void populateOptions() {
-        options.children().clear();
+        options.clear();
         options.add(visualizerType);
         visualizerType.get().addOptions(new OptionOrders(options::addDynamic), state.vizOptions);
         options.add(imageSize);

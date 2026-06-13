@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
+import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
@@ -31,7 +32,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     }
 
     @Override
-    public Cache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed) {
+    public Cache createCache(RegistryAccess registryAccess, TFCChunkGenerator generator, ImageSize size, long worldSeed, NoneOpt options, DrawParallelism parallelism) {
         return new Cache(RegionPointCache.of(generator, size, worldSeed));
     }
 
@@ -39,7 +40,7 @@ public class BiomeVisualizer implements IRegionVisualizerType<BiomeVisualizer.Ca
     public void draw(int imageX, int imageY, MutableImage image, int xPos, int zPos, DrawInfo<TFCChunkGenerator, Cache, GridScale, NoneOpt> info) {
         final ColorDefinition color = info.cache().getColor(imageX, imageY, xPos, zPos);
         info.addTooltip(color);
-        image.setPixel(imageX, imageY, color.abgr());
+        image.setPixel(imageX, imageY, color);
     }
 
     @Override
