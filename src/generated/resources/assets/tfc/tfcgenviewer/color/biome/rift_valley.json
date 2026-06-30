@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 100,
+      "g": 15,
+      "r": 100
+    },
+    "name": {
+      "translate": "biome.tfc.rift_valley"
+    },
+    "sort": 111
+  },
+  "keys": [
+    "tfc:rift_valley"
+  ]
+}

@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.chunk;
 
+import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ChunkDataProvider;
@@ -16,6 +17,9 @@ import net.dries007.tfc.world.river.RiverBlendType;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.Biome;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,16 +68,26 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
         private final ChunkDataProvider.Region biomeSource;
         private boolean unknownEncountered = false;
         private final Set<ColorDefinition> colorsEncountered;
+        @Nullable
+        private Set<ResourceKey<Biome>> collectAbsent;
 
         Cache(long worldSeed, TFCChunkGenerator generator) {
             biomeSource = ChunkDataProvider.tfcRegion(worldSeed, generator, false);
             colorsEncountered = new HashSet<>();
         }
 
+        public Cache collectAbsent() {
+            collectAbsent = new HashSet<>();
+            return this;
+        }
+
         public ColorDefinition getColor(int xPos, int zPos) {
             final BiomeExtension ext = getBiome(xPos, zPos);
             final ColorDefinition color = Colors.BIOME_COLORS.getInstanceColor(ext.key(), Colors.UNKNOWN_BIOME);
             colorsEncountered.add(color);
+            if (collectAbsent != null && color == Colors.UNKNOWN_BIOME.get().color()) {
+                collectAbsent.add(ext.key());
+            }
             return color;
         }
 
@@ -89,6 +103,9 @@ public class ChunkBiomeVisualizer implements ITFCChunkVisualizerType.Simple<Chun
         }
 
         public Component colorKey() {
+            if (collectAbsent != null && !collectAbsent.isEmpty()) {
+                TFCGenViewer.LOGGER.warn("{} absent biomes: {}", collectAbsent.size(), collectAbsent.stream().map(ResourceKey::location).toList());
+            }
             final MutableComponent key = Component.empty();
             final ColorDefinition unknown = Colors.UNKNOWN_BIOME.get().color();
             final Iterator<ColorDefinition> iter = colorsEncountered.stream()

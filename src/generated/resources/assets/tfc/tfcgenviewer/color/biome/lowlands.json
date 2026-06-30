@@ -8,12 +8,11 @@
     "name": {
       "translate": "biome.tfc.lowlands"
     },
-    "sort": 111
+    "sort": 191
   },
   "keys": [
     "tfc:lowlands",
     "tfc:tower_karst_bay",
-    "tfc:salt_marsh",
-    "tfc:tower_karst_lake"
+    "tfc:salt_marsh"
   ]
 }

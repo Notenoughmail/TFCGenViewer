@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 170,
+      "g": 0,
+      "r": 155
+    },
+    "name": {
+      "translate": "biome.tfc.river_valley"
+    },
+    "sort": 101
+  },
+  "keys": [
+    "tfc:river_valley"
+  ]
+}

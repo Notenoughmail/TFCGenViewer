@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 95,
+      "g": 15,
+      "r": 130
+    },
+    "name": {
+      "translate": "biome.tfc.volcanic_island"
+    },
+    "sort": 431
+  },
+  "keys": [
+    "tfc:volcanic_island",
+    "tfc:volcanic_mountain_islands"
+  ]
+}

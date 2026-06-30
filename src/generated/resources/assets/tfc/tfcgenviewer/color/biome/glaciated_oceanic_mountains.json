@@ -8,9 +8,10 @@
     "name": {
       "translate": "biome.tfc.glaciated_oceanic_mountains"
     },
-    "sort": 561
+    "sort": 631
   },
   "keys": [
-    "tfc:glaciated_oceanic_mountains"
+    "tfc:glaciated_oceanic_mountains",
+    "tfc:glaciated_volcanic_oceanic_mountains"
   ]
 }

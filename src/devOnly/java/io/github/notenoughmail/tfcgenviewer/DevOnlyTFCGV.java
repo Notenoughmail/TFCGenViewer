@@ -20,6 +20,8 @@ public class DevOnlyTFCGV {
         viz.register("region/new_cache_test", RegionPointExistsVisualizer::new);
         viz.register("region/neighbor_cache_collision", RegionNeighborPointCollisionVisualizer::new);
         viz.register("region/cache_difference", RegionCacheDifferenceVisualizer::new);
+        viz.register("chunk/biome_blend_type", ChunkBiomeBlendTypeVisualizer::new);
+        viz.register("chunk/collect_absent_biomes", ChunkCollectAbsentBiomesVisualizer::new);
     }
 
     private void tests(FMLLoadCompleteEvent event) {

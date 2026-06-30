@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 130,
+      "g": 30,
+      "r": 50
+    },
+    "name": {
+      "translate": "biome.tfc.ocean_ridge"
+    },
+    "sort": 61
+  },
+  "keys": [
+    "tfc:ocean_ridge"
+  ]
+}

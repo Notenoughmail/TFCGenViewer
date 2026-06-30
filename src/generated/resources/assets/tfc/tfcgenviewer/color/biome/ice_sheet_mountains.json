@@ -8,10 +8,11 @@
     "name": {
       "translate": "biome.tfc.ice_sheet_mountains"
     },
-    "sort": 521
+    "sort": 591
   },
   "keys": [
     "tfc:ice_sheet_mountains",
-    "tfc:ice_sheet_mountains_edge"
+    "tfc:ice_sheet_mountains_edge",
+    "tfc:ice_sheet_volcanic_mountains"
   ]
 }

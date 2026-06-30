@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 0,
+      "g": 0,
+      "r": 165
+    },
+    "name": {
+      "translate": "biome.tfc.collisional_mountains"
+    },
+    "sort": 121
+  },
+  "keys": [
+    "tfc:collisional_mountains"
+  ]
+}

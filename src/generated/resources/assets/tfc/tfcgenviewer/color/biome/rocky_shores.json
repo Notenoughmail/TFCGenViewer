@@ -1,14 +1,14 @@
 {
   "color": {
     "color": {
-      "b": 120,
+      "b": 100,
       "g": 140,
       "r": 140
     },
     "name": {
       "translate": "biome.tfc.rocky_shores"
     },
-    "sort": 311
+    "sort": 361
   },
   "keys": [
     "tfc:rocky_shores",

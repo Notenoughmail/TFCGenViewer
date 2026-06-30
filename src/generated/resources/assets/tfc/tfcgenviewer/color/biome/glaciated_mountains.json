@@ -8,9 +8,10 @@
     "name": {
       "translate": "biome.tfc.glaciated_mountains"
     },
-    "sort": 551
+    "sort": 621
   },
   "keys": [
-    "tfc:glaciated_mountains"
+    "tfc:glaciated_mountains",
+    "tfc:glaciated_volcanic_mountains"
   ]
 }

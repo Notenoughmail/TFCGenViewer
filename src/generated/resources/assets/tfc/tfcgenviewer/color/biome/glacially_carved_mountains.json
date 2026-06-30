@@ -8,9 +8,10 @@
     "name": {
       "translate": "biome.tfc.glacially_carved_mountains"
     },
-    "sort": 581
+    "sort": 651
   },
   "keys": [
-    "tfc:glacially_carved_mountains"
+    "tfc:glacially_carved_mountains",
+    "tfc:glacially_carved_volcanic_mountains"
   ]
 }

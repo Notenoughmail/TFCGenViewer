@@ -33,6 +33,8 @@ import static net.dries007.tfc.world.layer.TFCLayers.*;
 
 public class RegistryLinkedColorProvider extends DataManagerProvider {
 
+    private static final int MIN_COLOR_DISTANCE = 20;
+
     public RegistryLinkedColorProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         super(output, lookup, "RegistryLinkedColor");
     }
@@ -99,6 +101,19 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             );
             biome(
                     biomes,
+                    "ocean_atolls",
+                    new Color(35, 120, 255),
+                    OCEAN_ATOLLS,
+                    DEEP_OCEAN_ATOLLS
+            );
+            biome(
+                    biomes,
+                    "ocean_ridge",
+                    new Color(50, 30, 130),
+                    OCEAN_RIDGE
+            );
+            biome(
+                    biomes,
                     "mountain_lake",
                     new Color(20, 180, 255),
                     MOUNTAIN_LAKE,
@@ -113,13 +128,59 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     "lake",
                     new Color(30, 30, 255),
                     LAKE,
-                    MELTWATER_LAKE
+                    MELTWATER_LAKE,
+                    RIFT_LAKE,
+                    TOWER_KARST_LAKE
             );
             biome(
                     biomes,
                     "river",
                     new Color(0, 200, 255),
                     RIVER
+            );
+            biome(
+                    biomes,
+                    "river_valley",
+                    new Color(155, 0, 170),
+                    RIVER_VALLEY
+            );
+            biome(
+                    biomes,
+                    "rift_valley",
+                    new Color(100, 15, 100),
+                    RIFT_VALLEY
+            );
+            biome(
+                    biomes,
+                    "collisional_mountains",
+                    new Color(165, 0, 0),
+                    COLLISIONAL_MOUNTAINS
+            );
+            biome(
+                    biomes,
+                    "mountains",
+                    new Color(255, 50, 50),
+                    MOUNTAINS,
+                    VOLCANIC_MOUNTAINS
+            );
+            biome(
+                    biomes,
+                    "old_mountains",
+                    new Color(240, 100, 100),
+                    OLD_MOUNTAINS,
+                    EXTREME_DOLINE_MOUNTAINS
+            );
+            biome(
+                    biomes,
+                    "plateau",
+                    new Color(190, 120, 120),
+                    PLATEAU,
+                    EXTREME_DOLINE_PLATEAU,
+                    CENOTE_PLATEAU,
+                    DOLINE_PLATEAU,
+                    SHILIN_PLATEAU,
+                    BURREN_PLATEAU,
+                    PLATEAU_WIDE
             );
             biome(
                     biomes,
@@ -150,34 +211,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     new Color(220, 150, 230),
                     LOWLANDS,
                     TOWER_KARST_BAY,
-                    SALT_MARSH,
-                    TOWER_KARST_LAKE
-            );
-            biome(
-                    biomes,
-                    "mountains",
-                    new Color(255, 50, 50),
-                    MOUNTAINS,
-                    VOLCANIC_MOUNTAINS
-            );
-            biome(
-                    biomes,
-                    "old_mountains",
-                    new Color(240, 100, 100),
-                    OLD_MOUNTAINS,
-                    EXTREME_DOLINE_MOUNTAINS
-            );
-            biome(
-                    biomes,
-                    "plateau",
-                    new Color(190, 120, 120),
-                    PLATEAU,
-                    EXTREME_DOLINE_PLATEAU,
-                    CENOTE_PLATEAU,
-                    DOLINE_PLATEAU,
-                    SHILIN_PLATEAU,
-                    BURREN_PLATEAU,
-                    PLATEAU_WIDE
+                    SALT_MARSH
             );
             biome(
                     biomes,
@@ -296,7 +330,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             biome(
                     biomes,
                     "rocky_shores",
-                    new Color(140, 140, 120),
+                    new Color(140, 140, 100),
                     ROCKY_SHORES,
                     EMBAYMENTS // Rocky shores w/ some normal beaches mixed in
             );
@@ -335,6 +369,19 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     "guano_island",
                     new Color(120, 120, 50),
                     GUANO_ISLAND
+            );
+            biome(
+                    biomes,
+                    "volcanic_island",
+                    new Color(130, 15, 95),
+                    VOLCANIC_ISLAND,
+                    VOLCANIC_MOUNTAIN_ISLANDS
+            );
+            biome(
+                    biomes,
+                    "oceanic_volcanic_arc",
+                    new Color(0, 0, 120),
+                    OCEANIC_VOLCANIC_ARC
             );
             biome(
                     biomes,
@@ -432,14 +479,16 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     "ice_sheet_mountains",
                     new Color(255, 195, 195),
                     ICE_SHEET_MOUNTAINS,
-                    ICE_SHEET_MOUNTAINS_EDGE
+                    ICE_SHEET_MOUNTAINS_EDGE,
+                    ICE_SHEET_VOLCANIC_MOUNTAINS
             );
             biome(
                     biomes,
                     "ice_sheet_oceanic_mountains",
                     new Color(255, 195, 255),
                     ICE_SHEET_OCEANIC_MOUNTAINS,
-                    ICE_SHEET_OCEANIC_MOUNTAINS_EDGE
+                    ICE_SHEET_OCEANIC_MOUNTAINS_EDGE,
+                    ICE_SHEET_VOLCANIC_OCEANIC_MOUNTAINS
             );
             biome(
                     biomes,
@@ -451,13 +500,15 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     biomes,
                     "glaciated_mountains",
                     new Color(255, 165, 165),
-                    GLACIATED_MOUNTAINS
+                    GLACIATED_MOUNTAINS,
+                    GLACIATED_VOLCANIC_MOUNTAINS
             );
             biome(
                     biomes,
                     "glaciated_oceanic_mountains",
                     new Color(255, 165, 255),
-                    GLACIATED_OCEANIC_MOUNTAINS
+                    GLACIATED_OCEANIC_MOUNTAINS,
+                    GLACIATED_VOLCANIC_OCEANIC_MOUNTAINS
             );
             biome(
                     biomes,
@@ -469,13 +520,15 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                     biomes,
                     "glacially_carved_mountains",
                     new Color(255, 135, 135),
-                    GLACIALLY_CARVED_MOUNTAINS
+                    GLACIALLY_CARVED_MOUNTAINS,
+                    GLACIALLY_CARVED_VOLCANIC_MOUNTAINS
             );
             biome(
                     biomes,
                     "glacially_carved_oceanic_mountains",
                     new Color(255, 135, 255),
-                    GLACIALLY_CARVED_OCEANIC_MOUNTAINS
+                    GLACIALLY_CARVED_OCEANIC_MOUNTAINS,
+                    GLACIALLY_CARVED_VOLCANIC_OCEANIC_MOUNTAINS
             );
             verifyFuzzyUniqueness(biomeColors);
         });
@@ -499,7 +552,13 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
     private static void biome(Provider<RegistryLinkedColor<Biome>> provider, String name, ColorDefinition color, int... biomes) {
         provider.accept(Helpers.identifier(name), biome(color, biomes));
         verifyUniqueColor(color.color(), biomeColors);
-        TFCGenViewer.LOGGER.info("(x-{})^2+(y-{})^2+(z-{})^2=100", color.color().storage()[0], color.color().storage()[1], color.color().storage()[2]);
+        TFCGenViewer.LOGGER.info(
+                "(x-{})^2+(y-{})^2+(z-{})^2={}",
+                color.color().storage()[0],
+                color.color().storage()[1],
+                color.color().storage()[2],
+                Math.round(Math.pow((double) MIN_COLOR_DISTANCE / 2, 2))
+        );
     }
 
     private static RegistryLinkedColor<Biome> biome(ColorDefinition color, int... biomes) {
@@ -538,7 +597,6 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
     }
 
     private static void verifyFuzzyUniqueness(IntList colors) {
-        final int minDifference = 10;
         final IntList[] tooSimilar = new IntList[colors.size()];
         for (int i = 0 ; i < colors.size() ; i++) {
             final int color = colors.getInt(i);
@@ -551,7 +609,7 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
                                     Math.pow(FastColor.ABGR32.green(color) - FastColor.ABGR32.green(o), 2) +
                                     Math.pow(FastColor.ABGR32.blue(color) - FastColor.ABGR32.blue(o), 2)
                     );
-                    if (difference < minDifference) {
+                    if (difference < MIN_COLOR_DISTANCE) {
                         if (tooSimilar[j] == null) {
                             tooSimilar[j] = new IntArrayList();
                         }
@@ -565,13 +623,23 @@ public class RegistryLinkedColorProvider extends DataManagerProvider {
             final IntList similar = tooSimilar[i];
             if (similar != null) {
                 builder.append("\n")
-                        .append(Integer.toHexString(colors.getInt(i)))
+                        .append(colorStr(colors.getInt(i)))
                         .append(" is similar to ")
-                        .append(similar.intStream().mapToObj(Integer::toHexString).collect(Collectors.joining(",")));
+                        .append(similar.intStream()
+                                .mapToObj(RegistryLinkedColorProvider::colorStr)
+                                .collect(Collectors.joining(",")));
             }
         }
         if (!builder.isEmpty()) {
             throw new IllegalStateException(builder.toString());
         }
+    }
+
+    private static String colorStr(int abgr) {
+        return "[%s, %s, %s]".formatted(
+                FastColor.ABGR32.red(abgr),
+                FastColor.ABGR32.green(abgr),
+                FastColor.ABGR32.blue(abgr)
+        );
     }
 }

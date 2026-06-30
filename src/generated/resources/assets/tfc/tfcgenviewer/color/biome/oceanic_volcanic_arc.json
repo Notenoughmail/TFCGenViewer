@@ -1,0 +1,16 @@
+{
+  "color": {
+    "color": {
+      "b": 120,
+      "g": 0,
+      "r": 0
+    },
+    "name": {
+      "translate": "biome.tfc.oceanic_volcanic_arc"
+    },
+    "sort": 441
+  },
+  "keys": [
+    "tfc:oceanic_volcanic_arc"
+  ]
+}

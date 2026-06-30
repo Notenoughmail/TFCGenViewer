@@ -48,9 +48,9 @@ public class BiomeAltitudeVisualizer implements RegionVisualizerType.Simple {
                     case 3 -> MOUNTAIN;
                     default -> throw new IllegalStateException("Region point should have a discrete altitude in range [-1, 3], was %s".formatted(point.discreteBiomeAltitude()));
                 } :
-                point.baseOceanDepth < 4 ?
+                point.oceanDepth < 3 ?
                         SHALLOW :
-                        point.baseOceanDepth < 8 ?
+                        point.oceanDepth < 5 ?
                                 DEEP :
                                 VERY_DEEP).get();
         info.addTooltip(color);

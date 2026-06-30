@@ -8,10 +8,11 @@
     "name": {
       "translate": "biome.tfc.ice_sheet_oceanic_mountains"
     },
-    "sort": 531
+    "sort": 601
   },
   "keys": [
     "tfc:ice_sheet_oceanic_mountains",
-    "tfc:ice_sheet_oceanic_mountains_edge"
+    "tfc:ice_sheet_oceanic_mountains_edge",
+    "tfc:ice_sheet_volcanic_oceanic_mountains"
   ]
 }

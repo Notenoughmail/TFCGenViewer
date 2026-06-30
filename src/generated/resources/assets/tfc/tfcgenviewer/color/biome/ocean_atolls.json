@@ -1,0 +1,17 @@
+{
+  "color": {
+    "color": {
+      "b": 255,
+      "g": 120,
+      "r": 35
+    },
+    "name": {
+      "translate": "biome.tfc.ocean_atolls"
+    },
+    "sort": 51
+  },
+  "keys": [
+    "tfc:ocean_atolls",
+    "tfc:deep_ocean_atolls"
+  ]
+}

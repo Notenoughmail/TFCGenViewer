@@ -38,7 +38,7 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
 
     @Override
     public int sort() {
-        return 60;
+        return 0;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ChunkTimeToGenerateVisualizer implements ITFCChunkVisualizerType.Si
         final StopWatch stopWatch = new StopWatch();
 
         Timer(long worldSeed, TFCChunkGenerator generator) {
-            innerCache = ChunkDataProvider.tfcRegion(worldSeed, generator, true);
+            innerCache = ChunkDataProvider.tfcRegion(worldSeed, generator, false);
         }
 
         void start() {
