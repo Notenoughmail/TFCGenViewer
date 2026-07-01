@@ -97,7 +97,6 @@ public class ChunkElevationVisualizer implements ITFCChunkVisualizerType.Simple<
         return true;
     }
 
-    // TODO: 2.1.0 | Find where the difference is coming from
     public static class ElevationCache {
 
         // Trivially cacheable (chunk-agnostic) lookups

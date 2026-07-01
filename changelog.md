@@ -1,3 +1,7 @@
+# 2.1.1
+- Update to TFC 4.2.4, which is the new minimum version
+- Add colors for the biomes added in TFC 4.2.0
+
 # 2.1.0
 - Add the ability to visualizer the world at a chunk (16 block) scale
   - Has *Biome*, *Climate Restricted Features*, *Elevation* *Köppen Climate Classification*, *Rainfall*, *Rock*, and *Temperature* visualizer types
