@@ -11,6 +11,7 @@ import net.dries007.tfc.world.region.RegionGenerator;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.RockSettings;
 import net.dries007.tfc.world.settings.Settings;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.neoforged.fml.loading.FMLPaths;
 
@@ -134,7 +135,7 @@ public class RegionTests {
                     Rock::getSerializedName,
                     rock -> {
                         final var b = TFCBlocks.ROCK_BLOCKS.get(rock);
-                        return new RockSettings(
+                        return Holder.direct(new RockSettings(
                                 b.get(BlockType.RAW).get(),
                                 b.get(BlockType.HARDENED).get(),
                                 b.get(BlockType.GRAVEL).get(),
@@ -146,7 +147,7 @@ public class RegionTests {
                                 Optional.empty(),
                                 Optional.empty(),
                                 Optional.empty()
-                        );
+                        ));
                     }
             )),
             Stream.of(GNEISS, SCHIST, DIORITE, GRANITE, GABBRO).map(Rock::getSerializedName).toList(),

@@ -67,8 +67,7 @@ public record ViewRequestPacket(Set<ResourceLocation> clientGeneratorVisualizers
                             player.sendSystemMessage(EMPTY);
                         } else {
                             final RegistrySync sync = new RegistrySync(player.serverLevel().registryAccess());
-                            generatorVisualizer.additionalSynchronization(sync);
-                            visualizerTypes.forEach(v -> v.additionalSynchronization(sync));
+                            generatorVisualizer.registrySync(sync);
                             final SingleViewResponsePacket response = new SingleViewResponsePacket(
                                     generatorVisualizer,
                                     ext,

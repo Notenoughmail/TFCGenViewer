@@ -6,8 +6,8 @@ import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.registry.Universal;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.GridSize;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IRegionVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCGeneratorVisualizer;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeSourceExtension;
 import net.dries007.tfc.world.biome.RegionBiomeSource;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class TFCRegionVisualizer implements IGeneratorVisualizer<TFCChunkGenerator, GridSize, GridScale, IRegionVisualizerType<?, ?>> {
+public class TFCRegionVisualizer implements ITFCGeneratorVisualizer<GridSize, GridScale, IRegionVisualizerType<?, ?>> {
 
     public static final TFCRegionVisualizer INSTANCE = new TFCRegionVisualizer();
 

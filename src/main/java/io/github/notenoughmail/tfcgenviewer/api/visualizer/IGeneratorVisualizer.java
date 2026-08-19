@@ -1,6 +1,7 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
+import io.github.notenoughmail.tfcgenviewer.api.registry.ISyncRegistries;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
@@ -8,6 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -17,7 +19,7 @@ public interface IGeneratorVisualizer<
         I extends ImageSize,
         S extends IScale<I>,
         V extends IVisualizerType<G, ?, S, ?>
-        > {
+        > extends ISyncRegistries {
 
     /**
      * The id of the generator visualizer
@@ -62,12 +64,6 @@ public interface IGeneratorVisualizer<
     boolean supportsRockEditing();
 
     /**
-     * Synchronize server-only registry information so that is available to all {@link IVisualizerType}s handled by this
-     * generator visualizer and while deserializing the generator while visualizing in-world
-     */
-    default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
-
-    /**
      * Recreate the generator, will error if simply {@code return generator;}
      */
     G recreateGenerator(G generator);
@@ -76,4 +72,10 @@ public interface IGeneratorVisualizer<
      * A codec to serialize the generator over-the-network to recreate it on the client
      */
     StreamCodec<RegistryFriendlyByteBuf, G> generatorNetworkCodec();
+
+    @ApiStatus.Internal
+    default void registrySync(SynchronizationRequest request) {
+        additionalSynchronization(request);
+        visualzierStream().forEach(v -> v.additionalSynchronization(request));
+    }
 }

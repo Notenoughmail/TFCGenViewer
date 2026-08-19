@@ -1,8 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
-import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.api.*;
 import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
+import io.github.notenoughmail.tfcgenviewer.api.registry.ISyncRegistries;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
 import io.github.notenoughmail.tfcgenviewer.api.widget.OptionProvider;
@@ -10,10 +10,8 @@ import net.dries007.tfc.client.overworld.SolarCalculator;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
 import net.dries007.tfc.world.settings.RockLayerSettings;
 import net.dries007.tfc.world.settings.Settings;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -56,7 +54,7 @@ public interface IVisualizerType<
         C,
         S extends IScale<?>,
         O extends IVisualizerType.Options<O>
-        > {
+        > extends ISyncRegistries {
 
     /**
      * Create a {@link Options} instance which will store information about player-specified {@link #draw(int, int, MutableImage, int, int, DrawInfo) draw}
@@ -72,19 +70,6 @@ public interface IVisualizerType<
      * @param options The options made in {@link #createOptions(RegistryAccess) createOptions}
      */
     default void addOptions(OptionProvider optionProvider, O options) {}
-
-    /**
-     * Request server-only registry information to be synchronized to the client
-     */
-    default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {}
-
-    /**
-     * Get the codec used to {@link #additionalSynchronization(SynchronizationRequest) sync} server-only registry contents
-     */
-    @Nullable
-    default <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
-        return null;
-    }
 
     /**
      * Create the cache object which will be available during drawing via {@link DrawInfo}

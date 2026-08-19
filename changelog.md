@@ -1,3 +1,13 @@
+# 2.1.2 (W.I.P.)
+- Update to TFC 4.2.8, which is the new minimum version
+- Fix crash with TFC 4.2.8 when trying to visualize in-world
+- This version is ***not*** network compatible with older versions
+- [API]
+  - `IGeneratorVisualizer` and `IVisualizerType` now extend `ISyncRegistries` which has `#additionalSynchronization` and `#elementCodecForRegistry`, allowing GVs to specify how a registry is synced
+    - `#elementCodecForRegistry` has been changed to operate similarly to `#additionalSynchronization` to avoid having to deal with type casts
+    - Update `ClimateFeatureCache#codecForRegistry` to handle the `#elementCodecForRegistry` changes
+  - Add `ITFCGeneratorVisualizer` which syncs TFC's rock settings registry and is the base of the built-in grid and chunk scale GVs
+
 # 2.1.1
 - Update to TFC 4.2.4, which is the new minimum version
 - Add colors for the biomes added in TFC 4.2.0

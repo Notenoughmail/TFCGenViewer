@@ -1,8 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.impl.network.packet;
 
-import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
 import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
+import io.github.notenoughmail.tfcgenviewer.api.registry.ISyncRegistries;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType;
 import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
@@ -49,7 +49,7 @@ public record SingleViewResponsePacket(
             (buf, p) -> {
                 ImplAPI.GENERATOR_VISUALIZER_STREAM_CODEC.encode(buf, p.generatorVisualizer);
                 VISUALIZER_TYPE_CODEC.encode(buf, p.visualizerTypes);
-                registriesFromVisualizers(p.visualizerTypes).encode(buf, p.registries);
+                registriesFromVisualizers(p.visualizerTypes, p.generatorVisualizer).encode(buf, p.registries);
                 p.generatorVisualizer.generatorNetworkCodec().encode(buf, TFCGenViewer.cast(p.generator));
                 buf.writeBoolean(p.allowSpawnDraw);
                 buf.writeBoolean(p.allowExport);
@@ -61,7 +61,7 @@ public record SingleViewResponsePacket(
             buf -> {
                 final IGeneratorVisualizer<?, ?, ?, ?> generatorVisualizer = ImplAPI.GENERATOR_VISUALIZER_STREAM_CODEC.decode(buf);
                 final List<IVisualizerType<?, ?, ?, ?>> visualizerTypes = VISUALIZER_TYPE_CODEC.decode(buf);
-                final List<RegistryContents<?>> registries = registriesFromVisualizers(visualizerTypes).decode(buf);
+                final List<RegistryContents<?>> registries = registriesFromVisualizers(visualizerTypes, generatorVisualizer).decode(buf);
                 final Set<ResourceKey<? extends Registry<?>>> syncedRegistries =
                         registries.stream()
                                 .map(RegistryContents::registry)
@@ -92,9 +92,9 @@ public record SingleViewResponsePacket(
             }
     );
 
-    private static StreamCodec<FriendlyByteBuf, List<RegistryContents<?>>> registriesFromVisualizers(List<IVisualizerType<?, ?, ?, ?>> visualizerTypes) {
+    private static StreamCodec<FriendlyByteBuf, List<RegistryContents<?>>> registriesFromVisualizers(List<? extends ISyncRegistries> visualizerTypes, ISyncRegistries generatorVisualizer) {
         return RegistryContents.REGISTRY_KEY_CODEC
-                .dispatch(RegistryContents::registry, key -> NETWORKED_REGISTRIES.computeIfAbsent(key, Reg::of).findFrom(visualizerTypes))
+                .dispatch(RegistryContents::registry, key -> NETWORKED_REGISTRIES.computeIfAbsent(key, Reg::of).findFrom(visualizerTypes, generatorVisualizer))
                 .apply(ByteBufCodecs.list());
     }
 
@@ -105,24 +105,21 @@ public record SingleViewResponsePacket(
         return TYPE;
     }
 
-    private static class Reg<T> extends IdentityHashMap<IVisualizerType<?, ?, ?, ?>, StreamCodec<FriendlyByteBuf, RegistryContents<T>>> {
+    private static class Reg<T> extends IdentityHashMap<ISyncRegistries, StreamCodec<FriendlyByteBuf, RegistryContents<T>>> {
 
         static Reg<?> of(ResourceKey<? extends Registry<?>> key) {
             return new Reg<>(TFCGenViewer.cast(key));
         }
 
         Reg(ResourceKey<? extends Registry<T>> key) {
-            GenViewerAPI.VISUALIZER_REGISTRY.forEach(viz -> {
-                final Codec<T> codec = viz.elementCodecForRegistry(key);
-                if (codec != null) {
-                    put(viz, RegistryContents.registryStreamCodec(codec, key));
-                }
-            });
+            ImplAPI.getAllSync(key, (s, c) -> put(s, RegistryContents.registryStreamCodec(c, key)));
         }
 
-        StreamCodec<FriendlyByteBuf, RegistryContents<?>> findFrom(List<IVisualizerType<?, ?, ?, ?>> visualizerTypes) {
-            return visualizerTypes.stream()
-                    .map(this::get)
+        StreamCodec<FriendlyByteBuf, RegistryContents<?>> findFrom(List<? extends ISyncRegistries> visualizerTypes, ISyncRegistries generatorVisualizer) {
+            return Stream.concat(
+                    visualizerTypes.stream(),
+                    Stream.of(generatorVisualizer)
+            ).map(this::get)
                     .filter(Objects::nonNull)
                     .<StreamCodec<FriendlyByteBuf, RegistryContents<?>>>map(TFCGenViewer::cast)
                     .findFirst()

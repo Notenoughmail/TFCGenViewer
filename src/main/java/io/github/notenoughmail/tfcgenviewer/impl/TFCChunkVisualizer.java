@@ -6,8 +6,8 @@ import io.github.notenoughmail.tfcgenviewer.api.GenViewerAPI;
 import io.github.notenoughmail.tfcgenviewer.api.registry.NetworkHolder;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ChunkScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ChunkSize;
-import io.github.notenoughmail.tfcgenviewer.api.visualizer.IGeneratorVisualizer;
 import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCChunkVisualizerType;
+import io.github.notenoughmail.tfcgenviewer.api.visualizer.ITFCGeneratorVisualizer;
 import io.netty.buffer.ByteBuf;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.BiomeSourceExtension;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class TFCChunkVisualizer implements IGeneratorVisualizer<TFCChunkGenerator, ChunkSize, ChunkScale, ITFCChunkVisualizerType<?, ?>> {
+public class TFCChunkVisualizer implements ITFCGeneratorVisualizer<ChunkSize, ChunkScale, ITFCChunkVisualizerType<?, ?>> {
 
     public static final TFCChunkVisualizer INSTANCE = new TFCChunkVisualizer();
 

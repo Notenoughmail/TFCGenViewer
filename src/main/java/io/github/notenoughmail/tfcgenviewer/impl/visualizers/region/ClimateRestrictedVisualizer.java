@@ -1,8 +1,8 @@
 package io.github.notenoughmail.tfcgenviewer.impl.visualizers.region;
 
-import com.mojang.serialization.Codec;
 import io.github.notenoughmail.tfcgenviewer.api.DrawParallelism;
 import io.github.notenoughmail.tfcgenviewer.api.MutableImage;
+import io.github.notenoughmail.tfcgenviewer.api.SerializationInformation;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.cache.ClimateFeatureCache;
 import io.github.notenoughmail.tfcgenviewer.api.cache.RegionPointCache;
@@ -16,11 +16,9 @@ import io.github.notenoughmail.tfcgenviewer.impl.TFCGenViewerRegistration;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.layer.TFCLayers;
 import net.dries007.tfc.world.region.Region;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
@@ -130,10 +128,9 @@ public class ClimateRestrictedVisualizer implements IRegionVisualizerType<Climat
         ClimateFeatureCache.syncRequest(synchronizationRequest, null);
     }
 
-    @Nullable
     @Override
-    public <T> Codec<T> elementCodecForRegistry(ResourceKey<? extends Registry<T>> registry) {
-        return ClimateFeatureCache.codecForRegistry(registry);
+    public void elementCodecForRegistry(SerializationInformation serializationInformation) {
+        ClimateFeatureCache.codecForRegistry(serializationInformation);
     }
 
     @Override

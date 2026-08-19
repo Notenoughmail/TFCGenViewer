@@ -35,7 +35,7 @@ public class TFCGenViewer {
 
     public static final String ID = "tfcgenviewer";
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static final String NETWORK_VERSION = "2.0.1";
+    public static final String NETWORK_VERSION = "2.1.2";
 
     public static ModConfigSpec.BooleanValue dingWhenGenerated, displayGenerationProgress, disableParallelGeneration;
     public static ModConfigSpec.DoubleValue maxPreviewWidth;

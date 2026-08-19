@@ -1,5 +1,6 @@
 package io.github.notenoughmail.tfcgenviewer.api.registry;
 
+import io.github.notenoughmail.tfcgenviewer.api.SerializationInformation;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -8,7 +9,7 @@ import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A {@link Holder} which originates from over-the-network via {@link io.github.notenoughmail.tfcgenviewer.api.visualizer.IVisualizerType#elementCodecForRegistry(ResourceKey) server information sync}.
+ * A {@link Holder} which originates from over-the-network via {@link ISyncRegistries#elementCodecForRegistry(SerializationInformation) server information sync}.
  * Network holders are not required to have a value, and exist to fulfill the requirements of some registry elements
  * while maintaining TFCGenViewer's dedication to minimizing packet sizes.
  */
