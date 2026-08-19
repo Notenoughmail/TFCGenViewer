@@ -1,4 +1,4 @@
-# 2.1.2 (W.I.P.)
+# 2.1.2
 - Update to TFC 4.2.8, which is the new minimum version
 - Fix crash with TFC 4.2.8 when trying to visualize in-world
 - This version is ***not*** network compatible with older versions
