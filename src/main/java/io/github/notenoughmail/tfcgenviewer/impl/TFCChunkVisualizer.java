@@ -85,7 +85,7 @@ public class TFCChunkVisualizer implements ITFCGeneratorVisualizer<ChunkSize, Ch
     private static final StreamCodec<RegistryFriendlyByteBuf, TFCChunkGenerator> GENERATOR_CODEC = StreamCodec.composite(
             BIOME_SOURCE_EXTENSION_CODEC, g -> g.customBiomeSource,
             NOISE_GENERATOR_SETTINGS_CODEC, g -> g.noiseSettings,
-            ByteBufCodecs.fromCodecWithRegistriesTrusted(Settings.CODEC.codec()), TFCChunkGenerator::settings,
+            SETTINGS_CODEC, TFCChunkGenerator::settings,
             TFCChunkGenerator::new
     );
 

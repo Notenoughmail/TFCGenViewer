@@ -9,6 +9,7 @@ import io.github.notenoughmail.tfcgenviewer.api.color.ColorDefinition;
 import io.github.notenoughmail.tfcgenviewer.api.color.Colors;
 import io.github.notenoughmail.tfcgenviewer.api.color.manager.RegistryLinkedColorManager;
 import io.github.notenoughmail.tfcgenviewer.api.registry.NetworkHolder;
+import io.netty.buffer.ByteBuf;
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.util.data.DataManager;
 import net.dries007.tfc.world.placement.ClimatePlacement;
@@ -18,6 +19,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
@@ -41,22 +44,28 @@ public class ClimateFeatureCache<C> {
     public static final DataManager.Reference<ColorDefinition> LAND = Colors.MISC_COLORS.getReference(TFCGenViewer.id("visualizable_feature_land"));
     public static final RegistryLinkedColorManager<PlacedFeature> FEATURES = new RegistryLinkedColorManager<>(TFCGenViewer.id("visualizable_feature_color"), Registries.PLACED_FEATURE);
     public static final TagKey<PlacedFeature> VISUALIZABLE_FEATURES = TagKey.create(Registries.PLACED_FEATURE, TFCGenViewer.id("visualizable_features"));
-    public static final Codec<PlacedFeature> MINIMAL_FEATURE_CODEC =
-            ClimatePlacement.CODEC.codec().xmap(
-                    p -> new PlacedFeature(null, List.of(p)),
-                    f -> findFirst(f.placement()).orElseThrow()
-            );
+    private static final StreamCodec<ByteBuf, ClimatePlacement> CLIMATE_CODEC = StreamCodec.composite(
+            ByteBufCodecs.FLOAT, ClimatePlacement::getMinTemp,
+            ByteBufCodecs.FLOAT, ClimatePlacement::getMaxTemp,
+            ByteBufCodecs.FLOAT, ClimatePlacement::getMinGroundwater,
+            ByteBufCodecs.FLOAT, ClimatePlacement::getMaxGroundwater,
+            ByteBufCodecs.FLOAT, ClimatePlacement::getMinRainVariance,
+            ByteBufCodecs.FLOAT, ClimatePlacement::getMaxRainVariance,
+            (f1, f2, f3, f4, f5, f6) -> new ClimatePlacement(f1, f2, f3, f4, f5, f6, true, 0, 0, List.of(), 0, 0, false, false)
+    );
+    private static final StreamCodec<ByteBuf, PlacedFeature> PARTIAL_FEATURE_CODEC = CLIMATE_CODEC.map(
+            p -> new PlacedFeature(null, List.of(p)),
+            f -> findFirst(f.placement()).orElseThrow()
+    );
 
     public static final Predicate<Holder<PlacedFeature>> CAN_PIPE = h -> h.is(VISUALIZABLE_FEATURES) && findFirst(h.value().placement()).isPresent();
 
     private static final Supplier<Biome.ClimateSettings> BIOME_CLIMATE_SETTINGS_UNIT = Suppliers.memoize(() -> new Biome.ClimateSettings(false, 0, Biome.TemperatureModifier.NONE, 0));
     private static final Supplier<BiomeSpecialEffects> BIOME_SPECIAL_EFFECTS_UNIT = Suppliers.memoize(() -> new BiomeSpecialEffects.Builder().skyColor(0).waterColor(0).waterFogColor(0).fogColor(0).build());
     private static final Supplier<MobSpawnSettings> BIOME_MOB_SETTINGS_UNIT = Suppliers.memoize(() -> new MobSpawnSettings.Builder().build());
-
-    public static final Codec<Biome> MINIMAL_BIOME_CODEC =
-            ResourceKey.codec(Registries.PLACED_FEATURE)
-            .listOf()
-            .xmap(l -> new BiomeGenerationSettings(
+    private static final StreamCodec<ByteBuf, Biome> MINIMAL_BIOME_CODEC = ResourceKey.streamCodec(Registries.PLACED_FEATURE)
+            .apply(ByteBufCodecs.list())
+            .map(l -> new BiomeGenerationSettings(
                             Map.of(),
                             List.of(HolderSet.direct(NetworkHolder::of, l))
                     ),
@@ -65,9 +74,10 @@ public class ClimateFeatureCache<C> {
                             .flatMap(HolderSet::stream)
                             .filter(CAN_PIPE)
                             .map(Holder::getKey)
+                            .filter(Objects::nonNull)
                             .toList()
             )
-            .xmap(bgs -> new Biome(
+            .map(bgs -> new Biome(
                     BIOME_CLIMATE_SETTINGS_UNIT.get(),
                     BIOME_SPECIAL_EFFECTS_UNIT.get(),
                     bgs,
@@ -75,7 +85,7 @@ public class ClimateFeatureCache<C> {
             ), Biome::getGenerationSettings);
 
     public static void codecForRegistry(SerializationInformation serializationInformation) {
-        serializationInformation.provide(Registries.PLACED_FEATURE, MINIMAL_FEATURE_CODEC);
+        serializationInformation.provide(Registries.PLACED_FEATURE, PARTIAL_FEATURE_CODEC);
         serializationInformation.provide(Registries.BIOME, MINIMAL_BIOME_CODEC);
     }
 

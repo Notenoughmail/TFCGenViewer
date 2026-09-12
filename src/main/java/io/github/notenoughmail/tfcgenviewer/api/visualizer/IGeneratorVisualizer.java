@@ -1,10 +1,15 @@
 package io.github.notenoughmail.tfcgenviewer.api.visualizer;
 
+import io.github.notenoughmail.tfcgenviewer.api.SerializationInformation;
 import io.github.notenoughmail.tfcgenviewer.api.SynchronizationRequest;
 import io.github.notenoughmail.tfcgenviewer.api.registry.ISyncRegistries;
 import io.github.notenoughmail.tfcgenviewer.api.scale.IScale;
 import io.github.notenoughmail.tfcgenviewer.api.scale.ImageSize;
+import io.github.notenoughmail.tfcgenviewer.impl.ImplAPI;
 import net.dries007.tfc.world.ChunkGeneratorExtension;
+import net.dries007.tfc.world.settings.RockLayerSettings;
+import net.dries007.tfc.world.settings.RockSettings;
+import net.dries007.tfc.world.settings.Settings;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -20,6 +25,12 @@ public interface IGeneratorVisualizer<
         S extends IScale<I>,
         V extends IVisualizerType<G, ?, S, ?>
         > extends ISyncRegistries {
+
+    StreamCodec<RegistryFriendlyByteBuf, RockSettings> ROCK_SETTINGS_CODEC = ImplAPI.ROCK_SETTINGS_CODEC;
+
+    StreamCodec<RegistryFriendlyByteBuf, RockLayerSettings> ROCK_LAYER_SETTINGS_CODEC = ImplAPI.ROCK_LAYER_SETTINGS_CODEC;
+
+    StreamCodec<RegistryFriendlyByteBuf, Settings> SETTINGS_CODEC = ImplAPI.SETTINGS_CODEC;
 
     /**
      * The id of the generator visualizer
@@ -72,6 +83,17 @@ public interface IGeneratorVisualizer<
      * A codec to serialize the generator over-the-network to recreate it on the client
      */
     StreamCodec<RegistryFriendlyByteBuf, G> generatorNetworkCodec();
+
+    // Default implementations since it's very likely for these to be needed unless the rock layer settings is completely empty
+    @Override
+    default void additionalSynchronization(SynchronizationRequest synchronizationRequest) {
+        synchronizationRequest.request(RockSettings.KEY);
+    }
+
+    @Override
+    default void elementCodecForRegistry(SerializationInformation serializationInformation) {
+        serializationInformation.provide(RockSettings.KEY, ROCK_SETTINGS_CODEC);
+    }
 
     @ApiStatus.Internal
     default void registrySync(SynchronizationRequest request) {

@@ -45,8 +45,7 @@ public class TFCRegionVisualizer implements ITFCGeneratorVisualizer<GridSize, Gr
             false
     )));
 
-    static final StreamCodec<RegistryFriendlyByteBuf, TFCChunkGenerator> GENERATOR_NETWORK_CODEC =
-            ByteBufCodecs.fromCodecWithRegistriesTrusted(Settings.CODEC.codec())
+    static final StreamCodec<RegistryFriendlyByteBuf, TFCChunkGenerator> GENERATOR_NETWORK_CODEC = SETTINGS_CODEC
                     .map(s -> new TFCChunkGenerator(BIOME_UNIT.get(), NOISE_UNIT.get(), s), TFCChunkGenerator::settings);
 
     public static final Component NAME = Component.translatable("tfcgenviewer.generator.tfc_overworld.region");

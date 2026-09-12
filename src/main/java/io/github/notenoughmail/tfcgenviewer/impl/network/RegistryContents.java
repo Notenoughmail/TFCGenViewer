@@ -3,6 +3,7 @@ package io.github.notenoughmail.tfcgenviewer.impl.network;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import io.github.notenoughmail.tfcgenviewer.TFCGenViewer;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -46,12 +47,12 @@ public record RegistryContents<T>(ResourceKey<? extends Registry<T>> registry, M
         return new RegistryAccess.RegistryEntry<>(registry, reg);
     }
 
-    public static <T> StreamCodec<FriendlyByteBuf, RegistryContents<T>> registryStreamCodec(Codec<T> codec, ResourceKey<? extends Registry<T>> registry) {
+    public static <T> StreamCodec<FriendlyByteBuf, RegistryContents<T>> registryStreamCodec(StreamCodec<FriendlyByteBuf, T> codec, ResourceKey<? extends Registry<T>> registry) {
         final StreamCodec<FriendlyByteBuf, ResourceKey<? extends Registry<T>>> registryKeyCodec = TFCGenViewer.cast(REGISTRY_KEY_CODEC);
         final StreamCodec<FriendlyByteBuf, Map<ResourceKey<T>, T>> valuesCodec = ByteBufCodecs.map(
                 IdentityHashMap::new,
                 StreamCodec.of(FriendlyByteBuf::writeResourceKey, b -> b.readResourceKey(registry)),
-                ByteBufCodecs.fromCodec(codec)
+                codec
         );
         final StreamCodec<FriendlyByteBuf, Map<ResourceLocation, List<ResourceKey<T>>>> tagsCodec = ByteBufCodecs.map(
                 HashMap::new,
